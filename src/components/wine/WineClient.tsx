@@ -185,8 +185,8 @@ export function MergeDuplicate({ targetId, source }: { targetId: string; source:
         }}
       >
         <p>
-          {source.tastings === 1 ? "The tasting" : `All ${source.tastings} tastings`} and photos from <strong>{source.label}</strong> will move to this record, unchanged. That duplicate
-          record&rsquo;s own identity details will then be removed. This page&rsquo;s details are kept.
+          {source.tastings === 1 ? "The tasting" : `All ${source.tastings} tastings`} and photos from <strong>{source.label}</strong> will move to this record, unchanged. Grapes and identifiers
+          it lists that this record lacks are added. Its other identity details are then removed; this page&rsquo;s are kept.
         </p>
       </ConfirmDialog>
     </>
