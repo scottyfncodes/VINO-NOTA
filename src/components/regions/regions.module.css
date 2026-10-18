@@ -1,0 +1,99 @@
+.map {
+  width: 100%;
+  height: auto;
+  margin: var(--space-2) 0 var(--space-3);
+}
+.land {
+  fill: var(--surface-paper);
+  stroke: var(--bg);
+  stroke-width: 0.6;
+}
+.recorded {
+  stroke: var(--bg);
+  stroke-width: 0.8;
+  transition: opacity var(--duration) var(--ease);
+}
+.map a:hover .recorded,
+.map a:focus-visible .recorded {
+  opacity: 0.8;
+  stroke: var(--text);
+  stroke-width: 1.2;
+}
+.map a:focus {
+  outline: none;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.swatch {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 2px;
+  vertical-align: -2px;
+  margin-right: var(--space-1);
+}
+.index {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+.country {
+  scroll-margin-top: var(--space-6);
+}
+.countryHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--rule-strong);
+}
+.countryName {
+  font-size: var(--text-xl);
+}
+.countryMeta {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: right;
+}
+.regionRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--rule);
+  text-decoration: none;
+}
+.regionRow:hover .regionName {
+  text-decoration: underline;
+}
+.regionName {
+  font-family: var(--font-serif);
+  font-size: var(--text-md);
+}
+.regionSub {
+  grid-column: 1 / -1;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.regionFig {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+.unplaced {
+  font-style: italic;
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin-bottom: var(--space-3);
+}
