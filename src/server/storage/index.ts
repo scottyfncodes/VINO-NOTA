@@ -82,7 +82,9 @@ export function setStorageForTesting(storage: ObjectStorage | null) {
 
 export function getStorage(): ObjectStorage {
   if (override) return override;
-  if (process.env.BLOB_READ_WRITE_TOKEN) return new VercelBlobStorage();
+  // A connected Blob store provides either a read-write token or, for OIDC-authenticated
+  // stores, BLOB_STORE_ID (the SDK then uses the deployment's OIDC token).
+  if (process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID) return new VercelBlobStorage();
   // Never write to the (ephemeral, shared) filesystem on Vercel.
   if (process.env.VERCEL) return new UnconfiguredStorage();
   return new LocalStorage();

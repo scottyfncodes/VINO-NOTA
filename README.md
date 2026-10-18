@@ -71,7 +71,7 @@ npm run db:migrate
 npm run dev
 ```
 
-Without `BLOB_READ_WRITE_TOKEN`, photos are stored under `./.data/storage` in development.
+Without a Blob store configured, photos are stored under `./.data/storage` in development.
 
 ## Quality checks
 
@@ -88,7 +88,7 @@ The integration suite rebuilds the test database from the committed migrations o
 ## Deployment (Vercel)
 
 - `vercel-build` runs `scripts/migrate.ts` before `next build`, so each environment migrates **its own** database. Point Production and Preview at different databases (for example separate Neon branches).
-- Required environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BLOB_READ_WRITE_TOKEN` (private Blob store). Optional: `ANTHROPIC_API_KEY`, `RECOGNITION_MODEL`, `BETTER_AUTH_URL`.
+- Required environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, and a private Blob store (`BLOB_STORE_ID` with Vercel OIDC, or `BLOB_READ_WRITE_TOKEN`). Optional: `ANTHROPIC_API_KEY`, `RECOGNITION_MODEL`, `BETTER_AUTH_URL`.
 - Security headers (HSTS, `nosniff`, frame denial, referrer and permissions policies) are set in `next.config.ts`.
 
 ## Known limitations
