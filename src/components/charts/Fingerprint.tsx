@@ -55,8 +55,10 @@ export function Fingerprint({ dimensions }: { dimensions: FingerprintDimension[]
                   <Link
                     key={l.value}
                     href={`/journal?ids=${l.tastingIds.join(",")}`}
-                    aria-label={`${d.label} ${d.scale[l.value - 1]}: ${l.count} tastings${l.meanScore !== null ? `, mean score ${formatScore(l.meanScore)} from ${l.ratedCount} rated` : ", none rated"}`}
+                    aria-label={`${d.label} ${d.scale[l.value - 1]}: ${l.count} ${l.count === 1 ? "tasting" : "tastings"}${l.meanScore !== null ? `, mean score ${formatScore(l.meanScore)} from ${l.ratedCount} rated` : ", none rated"}`}
                   >
+                    {/* The whole grid cell is the tap target; small dots alone are too small to hit. */}
+                    <rect x={labelW + colW * (l.value - 1)} y={cy - rowH / 2} width={colW} height={rowH} fill="transparent" />
                     <circle
                       cx={labelW + colW * (l.value - 0.5)}
                       cy={cy}

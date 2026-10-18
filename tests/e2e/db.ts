@@ -1,14 +1,12 @@
 import postgres from "postgres";
+import { assertLocalDatabaseUrl } from "../support/local-database";
 
 /**
  * Direct access to the e2e app's database, for states the UI can't create
  * (label-read provenance, external ids) and for checking what a merge changed.
  * Refuses anything but a local database.
  */
-const url = process.env.DATABASE_URL ?? "postgresql://vino:vino@localhost:5432/vinonota";
-if (!["localhost", "127.0.0.1"].includes(new URL(url).hostname)) {
-  throw new Error("e2e database helpers only run against a local database.");
-}
+const url = assertLocalDatabaseUrl(process.env.DATABASE_URL ?? "postgresql://vino:vino@localhost:5432/vinonota");
 
 export const sql = postgres(url, { max: 1, prepare: false, onnotice: () => {} });
 
