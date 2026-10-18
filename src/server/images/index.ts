@@ -4,6 +4,7 @@ import { getDb } from "@/server/db";
 import { wine, wineImage } from "@/server/db/schema";
 import { NotFoundError, UserFacingError } from "@/server/errors";
 import { getStorage, StorageUnavailableError } from "@/server/storage";
+import { isUuid } from "@/lib/domain/ids";
 
 /** Uploads are resized in the browser first; this is a hard server-side ceiling. */
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -57,6 +58,7 @@ export async function uploadImage(
 ) {
   const db = getDb();
   if (options.wineId) {
+    if (!isUuid(options.wineId)) throw new NotFoundError("Wine");
     const owned = await db.query.wine.findFirst({ where: and(eq(wine.id, options.wineId), eq(wine.ownerId, userId)), columns: { id: true } });
     if (!owned) throw new NotFoundError("Wine");
   }
@@ -130,6 +132,7 @@ export async function safeDeleteObjects(keys: string[]) {
 }
 
 export async function deleteImage(userId: string, imageId: string) {
+  if (!isUuid(imageId)) throw new NotFoundError("Image");
   const db = getDb();
   const [row] = await db.delete(wineImage).where(and(eq(wineImage.id, imageId), eq(wineImage.ownerId, userId))).returning();
   if (!row) throw new NotFoundError("Image");

@@ -10,6 +10,7 @@ import { Button, ButtonLink, Notice } from "@/components/ui/primitives";
 import { clearDraft, emptyTasting, identityFromWine, identityToPayload, readDraft, repeatTasting, tastingFromInput, tastingToPayload, writeDraft, type IdentityDraft, type IdentityField, type TastingDraft } from "./drafts";
 import { IdentityForm, validateIdentity } from "./IdentityForm";
 import { TastingForm, validateTasting } from "./TastingForm";
+import { focusFirstError } from "./focusField";
 import s from "./capture.module.css";
 
 function ErrorBox({ error }: { error: { message: string; details?: string[] } | null }) {
@@ -74,7 +75,10 @@ export function TastingEditor({
   async function save() {
     const e = validateTasting(draft, today);
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) {
+      focusFirstError(e);
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     const payload = tastingToPayload(draft);
@@ -152,7 +156,10 @@ export function WineEditor({ wineId, initial }: { wineId: string; initial: WineI
   async function save() {
     const e = validateIdentity(draft);
     setErrors(e);
-    if (Object.keys(e).length) return;
+    if (Object.keys(e).length) {
+      focusFirstError(e);
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     const result = await updateWineAction(wineId, identityToPayload(draft)).catch(() => ({ ok: false as const, error: "We couldn't reach the server. Please try again." }));

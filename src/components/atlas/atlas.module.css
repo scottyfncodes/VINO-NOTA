@@ -108,6 +108,11 @@
   font-size: var(--text-sm);
   color: var(--text-muted);
 }
+a.sectionLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
+}
 .insight {
   display: grid;
   gap: var(--space-4);
