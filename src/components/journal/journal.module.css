@@ -1,0 +1,110 @@
+.controls {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.searchRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+}
+.search {
+  position: relative;
+}
+.search svg {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.search input {
+  padding-left: 2.5rem;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.toolbarLeft {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sortSelect {
+  min-height: 2.25rem;
+  font-size: var(--text-sm);
+  width: auto;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.viewToggle {
+  display: flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.viewToggle a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.25rem;
+  color: var(--text-muted);
+}
+.viewToggle a[aria-current="true"] {
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+.activeFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.count {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--rule-strong);
+}
+.filterBadge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+}
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+.tabs {
+  display: flex;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+.tab {
+  min-height: var(--touch);
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 550;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tab[aria-current="page"] {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
