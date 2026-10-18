@@ -30,6 +30,7 @@ import {
 import { IdentityForm, validateIdentity } from "./IdentityForm";
 import { prepareImage, uploadPhoto } from "./prepareImage";
 import { TastingForm, validateTasting } from "./TastingForm";
+import { focusFirstError } from "./focusField";
 import s from "./capture.module.css";
 
 type Step = "photo" | "identify" | "taste" | "review";
@@ -230,7 +231,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
     }
     setIdentityErrors(errors);
     if (Object.keys(errors).length) {
-      document.getElementById(Object.keys(errors)[0] === "name" ? "wine-name" : Object.keys(errors)[0])?.focus();
+      focusFirstError(errors);
       return;
     }
     if (providerFieldCount > 0 && !confirmed) {
@@ -244,8 +245,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
     const errors = validateTasting(tasting, today);
     setTastingErrors(errors);
     if (Object.keys(errors).length) {
-      const first = Object.keys(errors)[0];
-      document.getElementById(first === "tastedOn" ? "tasted-on" : first === "price" ? "price" : first)?.focus();
+      focusFirstError(errors);
       return;
     }
     go("review");
