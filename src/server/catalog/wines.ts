@@ -10,11 +10,11 @@ import {
   wineImage,
   type FieldProvenance,
 } from "@/server/db/schema";
+import { describeVintage, mergeExternalIds, planGrapeMerge, sameVintage } from "@/lib/domain/merge";
 import { NotFoundError, UserFacingError, ValidationError } from "@/server/errors";
 import { attachPendingImages, safeDeleteObjects, storageKeysOf } from "@/server/images";
 import { normalizeProducer, normalizeText, wineIdentityKey } from "@/lib/domain/normalize";
 import { formatIssues, wineInputSchema, type WineInput, type WineInputRaw } from "@/lib/domain/validation";
-import { describeVintage, mergeExternalIds, planGrapeMerge, sameVintage } from "@/lib/domain/merge";
 
 type Tx = Parameters<Parameters<Database["transaction"]>[0]>[0];
 type Executor = Database | Tx;
