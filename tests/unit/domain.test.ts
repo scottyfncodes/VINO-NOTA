@@ -9,6 +9,7 @@ describe("parseScore", () => {
   it("treats empty input as unrated, not zero", () => {
     expect(parseScore("")).toEqual({ ok: true, value: null });
     expect(parseScore(null)).toEqual({ ok: true, value: null });
+    expect(parseScore("   ")).toEqual({ ok: true, value: null });
   });
   it("accepts 0.0 and 10.0 and one decimal place", () => {
     expect(parseScore(0)).toEqual({ ok: true, value: 0 });
@@ -52,6 +53,12 @@ describe("wine validation", () => {
     expect(wineInputSchema.safeParse({ ...valid, region: "Piedmont" }).success).toBe(false);
     expect(wineInputSchema.safeParse({ ...valid, region: "Piedmont", country: "IT" }).success).toBe(true);
   });
+  it("treats blank alcohol, vintage and grape share as missing, never zero", () => {
+    const r = wineInputSchema.parse({ ...valid, alcoholPct: " ", vintage: " ", grapes: [{ name: "Nebbiolo", percentage: " " }] });
+    expect(r.alcoholPct).toBeNull();
+    expect(r.vintage).toBeNull();
+    expect(r.grapes[0].percentage).toBeNull();
+  });
   it("rejects blends over 100% and duplicate grapes", () => {
     expect(wineInputSchema.safeParse({ ...valid, grapes: [{ name: "A", percentage: 70 }, { name: "B", percentage: 40 }] }).success).toBe(false);
     expect(wineInputSchema.safeParse({ ...valid, grapes: [{ name: "Nebbiolo" }, { name: "nebbiolo" }] }).success).toBe(false);
@@ -83,6 +90,14 @@ describe("tasting validation", () => {
   it("rejects duplicate structural observations", () => {
     const obs = [{ dimension: "body", status: "assessed", value: 2 }, { dimension: "body", status: "assessed", value: 3 }];
     expect(tastingInputSchema.safeParse({ ...valid, observations: obs }).success).toBe(false);
+  });
+  it("treats blank numeric text as missing, never zero", () => {
+    const r = tastingInputSchema.parse({ ...valid, personalScore: " ", purchasePrice: "  ", servingTempC: " ", decantMinutes: "\t" });
+    expect(r.personalScore).toBeNull();
+    expect(r.purchasePrice).toBeNull();
+    expect(r.servingTempC).toBeNull();
+    expect(r.decantMinutes).toBeNull();
+    expect(tastingInputSchema.parse({ ...valid, personalScore: "0" }).personalScore).toBe(0);
   });
   it("normalises tags", () => {
     expect(tastingInputSchema.parse({ ...valid, tags: ["Birthday", "birthday ", ""] }).tags).toEqual(["birthday"]);
