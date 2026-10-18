@@ -87,7 +87,18 @@ The integration suite rebuilds the test database from the committed migrations o
 
 ## Deployment (Vercel)
 
-- `vercel-build` runs `scripts/migrate.ts` before `next build`, so each environment migrates **its own** database. Point Production and Preview at different databases (for example separate Neon branches).
+- `vercel-build` runs `scripts/migrate.ts` before `next build`, so each environment migrates **its own** database. The script logs the target (`env`, Neon endpoint id, database name; never credentials).
+
+### Preview / Production database isolation
+
+| Environment | Neon branch | How it gets `DATABASE_URL` |
+| --- | --- | --- |
+| Production | `main` (protected by the integration) | Project-level variable from the Neon integration |
+| Preview | `preview/<git-branch>`, forked from `main` | Injected per deployment by the Neon integration |
+
+The project-level `DATABASE_URL` is also targeted at Preview, so a Preview would fall back to Production if per-preview branching ever stopped working. `src/server/db/target.ts` prevents that: when `VERCEL_ENV=preview`, both the migration script and the runtime client refuse to connect to the endpoint named in `PRODUCTION_DB_ENDPOINT_ID` (set for Preview only). The guard fails closed: a Preview without that variable, or with an unrecognisable host, is refused too.
+
+Preview branches are forked from Production, so they start with a copy of Production data as of the fork. Preview deployments sit behind Vercel Authentication.
 - Required environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, and a private Blob store (`BLOB_STORE_ID` with Vercel OIDC, or `BLOB_READ_WRITE_TOKEN`). Optional: `ANTHROPIC_API_KEY`, `RECOGNITION_MODEL`, `BETTER_AUTH_URL`.
 - Security headers (HSTS, `nosniff`, frame denial, referrer and permissions policies) are set in `next.config.ts`.
 

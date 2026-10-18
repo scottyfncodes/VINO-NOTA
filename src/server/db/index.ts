@@ -1,6 +1,7 @@
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
+import { assertPreviewIsolation } from "./target";
 
 export type Database = PostgresJsDatabase<typeof schema>;
 
@@ -16,6 +17,7 @@ export function getDb(): Database {
   if (!url) {
     throw new Error("DATABASE_URL is not configured.");
   }
+  assertPreviewIsolation(url);
   const sql = postgres(url, {
     // Pooled serverless connections (e.g. Neon/PgBouncer) do not support
     // session-level prepared statements.
