@@ -10,6 +10,7 @@ import {
   wineImage,
   type FieldProvenance,
 } from "@/server/db/schema";
+import { describeVintage, mergeExternalIds, planGrapeMerge, sameVintage } from "@/lib/domain/merge";
 import { NotFoundError, UserFacingError, ValidationError } from "@/server/errors";
 import { attachPendingImages, safeDeleteObjects, storageKeysOf } from "@/server/images";
 import { normalizeProducer, normalizeText, wineIdentityKey } from "@/lib/domain/normalize";
@@ -308,20 +309,50 @@ function escapeLike(value: string) {
 }
 
 /**
- * Merges `sourceId` into `targetId`: every tasting, image and provenance record
- * moves to the target, then the now-empty source wine is removed. Tastings are
- * moved intact — no score or note is overwritten.
+ * Merges `sourceId` into `targetId` in one transaction: every tasting, image and
+ * provenance record moves to the target intact (no score or note is overwritten);
+ * grapes and external ids are combined without loss (see planGrapeMerge); the
+ * target's identity fields and their provenance are kept; then the now-empty source
+ * wine is removed. Refused, with nothing changed, when the vintages differ or the
+ * records can't be combined without inventing or discarding data.
  */
 export async function mergeWines(userId: string, targetId: string, sourceId: string) {
   if (targetId === sourceId) throw new UserFacingError("Choose two different wines to merge.");
   return getDb().transaction(async (tx) => {
-    await requireOwnedWine(tx, userId, targetId);
-    await requireOwnedWine(tx, userId, sourceId);
+    if (!isUuid(targetId) || !isUuid(sourceId)) throw new NotFoundError("Wine");
+    // Lock both rows (in a stable order) so a concurrent edit or merge can't interleave.
+    await tx
+      .select({ id: wine.id })
+      .from(wine)
+      .where(and(inArray(wine.id, [targetId, sourceId]), eq(wine.ownerId, userId)))
+      .orderBy(asc(wine.id))
+      .for("update");
+    const target = await requireOwnedWine(tx, userId, targetId);
+    const source = await requireOwnedWine(tx, userId, sourceId);
+
+    if (!sameVintage(target, source)) {
+      throw new UserFacingError(`These records are different vintages (${describeVintage(target)} and ${describeVintage(source)}), so they can't be merged.`, 409);
+    }
+    const externalIds = mergeExternalIds(target.externalIds, source.externalIds);
+    if (!externalIds.ok) throw new UserFacingError(externalIds.error, 409);
+    const [targetGrapes, sourceGrapes] = await Promise.all([targetId, sourceId].map((id) => tx.query.wineGrape.findMany({ where: eq(wineGrape.wineId, id) })));
+    const asRows = (rows: typeof targetGrapes) => rows.map((g) => ({ ...g, percentage: g.percentage === null ? null : Number(g.percentage) }));
+    const grapes = planGrapeMerge(
+      { grapes: asRows(targetGrapes), provenance: target.fieldProvenance.grapes },
+      { grapes: asRows(sourceGrapes), provenance: source.fieldProvenance.grapes },
+    );
+    if (!grapes.ok) throw new UserFacingError(grapes.error, 409);
+
     const moved = await tx.update(tasting).set({ wineId: targetId, updatedAt: new Date() }).where(and(eq(tasting.wineId, sourceId), eq(tasting.ownerId, userId))).returning({ id: tasting.id });
     await tx.update(wineImage).set({ wineId: targetId }).where(and(eq(wineImage.wineId, sourceId), eq(wineImage.ownerId, userId)));
     await tx.update(metadataSourceRecord).set({ wineId: targetId }).where(and(eq(metadataSourceRecord.wineId, sourceId), eq(metadataSourceRecord.ownerId, userId)));
+    for (const m of grapes.moves) await tx.update(wineGrape).set({ wineId: targetId, position: m.position }).where(and(eq(wineGrape.id, m.id), eq(wineGrape.wineId, sourceId)));
+    for (const u of grapes.shareUpdates) await tx.update(wineGrape).set({ percentage: String(u.percentage), source: u.source }).where(and(eq(wineGrape.id, u.id), eq(wineGrape.wineId, targetId)));
+    const fieldProvenance = { ...target.fieldProvenance };
+    if (grapes.provenance) fieldProvenance.grapes = grapes.provenance;
+    await tx.update(wine).set({ fieldProvenance, externalIds: externalIds.ids, updatedAt: new Date() }).where(and(eq(wine.id, targetId), eq(wine.ownerId, userId)));
+    // The source's remaining grape rows are duplicates of the target's and go with it.
     await tx.delete(wine).where(and(eq(wine.id, sourceId), eq(wine.ownerId, userId)));
-    await tx.update(wine).set({ updatedAt: new Date() }).where(eq(wine.id, targetId));
     return { movedTastings: moved.length };
   });
 }
