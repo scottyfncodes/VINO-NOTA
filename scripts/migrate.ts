@@ -7,6 +7,7 @@ import "dotenv/config";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
+import { assertPreviewIsolation } from "../src/server/db/target";
 
 async function main() {
   const url = process.env.DATABASE_URL;
@@ -17,6 +18,9 @@ async function main() {
     console.log("[migrate] DATABASE_URL not set; skipping migrations.");
     return;
   }
+  // Throws before connecting if a Preview build would migrate Production.
+  const target = assertPreviewIsolation(url);
+  console.log(`[migrate] env=${process.env.VERCEL_ENV ?? "local"} endpoint=${target.endpointId ?? target.host} database=${target.database}`);
   const sql = postgres(url, { max: 1, prepare: false, onnotice: () => {} });
   try {
     await migrate(drizzle(sql), { migrationsFolder: "./drizzle" });
