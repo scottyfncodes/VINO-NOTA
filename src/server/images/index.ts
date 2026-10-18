@@ -61,6 +61,11 @@ export async function uploadImage(
     if (!owned) throw new NotFoundError("Wine");
   }
   const processed = await processImage(bytes);
+  // Remove this user's abandoned capture uploads first. Awaited (not detached) so the
+  // work finishes within the request and can never race the upload created below.
+  await cleanupPendingImages(userId).catch(() => {
+    console.error("[images] pending-upload cleanup failed");
+  });
   const id = crypto.randomUUID();
   const prefix = `images/${userId}/${id}`;
   const keys = { originalKey: `${prefix}/original.jpg`, displayKey: `${prefix}/display.webp`, thumbKey: `${prefix}/thumb.webp` };
@@ -91,8 +96,6 @@ export async function uploadImage(
       source: options.source ?? "user_upload",
     })
     .returning();
-  // Opportunistically clean up abandoned capture uploads.
-  void cleanupPendingImages(userId).catch(() => {});
   return row;
 }
 

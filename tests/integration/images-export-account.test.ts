@@ -82,8 +82,19 @@ describe("image processing", () => {
     const u = await createUser("img-pending");
     const img = await uploadImage(u, await sampleJpeg());
     await getDb().update(wineImage).set({ createdAt: new Date(Date.now() - 48 * 3600 * 1000) }).where(eq(wineImage.id, img.id));
+    // Any background work from the upload must not have touched the backdated row.
+    await new Promise((r) => setTimeout(r, 60));
     expect(await cleanupPendingImages(u)).toBe(1);
     expect((await storedFiles()).some((f) => f.includes(img.id))).toBe(false);
+  });
+
+  it("removes abandoned uploads on the next upload, but never the new one", async () => {
+    const u = await createUser("img-next");
+    const stale = await uploadImage(u, await sampleJpeg());
+    await getDb().update(wineImage).set({ createdAt: new Date(Date.now() - 48 * 3600 * 1000) }).where(eq(wineImage.id, stale.id));
+    const fresh = await uploadImage(u, await sampleJpeg());
+    const rows = await getDb().select({ id: wineImage.id }).from(wineImage).where(eq(wineImage.ownerId, u));
+    expect(rows.map((r) => r.id)).toEqual([fresh.id]);
   });
 
   it("reports a storage failure without leaving rows or partial files", async () => {
