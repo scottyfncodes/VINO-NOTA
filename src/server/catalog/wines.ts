@@ -14,6 +14,7 @@ import { NotFoundError, UserFacingError, ValidationError } from "@/server/errors
 import { attachPendingImages, safeDeleteObjects, storageKeysOf } from "@/server/images";
 import { normalizeProducer, normalizeText, wineIdentityKey } from "@/lib/domain/normalize";
 import { formatIssues, wineInputSchema, type WineInput, type WineInputRaw } from "@/lib/domain/validation";
+import { isUuid } from "@/lib/domain/ids";
 
 type Tx = Parameters<Parameters<Database["transaction"]>[0]>[0];
 type Executor = Database | Tx;
@@ -143,9 +144,7 @@ async function requireOwnedWine(tx: Executor, userId: string, wineId: string) {
   return row;
 }
 
-export function isUuid(value: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
-}
+export { isUuid };
 
 /**
  * Updates a wine's identity. Any field the user changes becomes user-sourced;
@@ -160,17 +159,19 @@ export async function updateWine(userId: string, wineId: string, raw: unknown) {
     const before: Record<string, unknown> = {
       name: current.name,
       producer: current.producer?.name ?? null,
-      vintage: current.vintage,
+      vintage: current.isNonVintage ? "NV" : current.vintage,
       wineType: current.wineType,
       country: current.country,
       region: current.regionPath.region,
       subregion: current.regionPath.subregion,
       appellation: current.appellation,
       alcoholPct: current.alcoholPct === null ? null : Number(current.alcoholPct),
-      grapes: current.grapes.map((g) => `${g.grape}:${g.percentage ?? ""}`).join(","),
+      // Shares come back from numeric columns as text ("60.00"); compare them as numbers.
+      grapes: current.grapes.map((g) => `${g.grape}:${g.percentage === null ? "" : Number(g.percentage)}`).join(","),
     };
     const after: Record<string, unknown> = {
       ...input,
+      vintage: input.isNonVintage ? "NV" : input.vintage,
       grapes: input.grapes.map((g) => `${g.name}:${g.percentage ?? ""}`).join(","),
     };
     const provenance: Record<string, FieldProvenance> = { ...current.fieldProvenance };

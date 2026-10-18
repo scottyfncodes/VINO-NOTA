@@ -4,7 +4,7 @@ import { readdir } from "node:fs/promises";
 import sharp from "sharp";
 import { closeDb, getDb } from "@/server/db";
 import { tasting, user, wine, wineImage } from "@/server/db/schema";
-import { cleanupPendingImages, getImageForUser, processImage, uploadImage } from "@/server/images";
+import { cleanupPendingImages, deleteImage, getImageForUser, processImage, uploadImage } from "@/server/images";
 import { createWine, deleteWine, getWineDetail } from "@/server/catalog/wines";
 import { createTasting, saveCapture } from "@/server/tastings";
 import { buildAccountExport, buildWineExport, exportToCsv, EXPORT_FORMAT } from "@/server/export";
@@ -66,6 +66,12 @@ describe("image processing", () => {
     const b = await createUser("img-b");
     const w = await createWine(a, baseWine);
     await expect(uploadImage(b, await sampleJpeg(), { wineId: w.id })).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it("answers malformed ids with not-found instead of a database error", async () => {
+    const owner = await createUser("malformed");
+    await expect(uploadImage(owner, await sampleJpeg(), { wineId: "not-a-uuid" })).rejects.toBeInstanceOf(NotFoundError);
+    await expect(deleteImage(owner, "not-a-uuid")).rejects.toBeInstanceOf(NotFoundError);
   });
 
   it("deletes stored files when a wine is deleted", async () => {

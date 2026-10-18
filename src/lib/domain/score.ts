@@ -6,7 +6,8 @@ export const SCORE_MAX = 10;
  * a number rounded to one decimal place, or an error for anything invalid.
  */
 export function parseScore(input: unknown): { ok: true; value: number | null } | { ok: false; error: string } {
-  if (input === null || input === undefined || input === "") return { ok: true, value: null };
+  // Blank means unrated, never zero (Number(" ") is 0).
+  if (input === null || input === undefined || (typeof input === "string" && !input.trim())) return { ok: true, value: null };
   const n = typeof input === "number" ? input : Number(String(input).trim().replace(",", "."));
   if (!Number.isFinite(n)) return { ok: false, error: "Score must be a number." };
   if (n < SCORE_MIN || n > SCORE_MAX) return { ok: false, error: "Score must be between 0.0 and 10.0." };

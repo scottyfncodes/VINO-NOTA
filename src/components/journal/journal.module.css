@@ -36,8 +36,8 @@
   flex-wrap: wrap;
 }
 .sortSelect {
-  min-height: 2.25rem;
-  font-size: var(--text-sm);
+  min-height: var(--touch);
+  font-size: var(--text-base); /* under 16px, iOS Safari zooms on focus */
   width: auto;
   padding-top: 0;
   padding-bottom: 0;
@@ -52,8 +52,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.25rem;
+  width: var(--touch);
+  height: var(--touch);
   color: var(--text-muted);
 }
 .viewToggle a[aria-current="true"] {

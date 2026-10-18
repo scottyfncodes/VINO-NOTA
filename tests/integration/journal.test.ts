@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { closeDb, getDb } from "@/server/db";
-import { producer, region, sensoryObservation, tasting, tastingTag, wine, wineImage } from "@/server/db/schema";
+import { producer, region, sensoryObservation, tasting, tastingTag, wine, wineGrape, wineImage } from "@/server/db/schema";
 import { createWine, deleteWine, findWineMatches, getWineDetail, mergeWines, updateWine } from "@/server/catalog/wines";
 import { createTasting, deleteTasting, getTasting, listTastingsForWine, saveCapture, updateTasting } from "@/server/tastings";
 import { searchJournal, listWines, journalFacets } from "@/server/journal";
@@ -93,6 +93,37 @@ describe("wine and tasting lifecycle", () => {
     await updateWine(alice, w.id, { ...baseWine, name: "Provenance", vintage: 2017 });
     const after = await getWineDetail(alice, w.id);
     expect(after.fieldProvenance.name.source).toBe("provider");
+    expect(after.fieldProvenance.vintage).toEqual({ source: "user" });
+  });
+
+  it("keeps grape and vintage provenance when an edit leaves them unchanged", async () => {
+    const input = {
+      ...baseWine,
+      name: "Unchanged blend",
+      grapes: [{ name: "Merlot", percentage: 60 }, { name: "Cabernet Franc", percentage: 40 }],
+      provenance: { grapes: { source: "provider", provider: "anthropic", confidence: 0.9 } },
+    };
+    const w = await createWine(alice, input);
+    const rowsBefore = await getDb().select({ id: wineGrape.id }).from(wineGrape).where(eq(wineGrape.wineId, w.id));
+    await updateWine(alice, w.id, { ...input, provenance: undefined });
+    const after = await getWineDetail(alice, w.id);
+    expect(after.fieldProvenance.grapes.source).toBe("provider");
+    const rowsAfter = await getDb().select({ id: wineGrape.id }).from(wineGrape).where(eq(wineGrape.wineId, w.id));
+    expect(rowsAfter.map((r) => r.id).sort()).toEqual(rowsBefore.map((r) => r.id).sort());
+    expect(after.grapes.map((g) => [g.grape, Number(g.percentage)])).toEqual([["Merlot", 60], ["Cabernet Franc", 40]]);
+  });
+
+  it("treats a change between non-vintage and unknown vintage as a user edit", async () => {
+    const w = await createWine(alice, {
+      ...baseWine,
+      name: "NV or unknown",
+      vintage: null,
+      isNonVintage: true,
+      provenance: { vintage: { source: "provider", provider: "anthropic", confidence: 0.9 } },
+    });
+    await updateWine(alice, w.id, { ...baseWine, name: "NV or unknown", vintage: null, isNonVintage: false });
+    const after = await getWineDetail(alice, w.id);
+    expect(after.isNonVintage).toBe(false);
     expect(after.fieldProvenance.vintage).toEqual({ source: "user" });
   });
 

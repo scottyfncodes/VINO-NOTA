@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import { cloneElement, isValidElement, type ComponentProps, type ReactNode } from "react";
 import { Icon, type IconName } from "./Icon";
 import s from "./ui.module.css";
 
@@ -49,13 +49,19 @@ export function Field({
   children: ReactNode;
   className?: string;
 }) {
+  // Point the control at its hint or error so screen readers read it on focus.
+  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : null;
+  const control =
+    describedBy && isValidElement<{ id?: string; "aria-describedby"?: string }>(children) && children.props.id === id
+      ? cloneElement(children, { "aria-describedby": [children.props["aria-describedby"], describedBy].filter(Boolean).join(" ") })
+      : children;
   return (
     <div className={cls(s.field, className)}>
       <label className={s.label} htmlFor={id}>
         {label}
         {optional && <span className={s.optional}> · optional</span>}
       </label>
-      {children}
+      {control}
       {hint && !error && (
         <p className={s.hint} id={`${id}-hint`}>
           {hint}

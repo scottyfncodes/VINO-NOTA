@@ -19,8 +19,9 @@ const optionalNumber = (min: number, max: number, label: string) =>
   z
     .union([z.number(), z.string(), z.null()])
     .transform((v, ctx) => {
-      if (v === null || v === undefined || v === "") return null;
-      const n = typeof v === "number" ? v : Number(String(v).replace(",", "."));
+      // Blank text is a missing value, never zero (Number(" ") is 0).
+      if (v === null || v === undefined || (typeof v === "string" && !v.trim())) return null;
+      const n = typeof v === "number" ? v : Number(v.replace(",", "."));
       if (!Number.isFinite(n) || n < min || n > max) {
         ctx.addIssue({ code: "custom", message: `${label} must be between ${min} and ${max}.` });
         return z.NEVER;
@@ -50,7 +51,7 @@ export const wineInputSchema = z
     vintage: z
       .union([z.number().int(), z.string(), z.null()])
       .transform((v, ctx) => {
-        if (v === null || v === undefined || v === "") return null;
+        if (v === null || v === undefined || (typeof v === "string" && !v.trim())) return null;
         const n = typeof v === "number" ? v : Number(v);
         if (!Number.isInteger(n) || n < 1800 || n > 2100) {
           ctx.addIssue({ code: "custom", message: "Vintage must be a year between 1800 and 2100." });
