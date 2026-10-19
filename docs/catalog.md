@@ -115,7 +115,32 @@ confirms.
 
   It fails only on structural problems.
 
-### Class-ID resolution
+### Appellation audit (report only)
+
+Appellations are excluded from ingestion. Even so, Wikidata types some
+appellations (e.g. Margaux AOC) directly as wine-producing regions, so they
+arrive as regions.
+
+`npm run catalog:audit-appellations -- --dir <snapshot>` estimates how many.
+It runs in the ingest workflow straight after the fetch, and writes
+`report-appellation-audit.json` into the snapshot artifact and a table into
+the job summary.
+
+It flags a region when its name or an alias contains a recognised designation.
+The rules are `APPELLATION_RULES` in `src/lib/domain/appellation-audit.ts`:
+- **Acronyms:** AOC/AOP, DOCG/DOC/DOP, DOCa/DOQ/DO, AVA, DAC, VQA, WO, GI,
+  IGP/IGT, PDO/PGI. They match only as whole tokens, and in capitals where the
+  lower-case form is an ordinary word or name ("do", "Doc", "Ava", "doca").
+- **Full designation phrases**, e.g. "appellation d'origine contrôlée",
+  "denominazione di origine controllata", "American Viticultural Area".
+
+Generic place words ("valley", "côte", "cru") are never rules.
+
+**This is a heuristic for manual review.** A flag does not establish an item's
+classification, and the audit never filters, reclassifies or changes catalog
+records. It reads only the fetched snapshot: no database, no network.
+
+
 
 `npm run catalog:resolve-ids` (workflow **Catalog class-ID resolution**,
 `.github/workflows/catalog-resolve-ids.yml`) is read-only: it fetches no
