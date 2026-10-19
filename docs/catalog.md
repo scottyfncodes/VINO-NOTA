@@ -115,6 +115,26 @@ confirms.
 
   It fails only on structural problems.
 
+### Class-ID resolution
+
+`npm run catalog:resolve-ids` (workflow **Catalog class-ID resolution**,
+`.github/workflows/catalog-resolve-ids.yml`) is read-only: it fetches no
+catalog records, has no database or secrets and uploads no artifacts.
+
+For grape variety, wine-producing region and appellation it finds Wikidata
+classes whose English label or alias matches a search term. For each class it
+then reports:
+- its description and parent classes;
+- its instance count and sample instances;
+- which well-known anchors (e.g. Merlot, Margaux AOC) are instances of it.
+
+An id is proposed only when exactly one candidate covers at least 40% of the
+target's anchors (and at least 2) and has 10 or more instances. Otherwise the
+class is reported as ambiguous or unresolved, together with the classes the
+anchors are actually instances of.
+Changing `WIKIDATA_CLASSES` stays a separate, reviewed PR, and the ingest
+workflow's pre-fetch label check still guards every fetch.
+
 ## Growth from users
 
 When `CATALOG_CONTRIBUTIONS=on` (off by default, pending a privacy notice),

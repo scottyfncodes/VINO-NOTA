@@ -1,0 +1,38 @@
+# Read-only Wikidata class-ID resolution. Proposes ids for the catalog's
+# grape-variety, wine-region and appellation classes with evidence, for a
+# human to review. It fetches no catalog records, has no database, uses no
+# secrets and uploads no artifacts: the report is the job summary and log.
+#
+# Runs manually, and on pull requests that change the resolver or the
+# configured ids, so proposed ids are checked against Wikidata before merge.
+name: Catalog class-ID resolution (Wikidata, read-only)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - scripts/catalog/resolve-wikidata.ts
+      - scripts/catalog/fetch-wikidata.ts
+      - src/server/reference/wikidata.ts
+      - .github/workflows/catalog-resolve-ids.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-resolve-ids
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Resolve class ids (report only)
+        run: npm run -s catalog:resolve-ids
