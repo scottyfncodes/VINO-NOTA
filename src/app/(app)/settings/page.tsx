@@ -72,6 +72,14 @@ export default async function SettingsPage() {
           <dd>{recognition.available ? `On — ${recognition.provider}. Label photos are sent to it only when you capture a label.` : "Not configured. Details are entered by hand."}</dd>
           <dt className="muted">Photo storage</dt>
           <dd>{storage === "vercel-blob" ? "Private cloud storage" : storage === "local" ? "Local development storage" : "Not configured — photos can't be saved"}</dd>
+          <dt className="muted">Reference data</dt>
+          <dd>
+            Missing label details may be suggested from a shared wine reference catalog, marked “From catalog”. It includes data from{" "}
+            <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">
+              Wikidata
+            </a>{" "}
+            (CC0). Your tastings, notes and photos are never added to it.
+          </dd>
         </dl>
       </section>
 

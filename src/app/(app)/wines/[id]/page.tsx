@@ -38,6 +38,13 @@ export async function generateMetadata({ params }: PageProps<"/wines/[id]">): Pr
 function Provenance({ p }: { p?: FieldProvenance }) {
   if (!p || p.source === "user") return null;
   const pct = typeof p.confidence === "number" ? ` · ${Math.round(p.confidence * 100)}%` : "";
+  if (p.provider?.startsWith("catalog:")) {
+    return (
+      <Badge tone="success" title={`Completed from the reference catalog (${p.provider.slice(8)}) and confirmed by you${p.confirmedAt ? ` on ${p.confirmedAt.slice(0, 10)}` : ""}.`}>
+        From catalog{pct} · confirmed
+      </Badge>
+    );
+  }
   return (
     <Badge tone="success" title={`Suggested by ${p.provider ?? "a provider"} from the label and confirmed by you${p.confirmedAt ? ` on ${p.confirmedAt.slice(0, 10)}` : ""}.`}>
       From label{pct} · confirmed

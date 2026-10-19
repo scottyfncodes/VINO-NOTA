@@ -11,6 +11,9 @@ export type IdentityField = "name" | "producer" | "vintage" | "wineType" | "coun
 
 export type ProviderMark = { provider: string; confidence: number };
 
+/** True when a provider mark names the reference catalog rather than the label reader. */
+export const isCatalogSource = (provider: string | undefined) => !!provider?.startsWith("catalog:");
+
 export type IdentityDraft = {
   name: string;
   producer: string;
@@ -77,18 +80,24 @@ export function applyCandidate(draft: IdentityDraft, c: RecognitionCandidate, pr
     return has && !draft.fromProvider[field];
   };
 
+  // A field completed from the reference catalog carries its own source (e.g. "catalog:wikidata").
+  const sourceOf: Partial<Record<IdentityField, string | undefined>> = {
+    name: c.name.source, producer: c.producer.source, wineType: c.wineType.source, country: c.country.source,
+    region: c.region.source, subregion: c.subregion.source, appellation: c.appellation.source, grapes: c.grapes.source,
+  };
   const consider = (field: IdentityField, value: string | null, confidence: number, setter: (d: IdentityDraft, v: string) => IdentityDraft, current: string | unknown[]) => {
     if (value === null || value === "") return;
     if (userOwns(field, current)) return;
+    const mark = { provider: sourceOf[field] ?? provider, confidence };
     if (confidence >= PREFILL_CONFIDENCE) {
       Object.assign(next, setter(next, value));
-      next.fromProvider[field] = { provider, confidence };
+      next.fromProvider[field] = mark;
     } else {
       suggestions.push({
         field,
         display: value,
         confidence,
-        apply: (d) => ({ ...setter(d, value), fromProvider: { ...d.fromProvider, [field]: { provider, confidence } } }),
+        apply: (d) => ({ ...setter(d, value), fromProvider: { ...d.fromProvider, [field]: mark } }),
       });
     }
   };

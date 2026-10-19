@@ -417,3 +417,215 @@ export const providerUsage = pgTable(
   },
   (t) => [primaryKey({ columns: [t.key, t.windowStart] })],
 );
+
+/* -------------------------------------------------------------------------- */
+/* Reference catalog                                                          */
+/* -------------------------------------------------------------------------- */
+/*
+ * Shared, read-only reference data used to recognise and complete wine
+ * identities. Kept apart from users' private journal tables: nothing here has
+ * an owner, ordinary requests never write to it, and it is filled only by the
+ * import scripts (scripts/catalog). Every record names its source and the
+ * identifier it has there, so imports are idempotent and auditable.
+ */
+
+/** One row per data source, mirroring docs/catalog-sources.md. */
+export const catalogSource = pgTable("catalog_source", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  license: text("license").notNull(),
+  attribution: text("attribution"),
+  /** Lookups only use sources whose licence has been approved for this product. */
+  approvedForLookup: boolean("approved_for_lookup").notNull().default(false),
+  retrievedAt: timestamp("retrieved_at", { withTimezone: true }),
+});
+
+export const catalogRegionKindEnum = pgEnum("catalog_region_kind", ["region", "subregion", "appellation"]);
+
+export const catalogRegion = pgTable(
+  "catalog_region",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => catalogSource.id),
+    externalId: text("external_id").notNull(),
+    kind: catalogRegionKindEnum("kind").notNull(),
+    name: text("name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
+    country: text("country"),
+    parentId: uuid("parent_id").references((): AnyPgColumn => catalogRegion.id, { onDelete: "set null" }),
+    confidence: doublePrecision("confidence").notNull().default(1),
+    lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("catalog_region_source_uq").on(t.sourceId, t.externalId),
+    index("catalog_region_name_idx").on(t.normalizedName),
+    index("catalog_region_name_trgm_idx").using("gin", sql`${t.normalizedName} gin_trgm_ops`),
+    check("catalog_region_country_chk", sql`${t.country} IS NULL OR ${t.country} ~ '^[A-Z]{2}$'`),
+    check("catalog_region_confidence_chk", sql`${t.confidence} >= 0 AND ${t.confidence} <= 1`),
+  ],
+);
+
+export const catalogProducer = pgTable(
+  "catalog_producer",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => catalogSource.id),
+    externalId: text("external_id").notNull(),
+    name: text("name").notNull(),
+    /** normalizeProducer(): accent-free, without "Domaine"/"Château"-style prefixes. */
+    normalizedName: text("normalized_name").notNull(),
+    country: text("country"),
+    regionId: uuid("region_id").references(() => catalogRegion.id, { onDelete: "set null" }),
+    confidence: doublePrecision("confidence").notNull().default(1),
+    lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("catalog_producer_source_uq").on(t.sourceId, t.externalId),
+    index("catalog_producer_name_idx").on(t.normalizedName),
+    index("catalog_producer_name_trgm_idx").using("gin", sql`${t.normalizedName} gin_trgm_ops`),
+    check("catalog_producer_country_chk", sql`${t.country} IS NULL OR ${t.country} ~ '^[A-Z]{2}$'`),
+    check("catalog_producer_confidence_chk", sql`${t.confidence} >= 0 AND ${t.confidence} <= 1`),
+  ],
+);
+
+export const catalogGrape = pgTable(
+  "catalog_grape",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => catalogSource.id),
+    externalId: text("external_id").notNull(),
+    name: text("name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
+    lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("catalog_grape_source_uq").on(t.sourceId, t.externalId), index("catalog_grape_name_idx").on(t.normalizedName)],
+);
+
+/** A wine's lasting identity (producer + cuvée), independent of vintage or bottling. */
+export const catalogWine = pgTable(
+  "catalog_wine",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => catalogSource.id),
+    externalId: text("external_id").notNull(),
+    producerId: uuid("producer_id").references(() => catalogProducer.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
+    wineType: wineTypeEnum("wine_type"),
+    regionId: uuid("region_id").references(() => catalogRegion.id, { onDelete: "set null" }),
+    country: text("country"),
+    confidence: doublePrecision("confidence").notNull().default(1),
+    lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("catalog_wine_source_uq").on(t.sourceId, t.externalId),
+    index("catalog_wine_producer_idx").on(t.producerId),
+    index("catalog_wine_name_trgm_idx").using("gin", sql`${t.normalizedName} gin_trgm_ops`),
+    check("catalog_wine_country_chk", sql`${t.country} IS NULL OR ${t.country} ~ '^[A-Z]{2}$'`),
+    check("catalog_wine_confidence_chk", sql`${t.confidence} >= 0 AND ${t.confidence} <= 1`),
+  ],
+);
+
+/** Grapes documented for a catalog wine. Share is null unless the source states it. */
+export const catalogWineGrape = pgTable(
+  "catalog_wine_grape",
+  {
+    wineId: uuid("wine_id")
+      .notNull()
+      .references(() => catalogWine.id, { onDelete: "cascade" }),
+    grapeId: uuid("grape_id")
+      .notNull()
+      .references(() => catalogGrape.id, { onDelete: "cascade" }),
+    percentage: numeric("percentage", { precision: 5, scale: 2 }),
+  },
+  (t) => [primaryKey({ columns: [t.wineId, t.grapeId] }), check("catalog_wine_grape_pct_chk", sql`${t.percentage} IS NULL OR (${t.percentage} > 0 AND ${t.percentage} <= 100)`)],
+);
+
+/** A specific bottling/listing: barcode, vintage, volume and stated alcohol. */
+export const catalogProduct = pgTable(
+  "catalog_product",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => catalogSource.id),
+    externalId: text("external_id").notNull(),
+    /** GTIN digits only (EAN-8/UPC-A/EAN-13/GTIN-14). */
+    barcode: text("barcode"),
+    wineId: uuid("wine_id").references(() => catalogWine.id, { onDelete: "set null" }),
+    producerName: text("producer_name"),
+    productName: text("product_name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
+    vintage: smallint("vintage"),
+    isNonVintage: boolean("is_non_vintage").notNull().default(false),
+    volumeMl: integer("volume_ml"),
+    alcoholPct: numeric("alcohol_pct", { precision: 4, scale: 2 }),
+    country: text("country"),
+    lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("catalog_product_source_uq").on(t.sourceId, t.externalId),
+    index("catalog_product_barcode_idx").on(t.barcode),
+    check("catalog_product_barcode_chk", sql`${t.barcode} IS NULL OR ${t.barcode} ~ '^[0-9]{8,14}$'`),
+    check("catalog_product_vintage_chk", sql`${t.vintage} IS NULL OR ${t.vintage} BETWEEN 1800 AND 2100`),
+    check("catalog_product_nv_chk", sql`NOT (${t.isNonVintage} AND ${t.vintage} IS NOT NULL)`),
+    check("catalog_product_alcohol_chk", sql`${t.alcoholPct} IS NULL OR ${t.alcoholPct} BETWEEN 0 AND 25`),
+  ],
+);
+
+export const catalogEntityEnum = pgEnum("catalog_entity", ["producer", "region", "grape", "wine"]);
+
+/** Alternative names and spellings (labels, languages, former names). */
+export const catalogAlias = pgTable(
+  "catalog_alias",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entity: catalogEntityEnum("entity").notNull(),
+    entityId: uuid("entity_id").notNull(),
+    alias: text("alias").notNull(),
+    normalizedAlias: text("normalized_alias").notNull(),
+    sourceId: text("source_id")
+      .notNull()
+      .references(() => catalogSource.id),
+  },
+  (t) => [
+    unique("catalog_alias_uq").on(t.entity, t.entityId, t.normalizedAlias),
+    index("catalog_alias_lookup_idx").on(t.entity, t.normalizedAlias),
+    index("catalog_alias_trgm_idx").using("gin", sql`${t.normalizedAlias} gin_trgm_ops`),
+  ],
+);
+
+export const contributionStatusEnum = pgEnum("catalog_contribution_status", ["pending", "accepted", "rejected"]);
+
+/**
+ * A wine identity a user confirmed when saving, held for review. Identity
+ * fields only, never notes or tastings; deleted with the account; never used
+ * for lookups until an operator accepts it (scripts/catalog/review.ts).
+ */
+export const catalogContribution = pgTable(
+  "catalog_contribution",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    /** normalizeProducer|normalizeText(name), the grouping key for agreement across users. */
+    identityKey: text("identity_key").notNull(),
+    fields: jsonb("fields").$type<Record<string, unknown>>().notNull(),
+    /** Where each field came from when the user confirmed it (user / label / catalog). */
+    fieldOrigins: jsonb("field_origins").$type<Record<string, string>>().notNull(),
+    matchedWineId: uuid("matched_wine_id").references(() => catalogWine.id, { onDelete: "set null" }),
+    status: contributionStatusEnum("status").notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique("catalog_contribution_user_identity_uq").on(t.userId, t.identityKey), index("catalog_contribution_identity_idx").on(t.identityKey, t.status)],
+);

@@ -3,6 +3,7 @@ import { getDb, type Database } from "@/server/db";
 import { sensoryObservation, tasting, tastingTag, wine } from "@/server/db/schema";
 import { NotFoundError, ValidationError } from "@/server/errors";
 import { attachPendingImages } from "@/server/images";
+import { recordContribution } from "@/server/reference/contributions";
 import { createWineTx, isUuid, parseWineInput, recordMetadataSource } from "@/server/catalog/wines";
 import { descriptorCategory } from "@/lib/domain/sensory";
 import { formatIssues, tastingInputSchema, type TastingInput, type TastingInputRaw } from "@/lib/domain/validation";
@@ -207,6 +208,7 @@ export async function saveCapture(userId: string, payload: CapturePayload) {
     } else {
       const created = await createWineTx(tx, userId, wineInput!, imageIds);
       wineId = created.id;
+      await recordContribution(tx, userId, wineInput!);
     }
     const t = await createTastingTx(tx, userId, wineId, tastingInput);
     if (payload.recognition) {
