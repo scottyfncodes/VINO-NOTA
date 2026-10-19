@@ -73,8 +73,8 @@ export function queries(limit: number) {
 }
 
 type Bindings = { results: { bindings: Record<string, { value: string }>[] } };
-type Deps = { fetch: typeof fetch; sleep: (ms: number) => Promise<void>; log: (msg: string) => void };
-const defaultDeps: Deps = { fetch: (...a) => fetch(...a), sleep: (ms) => new Promise((r) => setTimeout(r, ms)), log: (m) => console.log(m) };
+export type Deps = { fetch: typeof fetch; sleep: (ms: number) => Promise<void>; log: (msg: string) => void };
+export const defaultDeps: Deps = { fetch: (...a) => fetch(...a), sleep: (ms) => new Promise((r) => setTimeout(r, ms)), log: (m) => console.log(m) };
 
 /**
  * One SPARQL query with bounded retries: 429, 5xx, timeouts and network errors

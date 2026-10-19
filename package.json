@@ -18,7 +18,8 @@
     "catalog:fetch-wikidata": "tsx scripts/catalog/fetch-wikidata.ts",
     "catalog:import": "tsx scripts/catalog/import.ts",
     "catalog:review": "tsx scripts/catalog/review.ts",
-    "catalog:validate": "tsx scripts/catalog/validate.ts"
+    "catalog:validate": "tsx scripts/catalog/validate.ts",
+    "catalog:resolve-ids": "tsx scripts/catalog/resolve-wikidata.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
