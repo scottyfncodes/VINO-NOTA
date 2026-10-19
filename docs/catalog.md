@@ -132,7 +132,10 @@ An id is proposed only when exactly one candidate covers at least 40% of the
 target's anchors (and at least 2) and has 10 or more instances. Otherwise the
 class is reported as ambiguous or unresolved, together with the classes the
 anchors are actually instances of.
-Changing `WIKIDATA_CLASSES` stays a separate, reviewed PR, and the ingest
+Grape variety (`Q958314`) and wine-producing region (`Q2140699`) were set
+from its evidence. Appellations are excluded from Wikidata ingestion
+(`EXCLUDED_WIKIDATA_CLASSES`). Changing `WIKIDATA_CLASSES` stays a separate,
+reviewed PR, and the ingest
 workflow's pre-fetch label check still guards every fetch.
 
 ## Growth from users
