@@ -91,6 +91,30 @@ confirms.
   restores names and aliases. Records it doesn't contain are reported as stale;
   delete them by hand only after review.
 
+### Ingestion workflow
+
+`.github/workflows/catalog-ingest.yml` is a `workflow_dispatch`-only workflow.
+
+- **Permissions:** `contents: read`. It runs one ingest at a time (a
+  concurrency group) and every job has a timeout.
+- **Fetch and validate (job 1):** needs no secrets. It works on an ephemeral
+  Postgres service, and a failing step fails the run without touching any
+  shared database.
+- **Retries:** the fetch retries 429, 5xx, timeouts and network errors up to 4
+  times. It honours `Retry-After`, capped at 2 minutes, and fails immediately
+  on other 4xx errors.
+- **Preview import (job 2):** optional. It runs in the `catalog-preview`
+  environment with `VERCEL_ENV=preview`, so the isolation guard refuses the
+  Production endpoint and fails closed when `PRODUCTION_DB_ENDPOINT_ID` is
+  missing.
+- **Quality report:** `npm run catalog:validate` checks:
+  - provenance: source row, licence, ids, `last_verified_at`, confidence;
+  - coverage and name collisions;
+  - lookup and enrichment results for a fixed set of label readings, including
+    a misspelling and an unknown producer.
+
+  It fails only on structural problems.
+
 ## Growth from users
 
 When `CATALOG_CONTRIBUTIONS=on` (off by default, pending a privacy notice),

@@ -4,13 +4,16 @@
  *   npm run catalog:import -- --source wikidata --dir data/catalog/wikidata/2026-10-19            (dry run)
  *   npm run catalog:import -- --source wikidata --dir data/catalog/wikidata/2026-10-19 --apply
  *
+ * Options: --report <file> writes the full report (with every rejection);
+ * --expect-unchanged fails if anything would change (idempotency check).
+ *
  * Dry run is the default: the whole import runs in a transaction that is then
  * rolled back, and the report shows what would change. Re-running a snapshot
  * changes nothing (idempotent). Failure rolls back everything; fix and re-run.
  * Records missing from a newer snapshot are reported as stale, never deleted.
  */
 import "dotenv/config";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { CATALOG_SOURCES } from "../../src/server/reference/sources";
 import { wikidataToBatch, type WikidataFiles } from "../../src/server/reference/wikidata";
@@ -56,7 +59,17 @@ async function main() {
   console.log(`[catalog:import] source=${sourceId} target=${target.label} mode=${apply ? "apply" : "dry-run"} retrievedAt=${manifest.retrievedAt}`);
   const report = await importCatalogBatch(source, batch, { dryRun: !apply, retrievedAt });
   const { rejected, ...counts } = report;
-  console.log(JSON.stringify({ ...counts, ...notes, rejectedCount: rejected.length, rejectedSample: rejected.slice(0, 20) }, null, 2));
+  const summary = { ...counts, ...notes, target: target.label, retrievedAt: manifest.retrievedAt, rejectedCount: rejected.length, rejectedSample: rejected.slice(0, 20) };
+  console.log(JSON.stringify(summary, null, 2));
+  const reportFile = arg(argv, "--report");
+  if (reportFile) writeFileSync(reportFile, JSON.stringify({ ...summary, rejected }, null, 2));
+  // Idempotency check: re-importing the same snapshot must change nothing.
+  if (argv.includes("--expect-unchanged")) {
+    const kinds = [report.regions, report.producers, report.grapes, report.wines, report.products];
+    const changed = kinds.reduce((n, k) => n + k.inserted + k.updated, 0) + report.aliases.added + report.aliases.removed;
+    if (changed > 0) throw new Error(`Expected no changes on re-import, but ${changed} rows/aliases changed.`);
+    console.log("[catalog:import] Re-import changed nothing (idempotent).");
+  }
 }
 
 main()

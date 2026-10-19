@@ -61,18 +61,34 @@ the first Production import, re-check each licence link below.
 
 ## Update procedure
 
-1. Run `npm run catalog:fetch-wikidata -- --out data/catalog/wikidata/<date>`.
-   This writes SPARQL JSON and `manifest.json` with the retrieval time, row
-   counts and query hashes. Snapshots aren't committed (`data/` is ignored).
-2. Run `npm run catalog:import -- --source wikidata --dir <dir>`. This is a dry
-   run: review the inserted / updated / stale / rejected counts.
-3. Run the same command with `--apply` against a Preview or development branch
-   first. Production needs `--allow-production` plus
-   `CATALOG_CONFIRM_ENDPOINT=<endpoint id>`, and an approved change request.
-4. Record the snapshot date and counts in the table below.
+Ingestion runs through the **Catalog ingest (Wikidata)** GitHub Action
+(`.github/workflows/catalog-ingest.yml`). It is manual only: there is no
+schedule, and nothing on `main` triggers it. It never writes to Production.
+
+1. **Actions → Catalog ingest (Wikidata) → Run workflow.** Set `row_limit`
+   (5000 by default, 50000 at most) and leave `import_to_preview` unticked.
+   Job 1 then does the following:
+   - fetches the snapshot, after checking the ids against their labels;
+   - imports it into a throwaway Postgres inside the runner, as a dry run, then
+     for real, then a re-import that must change nothing;
+   - validates quality and lookups (results appear in the job summary);
+   - uploads the snapshot, manifest and reports as an artifact (kept 30 days).
+     That artifact is the provenance record.
+2. Review the summary. To load the same snapshot into Preview, run the workflow
+   again with `import_to_preview` ticked. Job 2 needs the `catalog-preview`
+   environment to hold:
+   - the secret `CATALOG_PREVIEW_DATABASE_URL`: a Preview Neon branch,
+     **never** the Production branch;
+   - the variable `PRODUCTION_DB_ENDPOINT_ID`, which the guard needs in order to
+     refuse Production.
+3. A Production import is a separate, approved, manual step. Run
+   `npm run catalog:import -- --source wikidata --dir <reviewed snapshot> --apply --allow-production`
+   with `CATALOG_CONFIRM_ENDPOINT=<endpoint id>`. The workflow has no
+   Production path.
+4. Record the run id, snapshot date and counts in the table below.
 
 ## Import log
 
-| Date | Source | Target | Inserted / updated / stale / rejected | Approved by |
-|---|---|---|---|---|
-| none yet | | | | |
+| Date | Source | Run / snapshot | Target | Inserted / updated / stale / rejected | Approved by |
+|---|---|---|---|---|---|
+| none yet | | | | | |

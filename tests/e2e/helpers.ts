@@ -41,5 +41,7 @@ export async function captureWine(page: Page, opts: { name: string; producer: st
   await page.getByRole("button", { name: "Save to journal" }).click();
   await expect(page).toHaveURL(/\/wines\/[0-9a-f-]{36}/);
   await expect(page.getByText("Saved to your journal")).toBeVisible();
+  // A saved entry must not linger as an "unsaved" draft for the next capture.
+  expect(await page.evaluate(() => window.localStorage.getItem("vino-nota:capture-draft:v1"))).toBeNull();
   return page.url().match(/\/wines\/([0-9a-f-]{36})/)![1];
 }
