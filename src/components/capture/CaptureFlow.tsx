@@ -119,9 +119,13 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
   const libraryRef = useRef<HTMLInputElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const userChoseMatch = useRef(Boolean(d0));
+  // Set once the entry is saved: late async updates (e.g. the duplicate lookup)
+  // must not write the saved entry back as an "unsaved" draft.
+  const savedRef = useRef(false);
 
   // Autosave on every change.
   useEffect(() => {
+    if (savedRef.current) return;
     const pristine = !imageId && !identity.name && !identity.producer && tasting.score === null && !tasting.notes && step === "photo";
     if (pristine) return;
     const draft: SavedDraft = { v: 1, savedAt: Date.now(), step, imageId, identity, tasting, matchChoice, confirmed, recognition };
@@ -272,6 +276,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
         : null,
     }).catch(() => ({ ok: false as const, error: "We couldn't reach the server. Your entry is saved on this device — try again when you're back online." }));
     if (result.ok) {
+      savedRef.current = true;
       clearDraft(DRAFT_KEY);
       router.push(`/wines/${result.data.wineId}?saved=${result.data.tastingId}#tasting-${result.data.tastingId}`);
       return;
