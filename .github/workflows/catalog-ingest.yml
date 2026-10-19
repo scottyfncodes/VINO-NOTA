@@ -1,0 +1,121 @@
+# Wikidata → reference catalog ingestion. Manual only: no schedule, never
+# triggered by pushes to main, and never writes to Production.
+#
+# Job 1 (always): fetch a bounded CC0 snapshot, import it into a throwaway
+# Postgres inside the runner, check idempotency, validate quality and lookups,
+# and upload the snapshot + reports as an artifact (provenance record).
+# Needs no secrets.
+#
+# Job 2 (only when import_to_preview is ticked): import the same snapshot into a
+# Preview database. Runs in the `catalog-preview` environment and needs its
+# CATALOG_PREVIEW_DATABASE_URL secret plus the PRODUCTION_DB_ENDPOINT_ID
+# variable; the isolation guard refuses the Production endpoint and fails
+# closed if the variable is missing.
+name: Catalog ingest (Wikidata)
+
+on:
+  workflow_dispatch:
+    inputs:
+      row_limit:
+        description: Max rows per Wikidata query (1–50000)
+        type: string
+        default: "5000"
+      import_to_preview:
+        description: Also import into the Preview database (catalog-preview environment)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-ingest
+  cancel-in-progress: false
+
+jobs:
+  fetch-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vino
+          POSTGRES_PASSWORD: vino
+          POSTGRES_DB: catalog
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U vino" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://vino:vino@localhost:5432/catalog
+      SNAPSHOT: data/catalog/wikidata/run-${{ github.run_id }}
+      ROW_LIMIT: ${{ inputs.row_limit || '5000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fetch Wikidata snapshot (verifies class and property ids first)
+        run: npm run -s catalog:fetch-wikidata -- --out "$SNAPSHOT" --limit "$ROW_LIMIT"
+      - name: Migrate the throwaway database
+        run: npm run -s db:migrate
+      - name: Dry run
+        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --report "$SNAPSHOT/report-dry-run.json"
+      - name: Import
+        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --apply --report "$SNAPSHOT/report-import.json"
+      - name: Re-import (must change nothing)
+        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --apply --expect-unchanged --report "$SNAPSHOT/report-reimport.json"
+      - name: Validate quality, provenance and lookups
+        run: npm run -s catalog:validate -- --source wikidata --report "$SNAPSHOT/report-validate.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wikidata-snapshot-${{ github.run_id }}
+          path: ${{ env.SNAPSHOT }}
+          retention-days: 30
+          if-no-files-found: warn
+
+  import-preview:
+    needs: fetch-and-validate
+    if: ${{ inputs.import_to_preview == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: catalog-preview
+    env:
+      # Makes the isolation guard apply: it refuses PRODUCTION_DB_ENDPOINT_ID and fails closed without it.
+      VERCEL_ENV: preview
+      PRODUCTION_DB_ENDPOINT_ID: ${{ vars.PRODUCTION_DB_ENDPOINT_ID }}
+      DATABASE_URL: ${{ secrets.CATALOG_PREVIEW_DATABASE_URL }}
+      SNAPSHOT: snapshot
+    steps:
+      - name: Check configuration
+        run: |
+          [ -n "$DATABASE_URL" ] || { echo "::error::CATALOG_PREVIEW_DATABASE_URL is not set in the catalog-preview environment."; exit 1; }
+          [ -n "$PRODUCTION_DB_ENDPOINT_ID" ] || { echo "::error::PRODUCTION_DB_ENDPOINT_ID variable is not set in the catalog-preview environment."; exit 1; }
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: wikidata-snapshot-${{ github.run_id }}
+          path: snapshot
+      - name: Migrate Preview database (same migrations the Preview build applies)
+        run: npm run -s db:migrate
+      - name: Dry run against Preview
+        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT"
+      - name: Import into Preview
+        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --apply --report preview-import.json
+      - name: Validate Preview
+        run: npm run -s catalog:validate -- --source wikidata --report preview-validate.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: preview-import-${{ github.run_id }}
+          path: preview-*.json
+          retention-days: 30
+          if-no-files-found: warn
