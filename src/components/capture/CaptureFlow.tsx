@@ -157,12 +157,16 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
     requestAnimationFrame(() => headingRef.current?.focus());
   }, []);
 
+  // Each reading is a paid API call: ignore a second tap while one is in flight.
+  const recognitionInFlight = useRef(false);
   const runRecognition = useCallback(
     async (id: string) => {
       if (!recognitionAvailable) {
         setRecognition({ status: "unavailable", reason: "Automatic label reading isn't set up for this journal, so please enter the details from the label." });
         return;
       }
+      if (recognitionInFlight.current) return;
+      recognitionInFlight.current = true;
       setRecognition({ status: "running" });
       try {
         const res = await fetch("/api/recognize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageId: id }) });
@@ -186,6 +190,8 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
         }
       } catch {
         setRecognition({ status: "failed", reason: "We couldn't reach the label reader. Your entries are safe — retry or continue by hand.", retryable: true });
+      } finally {
+        recognitionInFlight.current = false;
       }
     },
     [recognitionAvailable],
