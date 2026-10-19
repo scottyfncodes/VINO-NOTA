@@ -36,9 +36,18 @@ For each field return the value and a confidence between 0 and 1 that the value 
 - If more than one vintage year appears, set vintage to null and include "multiple_vintages" in issues.
 - List any photo problems in issues. If this is not a wine label, set is_wine_label to false.`;
 
+/**
+ * One attempt plus one retry must finish inside the recognise route's 60 s limit
+ * (src/app/api/recognize/route.ts), or the function is killed mid-request.
+ */
+export const REQUEST_TIMEOUT_MS = 25_000;
+export const MAX_RETRIES = 1;
+
 export class AnthropicLabelProvider implements LabelRecognitionProvider {
   readonly id = "anthropic";
   readonly displayName = "Claude vision";
+
+  constructor(private readonly makeClient: () => Anthropic = () => new Anthropic({ timeout: REQUEST_TIMEOUT_MS, maxRetries: MAX_RETRIES })) {}
 
   isConfigured() {
     return Boolean(process.env.ANTHROPIC_API_KEY);
@@ -46,11 +55,12 @@ export class AnthropicLabelProvider implements LabelRecognitionProvider {
 
   async recognize(image: { bytes: Buffer; mediaType: "image/jpeg" | "image/png" | "image/webp" }): Promise<RecognitionOutcome> {
     if (!this.isConfigured()) return { status: "unavailable", reason: "Label recognition is not configured." };
-    const client = new Anthropic({ timeout: 45_000, maxRetries: 1 });
+    const client = this.makeClient();
     try {
       const response = await client.beta.messages.parse({
         model: process.env.RECOGNITION_MODEL || "claude-opus-5-5",
-        max_tokens: 4000,
+        // Thinking is always on for this model and shares this budget with the JSON answer.
+        max_tokens: 16000,
         betas: ["server-side-fallback-2026-07-01"],
         fallbacks: "default",
         output_config: { effort: "low", format: betaZodOutputFormat(LabelReading) },
@@ -65,6 +75,9 @@ export class AnthropicLabelProvider implements LabelRecognitionProvider {
           },
         ],
       });
+      // Token counts only (never label content), so real cost per label can be checked in the logs.
+      const u = response.usage;
+      console.info(`[recognition] model=${response.model} stop=${response.stop_reason} in=${u.input_tokens} out=${u.output_tokens}`);
       if (response.stop_reason === "refusal") return { status: "failed", reason: "The label couldn't be read automatically.", retryable: false };
       const r = response.parsed_output;
       if (!r) return { status: "failed", reason: "The label couldn't be read automatically.", retryable: true };
