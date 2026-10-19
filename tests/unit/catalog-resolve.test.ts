@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import os from "node:os";
-import { evaluateCandidates, formatReport, gatherCandidates, MIN_ANCHORS, MIN_INSTANCES, resolveClassIds, TARGETS, type Candidate } from "../../scripts/catalog/resolve-wikidata";
+import { evaluateCandidates, formatReport, gatherCandidates, MIN_ANCHORS, MIN_INSTANCES, requiredAnchors, resolveClassIds, TARGETS, type Candidate } from "../../scripts/catalog/resolve-wikidata";
 import { fetchSnapshot, PROPERTIES, queries } from "../../scripts/catalog/fetch-wikidata";
 import { WIKIDATA_CLASSES } from "@/server/reference/wikidata";
 
@@ -53,8 +53,13 @@ function world(query: string) {
   if (query.includes("COUNT(DISTINCT ?inst)")) return [["Q900", "4200"], ["Q901", "0"], ["Q800", "350"], ["Q801", "120"]].filter(([id]) => query.includes(`wd:${id}`)).map(([id, n]) => ({ item: uri(id), instances: v(n) }));
   if (query.includes("?parentLabel")) return query.includes("wd:Q900") ? [{ item: uri("Q900"), parentLabel: v("cultivar") }] : [];
   if (query.includes("?anchor")) {
-    if (query.includes("wd:Q900")) return ["Merlot", "Chardonnay", "Riesling"].map((a) => ({ item: uri("Q900"), anchor: v(a) }));
-    if (query.includes("wd:Q800")) return [{ item: uri("Q800"), anchor: v("Bordeaux") }, { item: uri("Q800"), anchor: v("Rioja") }, { item: uri("Q801"), anchor: v("Mosel") }, { item: uri("Q801"), anchor: v("Douro") }];
+    if (query.includes("wd:Q900")) return ["Merlot", "Chardonnay", "Riesling", "Syrah"].map((a) => ({ item: uri("Q900"), anchor: v(a) }));
+    if (query.includes("wd:Q800")) return [...TARGETS.wineRegion.anchors.slice(0, 5).map((a) => ({ item: uri("Q800"), anchor: v(a) })), ...TARGETS.wineRegion.anchors.slice(5, 10).map((a) => ({ item: uri("Q801"), anchor: v(a) }))];
+  }
+  if (query.includes("?classLabel")) {
+    // Classes the anchors are instances of: appellation anchors split across national systems.
+    if (query.includes('"Margaux AOC"@en')) return [{ anchor: v("Margaux AOC"), class: uri("Q700"), classLabel: v("AOC wine") }, { anchor: v("Pauillac AOC"), class: uri("Q700"), classLabel: v("AOC wine") }, { anchor: v("Napa Valley AVA"), class: uri("Q701"), classLabel: v("American Viticultural Area") }];
+    return [];
   }
   if (query.includes("?instLabel")) return query.includes("wd:Q900") ? [{ item: uri("Q900"), instLabel: v("Merlot") }] : [];
   return [];
@@ -62,13 +67,13 @@ function world(query: string) {
 
 describe("class-ID resolution decisions", () => {
   it("proposes the single candidate backed by anchors and instances", () => {
-    const r = evaluateCandidates("grapeVariety", [cand({ id: "Q900", anchorsHit: ["Merlot", "Chardonnay"], instances: 4200 }), cand({ id: "Q901", instances: 0 })]);
+    const r = evaluateCandidates("grapeVariety", [cand({ id: "Q900", anchorsHit: ["Merlot", "Chardonnay", "Riesling", "Syrah"], instances: 4200 }), cand({ id: "Q901", instances: 0 })]);
     expect(r).toMatchObject({ status: "resolved", proposed: { id: "Q900" } });
     expect(r.candidates.map((c) => c.id)).toEqual(["Q900", "Q901"]);
   });
 
   it("refuses to choose between several qualifying candidates", () => {
-    const r = evaluateCandidates("wineRegion", [cand({ id: "Q800", anchorsHit: ["a", "b", "c"], instances: 350 }), cand({ id: "Q801", anchorsHit: ["d", "e"], instances: 120 })]);
+    const r = evaluateCandidates("wineRegion", [cand({ id: "Q800", anchorsHit: ["a", "b", "c", "d", "e", "f"], instances: 350 }), cand({ id: "Q801", anchorsHit: ["g", "h", "i", "j", "k"], instances: 120 })]);
     expect(r.status).toBe("ambiguous");
     expect(r.proposed).toBeNull();
     expect(r.reason).toContain("Q800, Q801");
@@ -79,7 +84,16 @@ describe("class-ID resolution decisions", () => {
     // Same name, no wine evidence (e.g. an album or a person called "Appellation").
     const weak = evaluateCandidates("appellation", [cand({ id: "Q5", label: "appellation", anchorsHit: ["Margaux AOC"], instances: 500 }), cand({ id: "Q6", anchorsHit: ["a", "b"], instances: MIN_INSTANCES - 1 })]);
     expect(weak).toMatchObject({ status: "unresolved", proposed: null });
-    expect(weak.reason).toContain(`${MIN_ANCHORS} known anchors and ${MIN_INSTANCES} instances`);
+    expect(weak.reason).toContain(`at least ${requiredAnchors("appellation")} of the ${TARGETS.appellation.anchors.length} anchors`);
+  });
+
+  it("rejects a class that fits only a narrow subset of the anchors", () => {
+    // Like American Viticultural Area among world appellations: real and wine-related, but US-only.
+    const ava = cand({ id: "Q166247", label: "American Viticultural Area", anchorsHit: ["Napa Valley AVA", "Sonoma Coast AVA"], instances: 263 });
+    expect(ava.anchorsHit.length).toBeGreaterThanOrEqual(MIN_ANCHORS);
+    expect(evaluateCandidates("appellation", [ava])).toMatchObject({ status: "unresolved", proposed: null });
+    expect(requiredAnchors("grapeVariety")).toBe(4);
+    expect(requiredAnchors("appellation")).toBe(5);
   });
 });
 
@@ -88,7 +102,7 @@ describe("resolution run against a fake Wikidata", () => {
     const w = fakeWikidata(world);
     const grapes = await gatherCandidates("grapeVariety", w.deps);
     const real = grapes.find((c) => c.id === "Q900")!;
-    expect(real).toMatchObject({ label: "grape variety", description: "cultivar of grapevine", instances: 4200, parents: ["cultivar"], anchorsHit: ["Merlot", "Chardonnay", "Riesling"], sampleInstances: ["Merlot"] });
+    expect(real).toMatchObject({ label: "grape variety", description: "cultivar of grapevine", instances: 4200, parents: ["cultivar"], anchorsHit: ["Merlot", "Chardonnay", "Riesling", "Syrah"], sampleInstances: ["Merlot"] });
     expect(grapes.find((c) => c.id === "Q901")).toMatchObject({ description: "2019 album", instances: 0, anchorsHit: [] });
   });
 
@@ -106,6 +120,14 @@ describe("resolution run against a fake Wikidata", () => {
     expect(text).toContain("**Proposed: Q900");
     expect(text).toContain("### wineRegion — AMBIGUOUS");
     expect(text).toContain("### appellation — UNRESOLVED");
+    // Unresolved and ambiguous classes carry the anchors' own classes as evidence; resolved ones don't need it.
+    const appellation = report.results.find((r) => r.key === "appellation")!;
+    expect(appellation.anchorClasses).toEqual([
+      { id: "Q700", label: "AOC wine", anchors: ["Margaux AOC", "Pauillac AOC"] },
+      { id: "Q701", label: "American Viticultural Area", anchors: ["Napa Valley AVA"] },
+    ]);
+    expect(report.results.find((r) => r.key === "grapeVariety")!.anchorClasses).toBeUndefined();
+    expect(text).toContain("| Q700 | AOC wine | 2: Margaux AOC, Pauillac AOC |");
   });
 
   it("sends only label-check and class-resolution queries — never a catalog record query", async () => {
@@ -119,13 +141,14 @@ describe("resolution run against a fake Wikidata", () => {
       if (q.includes("?matched")) return "candidates";
       if (q.includes("COUNT(DISTINCT ?inst)")) return "counts";
       if (q.includes("?parentLabel")) return "parents";
+      if (q.includes("?classLabel")) return "anchor-classes";
       if (q.includes("?anchor")) return "anchors";
       if (q.includes("?instLabel")) return "samples";
       return `unexpected: ${q}`;
     });
     expect(kinds.filter((k) => k.startsWith("unexpected"))).toEqual([]);
     // Every resolution query is bounded: either by explicit ids or a LIMIT.
-    for (const q of w.sent.filter((q) => q.includes("?matched") || q.includes("?instLabel"))) expect(q).toMatch(/LIMIT \d+$/);
+    for (const q of w.sent.filter((q) => q.includes("?matched") || q.includes("?instLabel") || q.includes("?classLabel"))) expect(q).toMatch(/LIMIT \d+$/);
   });
 
   it("has no path to files, databases or artifacts", () => {

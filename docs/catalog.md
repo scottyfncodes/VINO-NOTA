@@ -128,8 +128,10 @@ then reports:
 - its instance count and sample instances;
 - which well-known anchors (e.g. Merlot, Margaux AOC) are instances of it.
 
-An id is proposed only when exactly one candidate has at least 2 anchors and
-10 instances. Otherwise the class is reported as ambiguous or unresolved.
+An id is proposed only when exactly one candidate covers at least 40% of the
+target's anchors (and at least 2) and has 10 or more instances. Otherwise the
+class is reported as ambiguous or unresolved, together with the classes the
+anchors are actually instances of.
 Changing `WIKIDATA_CLASSES` stays a separate, reviewed PR, and the ingest
 workflow's pre-fetch label check still guards every fetch.
 

@@ -36,9 +36,15 @@ export const TARGETS: Record<TargetKey, { terms: string[]; anchors: string[] }> 
   },
 };
 
-/** A candidate needs at least this many anchors and instances to be proposed. */
+/**
+ * A candidate needs at least this many anchors and instances to be proposed,
+ * and must cover this share of the target's anchors: a class that only fits a
+ * narrow subset (e.g. US-only AVAs among world appellations) is not proposed.
+ */
 export const MIN_ANCHORS = 2;
 export const MIN_INSTANCES = 10;
+export const MIN_ANCHOR_SHARE = 0.4;
+export const requiredAnchors = (key: TargetKey) => Math.max(MIN_ANCHORS, Math.ceil(TARGETS[key].anchors.length * MIN_ANCHOR_SHARE));
 const MAX_CANDIDATES = 15;
 const PAUSE_MS = 2_000;
 
@@ -52,12 +58,15 @@ export type Candidate = {
   anchorsHit: string[];
   sampleInstances: string[];
 };
+/** A class the anchors themselves are instances of (P31): where the right class may lie when no candidate qualifies. */
+export type AnchorClass = { id: string; label: string; anchors: string[] };
 export type Resolution = {
   key: TargetKey;
   status: "resolved" | "ambiguous" | "unresolved";
   proposed: Candidate | null;
   reason: string;
   candidates: Candidate[];
+  anchorClasses?: AnchorClass[];
 };
 
 const lit = (s: string) => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"@en`;
@@ -84,6 +93,10 @@ export const resolutionQueries = {
   VALUES ?anchor { ${anchors.map(lit).join(" ")} }
   ?a rdfs:label ?anchor . ?a wdt:P31/wdt:P279* ?item
 }`,
+  anchorClasses: (anchors: string[]) => `SELECT DISTINCT ?anchor ?class ?classLabel WHERE {
+  VALUES ?anchor { ${anchors.map(lit).join(" ")} }
+  ?a rdfs:label ?anchor . ?a wdt:P31 ?class . ?class rdfs:label ?classLabel FILTER(LANG(?classLabel) = "en")
+} LIMIT 500`,
   samples: (ids: string[]) => `SELECT ?item ?instLabel WHERE {
   VALUES ?item { ${values(ids)} }
   ?inst wdt:P31 ?item . ?inst rdfs:label ?instLabel FILTER(LANG(?instLabel) = "en")
@@ -92,22 +105,43 @@ export const resolutionQueries = {
 
 /**
  * Picks the class the evidence singles out. Pure and deterministic.
- * resolved: exactly one candidate meets both thresholds.
- * ambiguous: several do (the strongest is shown, but not proposed).
+ * resolved: exactly one candidate meets every threshold.
+ * ambiguous: several do (none is proposed).
  * unresolved: none do.
  */
 export function evaluateCandidates(key: TargetKey, candidates: Candidate[]): Resolution {
+  const need = requiredAnchors(key);
+  const total = TARGETS[key].anchors.length;
   const ranked = [...candidates].sort((a, b) => b.anchorsHit.length - a.anchorsHit.length || b.instances - a.instances || a.id.localeCompare(b.id));
-  const qualified = ranked.filter((c) => c.anchorsHit.length >= MIN_ANCHORS && c.instances >= MIN_INSTANCES);
+  const qualified = ranked.filter((c) => c.anchorsHit.length >= need && c.instances >= MIN_INSTANCES);
   if (!candidates.length) return { key, status: "unresolved", proposed: null, reason: "no Wikidata item has one of the search terms as its English label or alias", candidates: ranked };
   if (!qualified.length) {
-    return { key, status: "unresolved", proposed: null, reason: `no candidate has at least ${MIN_ANCHORS} known anchors and ${MIN_INSTANCES} instances`, candidates: ranked };
+    const best = ranked[0];
+    return {
+      key,
+      status: "unresolved",
+      proposed: null,
+      reason: `no candidate is an ancestor class of at least ${need} of the ${total} anchors with ${MIN_INSTANCES}+ instances (best: ${best.id} "${best.label}", ${best.anchorsHit.length}/${total} anchors)`,
+      candidates: ranked,
+    };
   }
   if (qualified.length > 1) {
     return { key, status: "ambiguous", proposed: null, reason: `${qualified.length} candidates meet the thresholds (${qualified.map((c) => c.id).join(", ")}); needs a human decision`, candidates: ranked };
   }
   const c = qualified[0];
-  return { key, status: "resolved", proposed: c, reason: `only candidate with ≥${MIN_ANCHORS} anchors (${c.anchorsHit.length}) and ≥${MIN_INSTANCES} instances (${c.instances})`, candidates: ranked };
+  return { key, status: "resolved", proposed: c, reason: `only candidate covering ≥${need} of ${total} anchors (${c.anchorsHit.length}) with ≥${MIN_INSTANCES} instances (${c.instances})`, candidates: ranked };
+}
+
+/** The classes each anchor is directly an instance of, most widely shared first. */
+export async function gatherAnchorClasses(key: TargetKey, deps: Deps = defaultDeps): Promise<AnchorClass[]> {
+  const byClass = new Map<string, AnchorClass>();
+  for (const b of (await sparql(resolutionQueries.anchorClasses(TARGETS[key].anchors), deps)).results.bindings) {
+    const id = qid(b.class.value);
+    const c = byClass.get(id) ?? { id, label: b.classLabel.value, anchors: [] };
+    if (!c.anchors.includes(b.anchor.value)) c.anchors.push(b.anchor.value);
+    byClass.set(id, c);
+  }
+  return [...byClass.values()].sort((a, b) => b.anchors.length - a.anchors.length || a.id.localeCompare(b.id));
 }
 
 export async function gatherCandidates(key: TargetKey, deps: Deps = defaultDeps): Promise<Candidate[]> {
@@ -158,7 +192,13 @@ export async function resolveClassIds(deps: Deps = defaultDeps) {
   const results: Resolution[] = [];
   for (const key of Object.keys(TARGETS) as TargetKey[]) {
     await deps.sleep(PAUSE_MS);
-    results.push(evaluateCandidates(key, await gatherCandidates(key, deps)));
+    const resolution = evaluateCandidates(key, await gatherCandidates(key, deps));
+    // When nothing is proposed, show which classes the anchors really belong to.
+    if (resolution.status !== "resolved") {
+      await deps.sleep(PAUSE_MS);
+      resolution.anchorClasses = await gatherAnchorClasses(key, deps);
+    }
+    results.push(resolution);
   }
   return { configured, results };
 }
@@ -174,6 +214,10 @@ export function formatReport(r: Awaited<ReturnType<typeof resolveClassIds>>) {
       lines.push(`| ${c.id} | ${cell(c.label)} | ${cell(c.description ?? "")} | ${cell(c.matchedTerms.join("; "))} | ${c.instances} | ${c.anchorsHit.length}: ${cell(c.anchorsHit.join(", "))} | ${cell(c.parents.join(", "))} | ${cell(c.sampleInstances.join(", "))} |`);
     }
     if (!res.candidates.length) lines.push(`| — | | | | | | | |`);
+    if (res.anchorClasses) {
+      lines.push(``, `Classes the anchors are directly instances of (P31):`, ``, `| Q-ID | Label | Anchors |`, `|---|---|---|`);
+      for (const c of res.anchorClasses) lines.push(`| ${c.id} | ${c.label.replace(/\|/g, "\\|")} | ${c.anchors.length}: ${c.anchors.join(", ")} |`);
+    }
     lines.push(``);
   }
   return lines.join("\n");
