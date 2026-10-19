@@ -29,10 +29,12 @@ function fakeWikidata(answer: (query: string) => Record<string, { value: string 
 }
 
 /** A small Wikidata: a real grape-variety class, a same-named unrelated item, and two competing region classes. */
+/** Wrong English labels the fake returns for configured ids (to simulate a misconfigured class). */
+let mislabel: Record<string, string> = {};
+
 function world(query: string) {
   if (query.includes("VALUES ?id")) {
-    // Label check of configured ids: everything correct except the three known-bad ids.
-    const labels: Record<string, string> = { Q10978: "grape", Q1474389: "2005 Mosconi Cup", Q1424287: "Funk D'Void" };
+    const labels = mislabel;
     return [...Object.values(WIKIDATA_CLASSES).map((c) => [c.id, labels[c.id] ?? c.expectLabel]), ...Object.entries(PROPERTIES)].map(([id, label]) => ({ id: uri(id), label: v(label) }));
   }
   const isGrape = query.includes('"grape variety"@en');
@@ -107,10 +109,14 @@ describe("resolution run against a fake Wikidata", () => {
   });
 
   it("reports the wrong configured labels, a resolved, an ambiguous and an unresolved class", async () => {
+    mislabel = { [WIKIDATA_CLASSES.grapeVariety.id]: "grape", [WIKIDATA_CLASSES.wineRegion.id]: "2005 Mosconi Cup" };
     const w = fakeWikidata(world);
     const report = await resolveClassIds(w.deps);
-    expect(report.configured).toContain('Q10978 is "grape", expected "grape variety"');
-    expect(report.configured).toContain('Q1474389 is "2005 mosconi cup"');
+    mislabel = {};
+    expect(report.configured).toContain(`${WIKIDATA_CLASSES.grapeVariety.id} is "grape", expected "grape variety"`);
+    expect(report.configured).toContain(`${WIKIDATA_CLASSES.wineRegion.id} is "2005 mosconi cup"`);
+    // Appellation is excluded from ingestion, so the report says it isn't configured.
+    expect(formatReport(report)).toContain("Not configured (excluded from ingestion).");
     expect(Object.fromEntries(report.results.map((r) => [r.key, [r.status, r.proposed?.id ?? null]]))).toEqual({
       grapeVariety: ["resolved", "Q900"],
       wineRegion: ["ambiguous", null],
@@ -170,8 +176,10 @@ describe("resolution run against a fake Wikidata", () => {
 describe("ingest pre-fetch label gate (unchanged)", () => {
   it("stops before any data query when a configured id resolves to the wrong entity", async () => {
     const dir = join(mkdtempSync(join(os.tmpdir(), "wd-gate-")), "snap");
+    mislabel = { [WIKIDATA_CLASSES.grapeVariety.id]: "grape" };
     const w = fakeWikidata(world);
-    await expect(fetchSnapshot(dir, 100, w.deps)).rejects.toThrow('Q1424287 is "funk d\'void", expected "appellation"');
+    await expect(fetchSnapshot(dir, 100, w.deps)).rejects.toThrow(`${WIKIDATA_CLASSES.grapeVariety.id} is "grape", expected "grape variety"`);
+    mislabel = {};
     expect(w.sent).toHaveLength(1);
     expect(w.sent[0]).toContain("VALUES ?id");
     expect(existsSync(dir)).toBe(false);

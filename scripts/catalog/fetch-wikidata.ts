@@ -42,8 +42,10 @@ const enLabel = `?item rdfs:label ?label FILTER(LANG(?label) = "en")`;
 
 export function queries(limit: number) {
   return {
-    regions: `SELECT ?item (SAMPLE(?label) AS ?itemLabel) (SAMPLE(?isoCode) AS ?iso) (SAMPLE(?p) AS ?parent) (SAMPLE(?k) AS ?kind) (GROUP_CONCAT(DISTINCT ?alt; separator="|") AS ?alts) WHERE {
-  { ?item wdt:P31/wdt:P279* wd:${C.wineRegion.id} . BIND("region" AS ?k) } UNION { ?item wdt:P31/wdt:P279* wd:${C.appellation.id} . BIND("appellation" AS ?k) }
+    // Direct instances only: subclasses of wine-producing region include appellation
+    // systems (e.g. American Viticultural Area), and appellations are excluded for now.
+    regions: `SELECT ?item (SAMPLE(?label) AS ?itemLabel) (SAMPLE(?isoCode) AS ?iso) (SAMPLE(?p) AS ?parent) (GROUP_CONCAT(DISTINCT ?alt; separator="|") AS ?alts) WHERE {
+  ?item wdt:P31 wd:${C.wineRegion.id} .
   ${enLabel}
   OPTIONAL { ?item wdt:P17 ?c . ?c wdt:P297 ?isoCode }
   OPTIONAL { ?item wdt:P361 ?p }

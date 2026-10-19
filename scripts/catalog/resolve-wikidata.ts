@@ -206,8 +206,9 @@ export async function resolveClassIds(deps: Deps = defaultDeps) {
 export function formatReport(r: Awaited<ReturnType<typeof resolveClassIds>>) {
   const lines = [`## Wikidata class-ID resolution (read-only)`, ``, `**Configured ids:** ${r.configured}`, ``];
   for (const res of r.results) {
-    const current = WIKIDATA_CLASSES[res.key];
-    lines.push(`### ${res.key} — ${res.status.toUpperCase()}`, ``, `Configured: ${current.id} (expected "${current.expectLabel}"). ${res.proposed ? `**Proposed: ${res.proposed.id} "${res.proposed.label}"**` : "**No id proposed.**"} ${res.reason}.`, ``);
+    const current = (WIKIDATA_CLASSES as Record<string, { id: string; expectLabel: string } | undefined>)[res.key];
+    const configured = current ? `Configured: ${current.id} (expected "${current.expectLabel}").` : "Not configured (excluded from ingestion).";
+    lines.push(`### ${res.key} — ${res.status.toUpperCase()}`, ``, `${configured} ${res.proposed ? `**Proposed: ${res.proposed.id} "${res.proposed.label}"**` : "**No id proposed.**"} ${res.reason}.`, ``);
     lines.push(`| Q-ID | Label | Description | Matched | Instances | Anchors (${TARGETS[res.key].anchors.length}) | Parent classes | Sample instances |`, `|---|---|---|---|---|---|---|---|`);
     for (const c of res.candidates) {
       const cell = (s: string) => s.replace(/\|/g, "\\|");

@@ -8,14 +8,27 @@ import type { GrapeRecord, ImportBatch, ProducerRecord, RegionKind, RegionRecord
  * Wikidata classes the fetch script queries. Each class's English label is
  * checked against `expectLabel` before any snapshot is written, so a wrong id
  * stops the fetch instead of importing the wrong kind of item.
+ *
+ * Grape variety and wine-producing region were verified with
+ * `npm run catalog:resolve-ids` (PR #10): Q958314 has 2,464 instances
+ * including all 10 test grapes; Q2140699 has 574 direct instances including
+ * Rioja, Champagne, Tokaj, Mosel, Rheingau and Barossa Valley.
  */
 export const WIKIDATA_CLASSES = {
   winery: { id: "Q156362", expectLabel: "winery" },
-  grapeVariety: { id: "Q10978", expectLabel: "grape variety" },
-  wineRegion: { id: "Q1474389", expectLabel: "wine-producing region", kind: "region" as RegionKind },
-  appellation: { id: "Q1424287", expectLabel: "appellation", kind: "appellation" as RegionKind },
+  grapeVariety: { id: "Q958314", expectLabel: "grape variety" },
+  wineRegion: { id: "Q2140699", expectLabel: "wine-producing region", kind: "region" as RegionKind },
   wine: { id: "Q282", expectLabel: "wine" },
 } as const;
+
+/**
+ * Deliberately not ingested from Wikidata. Appellations have no single
+ * Wikidata class: the resolver found real appellations typed variously as
+ * AVA, AOC, DOCG, wine, red wine, vineyard or wine-producing region, and the
+ * generic "appellation" item (Q2858704) holds appellation systems rather than
+ * appellations. Revisit as a separate, approved change.
+ */
+export const EXCLUDED_WIKIDATA_CLASSES = ["appellation"] as const;
 
 type Binding = Record<string, { type: string; value: string } | undefined>;
 export type SparqlResult = { head: { vars: string[] }; results: { bindings: Binding[] } };

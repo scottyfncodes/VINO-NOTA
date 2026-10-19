@@ -47,11 +47,21 @@ the first Production import, re-check each licence link below.
    - (b) Don't use it.
 
    Its barcode coverage of wine is also thin, which lowers its value.
-2. **Wikidata class ids.** `WIKIDATA_CLASSES` (winery, grape variety, wine
-   region, appellation, wine) and the properties used haven't yet been checked
-   against Wikidata from this environment. The fetch script checks every id
-   against its expected English label and stops on any mismatch.
-3. **Contributions.** Recording needs a privacy notice before it is turned on.
+2. **Wikidata class ids.** The first ingest run (run 39257188334) stopped at
+   the pre-fetch label check: three ids pointed at unrelated items. The
+   read-only resolver (PR #10) verified the replacements against Wikidata:
+   - grape variety → `Q958314` "grape variety";
+   - wine-producing region → `Q2140699` "wine-producing region". Only its
+     direct instances are fetched.
+
+   The fetch script still checks every configured id against its expected
+   English label, and stops on any mismatch or missing label.
+3. **Appellations are excluded from Wikidata ingestion for now.** Wikidata has
+   no single appellation class: real appellations are typed as AVA, AOC, DOCG,
+   wine, vineyard or wine-producing region. Some items that Wikidata itself
+   types as wine-producing regions (e.g. Margaux AOC) may still arrive as
+   regions. Including appellations needs a separate, approved change.
+4. **Contributions.** Recording needs a privacy notice before it is turned on.
    Only these fields are stored, per user and identity:
    - producer, wine name, country, region, appellation, style;
    - where each field came from.
