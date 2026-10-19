@@ -396,6 +396,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
                         </ul>
                       </Notice>
                     )}
+                    {recognition.outcome.catalog && <CatalogNote catalog={recognition.outcome.catalog} />}
                     {recognition.outcome.extractedText && (
                       <details>
                         <summary className="muted" style={{ fontSize: "var(--text-xs)", cursor: "pointer" }}>
@@ -624,5 +625,22 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
         </section>
       )}
     </div>
+  );
+}
+
+const CATALOG_FIELD_LABEL: Record<string, string> = {
+  producer: "producer", name: "wine name", wineType: "style", country: "country", region: "region",
+  subregion: "subregion", appellation: "appellation", grapes: "grapes",
+};
+
+/** What the reference catalog added or questioned. The label's own values are never replaced. */
+function CatalogNote({ catalog }: { catalog: NonNullable<Extract<RecognitionOutcome, { status: "ok" }>["catalog"]> }) {
+  const list = (fields: string[]) => fields.map((f) => CATALOG_FIELD_LABEL[f] ?? f).join(", ");
+  if (!catalog.filled.length && !catalog.conflicts.length) return null;
+  return (
+    <Notice tone={catalog.conflicts.length ? "warning" : "info"} title="Reference catalog">
+      {catalog.filled.length > 0 && <p style={{ margin: 0 }}>Not on the label, so completed from the catalog: {list(catalog.filled)}. Check before saving.</p>}
+      {catalog.conflicts.length > 0 && <p style={{ margin: 0 }}>The catalog disagrees on {list(catalog.conflicts)}. We kept what the label says.</p>}
+    </Notice>
   );
 }

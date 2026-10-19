@@ -5,7 +5,16 @@
  * Nothing here is ever saved without the user reviewing and confirming it.
  */
 
-export type FieldGuess<T> = { value: T | null; confidence: number };
+/** `source` is set when a value came from somewhere other than the label (e.g. `catalog:wikidata`). */
+export type FieldGuess<T> = { value: T | null; confidence: number; source?: string };
+
+/** What the reference catalog added to a label reading. Label values always win. */
+export type CatalogSummary = {
+  filled: string[];
+  agreed: string[];
+  conflicts: string[];
+  matches: { kind: "producer" | "place" | "wine"; name: string; score: number; source: string }[];
+};
 
 export type RecognitionCandidate = {
   name: FieldGuess<string>;
@@ -31,6 +40,7 @@ export type RecognitionOutcome =
       candidate: RecognitionCandidate;
       overallConfidence: number;
       issues: RecognitionIssue[];
+      catalog?: CatalogSummary;
     }
   | { status: "unavailable"; reason: string }
   | { status: "failed"; reason: string; retryable: boolean };

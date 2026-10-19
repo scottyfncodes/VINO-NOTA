@@ -2,6 +2,9 @@ import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/server/db";
 import { providerUsage } from "@/server/db/schema";
 import { getOriginalBytes } from "@/server/images";
+import { lookupCatalog } from "@/server/reference/lookup";
+import { enrichFromCatalog } from "@/lib/domain/catalog";
+import { countryCodeFromName, countryName } from "@/lib/domain/countries";
 import { AnthropicLabelProvider } from "./anthropic";
 import type { LabelRecognitionProvider, RecognitionOutcome } from "./types";
 
@@ -55,5 +58,27 @@ export async function recognizeLabel(userId: string, imageId: string): Promise<R
   }
   const bytes = await getOriginalBytes(userId, imageId);
   if (!bytes) return { status: "failed", reason: "That photo could not be found. Please retake it.", retryable: false };
-  return provider.recognize({ bytes, mediaType: "image/jpeg" });
+  const outcome = await provider.recognize({ bytes, mediaType: "image/jpeg" });
+  return outcome.status === "ok" ? withCatalog(outcome) : outcome;
+}
+
+/**
+ * Completes a label reading from the reference catalog: one bounded database
+ * lookup, no further AI calls. Vintage, non-vintage and alcohol are never
+ * touched; label values always win and disagreements are reported.
+ */
+export async function withCatalog(outcome: Extract<RecognitionOutcome, { status: "ok" }>): Promise<RecognitionOutcome> {
+  const c = outcome.candidate;
+  const { evidence, matches } = await lookupCatalog({
+    producer: c.producer.value,
+    name: c.name.value,
+    country: c.country.value,
+    region: c.region.value,
+    appellation: c.appellation.value,
+  });
+  if (!matches.length) return outcome;
+  const { fields, filled, agreed, conflicts } = enrichFromCatalog(c, evidence, countryCodeFromName, countryName);
+  const candidate = { ...c, ...fields };
+  for (const f of filled) candidate[f] = { ...candidate[f], source: `catalog:${candidate[f].source ?? "unknown"}` } as never;
+  return { ...outcome, candidate, catalog: { filled, agreed, conflicts, matches } };
 }

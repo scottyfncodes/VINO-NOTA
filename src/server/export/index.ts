@@ -16,6 +16,7 @@ import {
 import { NotFoundError } from "@/server/errors";
 import { isUuid } from "@/server/catalog/wines";
 import { countryName } from "@/lib/domain/countries";
+import { listContributions } from "@/server/reference/contributions";
 
 export const EXPORT_FORMAT = "vino-nota-export";
 export const EXPORT_VERSION = 1;
@@ -50,6 +51,7 @@ export async function buildAccountExport(userId: string, options: { wineIds?: st
     db.query.metadataSourceRecord.findMany({ where: inArray(metadataSourceRecord.wineId, ids), orderBy: asc(metadataSourceRecord.createdAt) }),
     db.query.tasting.findMany({ where: inArray(tasting.wineId, ids), orderBy: [asc(tasting.tastedOn), asc(tasting.createdAt)] }),
   ]);
+  const contributions = options.wineIds ? [] : await listContributions(userId);
   const tastingIds = tastings.length ? tastings.map((t) => t.id) : none;
   const [observations, tags] = await Promise.all([
     db.query.sensoryObservation.findMany({ where: inArray(sensoryObservation.tastingId, tastingIds) }),
@@ -79,6 +81,7 @@ export async function buildAccountExport(userId: string, options: { wineIds?: st
     ],
     account: scoped ? undefined : { name: account.name, email: account.email, createdAt: account.createdAt.toISOString() },
     preferences: scoped ? undefined : { defaultCurrency: prefs?.defaultCurrency ?? "USD" },
+    catalogContributions: scoped || !contributions.length ? undefined : contributions.map((c) => ({ ...c, createdAt: c.createdAt.toISOString() })),
     producers: producers
       .filter((p) => !scoped || usedProducers.has(p.id))
       .map((p) => ({ id: p.id, name: p.name, aliases: p.aliases, externalIds: p.externalIds })),

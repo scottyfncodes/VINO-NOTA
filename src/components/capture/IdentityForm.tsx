@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { COUNTRIES } from "@/lib/domain/countries";
 import { WINE_TYPES } from "@/lib/domain/wine";
 import { Badge, Button, Field, Input, Select, uiStyles } from "@/components/ui/primitives";
-import type { IdentityDraft, IdentityField, Suggestion } from "./drafts";
+import { isCatalogSource, type IdentityDraft, type IdentityField, type Suggestion } from "./drafts";
 import s from "./capture.module.css";
 
 const COMMON_GRAPES = [
@@ -18,6 +18,13 @@ const COMMON_GRAPES = [
 function ProviderBadge({ draft, field }: { draft: IdentityDraft; field: IdentityField }) {
   const mark = draft.fromProvider[field];
   if (!mark) return null;
+  if (isCatalogSource(mark.provider)) {
+    return (
+      <Badge tone="neutral" title="Not on the label: completed from the Vino Nota reference catalog. Check it before saving.">
+        From catalog · {Math.round(mark.confidence * 100)}%
+      </Badge>
+    );
+  }
   return (
     <Badge tone="accent" title="Read from your label photo. Edit it if it's wrong.">
       From label · {Math.round(mark.confidence * 100)}%

@@ -14,7 +14,10 @@
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
-    "icons": "tsx scripts/generate-icons.ts"
+    "icons": "tsx scripts/generate-icons.ts",
+    "catalog:fetch-wikidata": "tsx scripts/catalog/fetch-wikidata.ts",
+    "catalog:import": "tsx scripts/catalog/import.ts",
+    "catalog:review": "tsx scripts/catalog/review.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
