@@ -101,12 +101,12 @@ The Neon project is `neon-sky-pocket` (`twilight-paper-99193935`), connected thr
 The project-level `DATABASE_URL` is also targeted at Preview, so a Preview would fall back to Production if per-preview branching ever stopped working. `src/server/db/target.ts` prevents that: when `VERCEL_ENV=preview`, both the migration script and the runtime client refuse to connect to Production's endpoint. The guard fails closed: a Preview is refused if `PRODUCTION_DB_ENDPOINT_ID` (set for Preview only) is missing or differs from the endpoint committed in `PRODUCTION_ENDPOINT_ID`, or if the host is unrecognisable. So if Preview branching is switched off, Preview builds fail instead of migrating Production.
 
 Preview branches are forked from Production, so they start with a copy of Production data as of the fork. Preview deployments sit behind Vercel Authentication.
-- Required environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, and a private Blob store (`BLOB_STORE_ID` with Vercel OIDC, or `BLOB_READ_WRITE_TOKEN`). Optional: `ANTHROPIC_API_KEY`, `RECOGNITION_MODEL`, `BETTER_AUTH_URL`.
+- Required environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, and a private Blob store (`BLOB_STORE_ID` with Vercel OIDC, or `BLOB_READ_WRITE_TOKEN`). Optional: `ANTHROPIC_API_KEY`, `RECOGNITION_MODEL`, `BETTER_AUTH_URL`, and `RESEND_API_KEY` + `EMAIL_FROM` for password reset.
 - Security headers (HSTS, `nosniff`, frame denial, referrer and permissions policies) are set in `next.config.ts`.
 
 ## Known limitations
 
-- **No email delivery**: there is no email verification or password reset yet. A forgotten password can't be recovered without adding an email provider.
+- **Email is only used for password reset**, and only when `RESEND_API_KEY` and `EMAIL_FROM` are set; otherwise "Forgot your password?" is hidden. Reset links work once, expire after an hour and sign the account out everywhere. Email addresses are not verified at sign-up.
 - **No external wine metadata source**: "candidate matches" come from the recognition provider and from the user's own journal; there is no retail/catalogue database.
 - **Regions are not geocoded**: the map shades countries only. The schema supports region coordinates, but they are never inferred.
 - **Small countries** (e.g. Malta) aren't drawn at the 1:110m map scale; they still appear in the index.

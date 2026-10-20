@@ -11,7 +11,7 @@ function safeNext(next: string | null) {
   return next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
 }
 
-export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
+export function AuthForm({ mode, resetAvailable = false }: { mode: "sign-in" | "sign-up"; resetAvailable?: boolean }) {
   const router = useRouter();
   const params = useSearchParams();
   const [busy, setBusy] = useState(false);
@@ -52,6 +52,11 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   return (
     <form className={s.card} onSubmit={onSubmit} noValidate={false}>
       <h2 className={s.cardTitle}>{mode === "sign-in" ? "Open your journal" : "Begin a journal"}</h2>
+      {mode === "sign-in" && params.get("reset") === "1" && (
+        <Notice tone="success" role="status">
+          Password changed. Sign in with your new password.
+        </Notice>
+      )}
       {mode === "sign-up" && (
         <Field id="name" label="Name" optional>
           <Input id="name" name="name" autoComplete="name" maxLength={80} />
@@ -75,6 +80,11 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       <Button type="submit" variant="primary" block disabled={busy} aria-busy={busy}>
         {busy ? "One moment…" : mode === "sign-in" ? "Sign in" : "Create account"}
       </Button>
+      {mode === "sign-in" && resetAvailable && (
+        <p className={s.switch}>
+          <Link href="/forgot-password">Forgot your password?</Link>
+        </p>
+      )}
       <p className={s.switch}>
         {mode === "sign-in" ? (
           <>
