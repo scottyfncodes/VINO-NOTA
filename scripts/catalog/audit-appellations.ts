@@ -14,7 +14,7 @@ import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { wikidataToBatch, type SparqlResult } from "../../src/server/reference/wikidata";
-import { auditAppellations, type AppellationAudit } from "../../src/lib/domain/appellation-audit";
+import { auditAppellations, type AppellationAudit, type FlaggedRecord } from "../../src/lib/domain/appellation-audit";
 import { arg } from "./target";
 
 const empty: SparqlResult = { head: { vars: [] }, results: { bindings: [] } };
@@ -23,6 +23,14 @@ const empty: SparqlResult = { head: { vars: [] }, results: { bindings: [] } };
 export function regionsFromSnapshot(dir: string) {
   const regions = JSON.parse(readFileSync(join(dir, "regions.json"), "utf8")) as SparqlResult;
   return wikidataToBatch({ regions, producers: empty, grapes: empty, wines: empty }).regions.map((r) => ({ externalId: r.externalId, name: r.name, aliases: r.aliases }));
+}
+
+function reviewCell(f: FlaggedRecord) {
+  const notes: string[] = [f.review.group];
+  if (f.review.namespacePage) notes.push("namespace page");
+  if (f.review.sameBaseAs.length) notes.push(`same base name “${f.review.baseName}” as ${f.review.sameBaseAs.join(", ")}`);
+  if (f.review.aliasNamesOf.length) notes.push(`alias is the name of ${f.review.aliasNamesOf.join(", ")}`);
+  return notes.join("; ");
 }
 
 export function auditMarkdown(a: AppellationAudit, flaggedListLimit = 500) {
@@ -39,9 +47,11 @@ export function auditMarkdown(a: AppellationAudit, flaggedListLimit = 500) {
     `|---|---|`,
     ...(rules.length ? rules.map(([id, n]) => `| ${id} | ${n} |`) : [`| (none) | 0 |`]),
     ``,
-    `| Wikidata ID | Name | Matched rules (field: text) |`,
-    `|---|---|---|`,
-    ...a.flaggedRecords.slice(0, flaggedListLimit).map((f) => `| ${f.externalId} | ${cell(f.name)} | ${cell(f.matches.map((m) => `${m.rule} (${m.field}: “${m.text}”)`).join("; "))} |`),
+    `Review hints (pointers, not decisions): ${a.review.possibleDuplicates} possible duplicate concepts, ${a.review.aliasConflicts} possible alias mix-ups, ${a.review.namespacePages} Wikimedia namespace pages (rejected by validation).`,
+    ``,
+    `| Wikidata ID | Name | Matched rules (field: text) | Review |`,
+    `|---|---|---|---|`,
+    ...a.flaggedRecords.slice(0, flaggedListLimit).map((f) => `| ${f.externalId} | ${cell(f.name)} | ${cell(f.matches.map((m) => `${m.rule} (${m.field}: “${m.text}”)`).join("; "))} | ${cell(reviewCell(f))} |`),
   ];
   if (a.flaggedRecords.length > flaggedListLimit) lines.push(``, `…${a.flaggedRecords.length - flaggedListLimit} more in the JSON report.`);
   return lines.join("\n");

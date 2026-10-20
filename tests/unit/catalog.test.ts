@@ -3,6 +3,7 @@ import {
   contributionConsensus,
   contributionKey,
   enrichFromCatalog,
+  isWikimediaNamespaceName,
   normalizeBarcode,
   validateBatch,
   type CatalogEvidence,
@@ -75,6 +76,20 @@ describe("import validation", () => {
       "implausible vintage 1700",
       "implausible alcohol 40%",
     ]);
+  });
+});
+
+describe("Wikimedia namespace pages", () => {
+  const batch = (over: Partial<ImportBatch>): ImportBatch => ({ regions: [], producers: [], grapes: [], wines: [], products: [], ...over });
+  const region = (externalId: string, name: string) => ({ externalId, kind: "region" as const, name, country: "ES", parentExternalId: null, aliases: [] });
+  it("rejects category and template items, which are never places", () => {
+    const v = validateBatch(batch({ regions: [region("Q131278789", "Category:Aylés (DO)"), region("Q2", " template:Spanish wine"), region("Q3", "Aylés"), region("Q4", "Cava: the region")] }));
+    expect(v.batch.regions.map((r) => r.externalId)).toEqual(["Q3", "Q4"]);
+    expect(v.rejected).toEqual([
+      { kind: "regions", externalId: "Q131278789", reason: "a Wikimedia namespace page, not a record" },
+      { kind: "regions", externalId: "Q2", reason: "a Wikimedia namespace page, not a record" },
+    ]);
+    expect(isWikimediaNamespaceName("Categoryland")).toBe(false);
   });
 });
 

@@ -140,6 +140,18 @@ Generic place words ("valley", "côte", "cru") are never rules.
 classification, and the audit never filters, reclassifies or changes catalog
 records. It reads only the fetched snapshot: no database, no network.
 
+Each flagged record also carries review hints. They are pointers for a person
+to check, never decisions:
+- `group`: whether the designation was in its name or only in an alias.
+- `sameBaseAs`: other records named like it once the designation is
+  removed, which may be a duplicate concept.
+- `aliasNamesOf`: other records whose name is one of its aliases, which may
+  be an alias mix-up.
+- `namespacePage`: a Wikimedia category or template item. Validation rejects
+  these, because they are never places.
+
+The first import's audit findings and plan are in `docs/catalog-import-plan.md`.
+
 
 
 `npm run catalog:resolve-ids` (workflow **Catalog class-ID resolution**,

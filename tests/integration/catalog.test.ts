@@ -104,6 +104,24 @@ describe("catalog import", () => {
     await expect(importCatalogBatch(bad, changed, { dryRun: false, retrievedAt: at })).rejects.toThrow();
     expect(await count(catalogProducer)).toBe(before);
   });
+
+  it("recovers from a failed import by re-running the same batch, and never stores namespace pages", async () => {
+    const regions = await count(catalogRegion);
+    const aliases = await count(catalogAlias);
+    const withCategory = fixture();
+    withCategory.regions.push({ externalId: "Q131278789", kind: "region", name: "Category:Aylés (DO)", country: "ES", parentExternalId: null, aliases: ["Aylés"] });
+    await expect(importCatalogBatch({ ...CATALOG_SOURCES.wikidata, confidence: 2 }, withCategory, { dryRun: false, retrievedAt: at })).rejects.toThrow();
+    expect([await count(catalogRegion), await count(catalogAlias)]).toEqual([regions, aliases]);
+
+    const retry = await importCatalogBatch(wikidata, withCategory, { dryRun: false, retrievedAt: at });
+    expect(retry.rejected).toEqual([
+      { kind: "regions", externalId: "Q131278789", reason: "a Wikimedia namespace page, not a record" },
+      { kind: "producers", externalId: "Q-bad", reason: 'invalid country code "France"' },
+    ]);
+    expect(retry.regions).toMatchObject({ inserted: 0, updated: 0, stale: 0 });
+    expect([await count(catalogRegion), await count(catalogAlias)]).toEqual([regions, aliases]);
+    expect(await getDb().select().from(catalogRegion).where(eq(catalogRegion.externalId, "Q131278789"))).toEqual([]);
+  });
 });
 
 describe("catalog lookup", () => {

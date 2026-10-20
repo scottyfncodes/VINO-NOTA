@@ -7,6 +7,7 @@
  * establish the item's actual classification, and every flagged record needs
  * manual review. Nothing here filters, reclassifies or changes catalog data.
  */
+import { isWikimediaNamespaceName } from "./catalog";
 import { normalizeText } from "./normalize";
 
 export const APPELLATION_AUDIT_DISCLAIMER =
@@ -75,7 +76,16 @@ function compile(rule: AuditRule): CompiledRule {
 
 export type AuditRecord = { externalId: string; name: string; aliases: string[] };
 export type AuditMatch = { rule: string; field: "name" | "alias"; text: string; matched: string };
-export type FlaggedRecord = { externalId: string; name: string; matches: AuditMatch[] };
+/**
+ * Pointers for the human reviewer, never decisions. `group` says where the
+ * designation was found. `sameBaseAs` lists other records whose name or alias
+ * equals this one's name with the designation removed (a possible duplicate
+ * concept); `aliasNamesOf` lists other records whose name is one of this
+ * record's aliases (a possible alias mix-up). `namespacePage` marks a
+ * Wikimedia category or template item, which validation rejects.
+ */
+export type ReviewHints = { group: "designation-in-name" | "alias-only"; baseName: string; sameBaseAs: string[]; aliasNamesOf: string[]; namespacePage: boolean };
+export type FlaggedRecord = { externalId: string; name: string; matches: AuditMatch[]; review: ReviewHints };
 export type AppellationAudit = {
   disclaimer: string;
   examined: number;
@@ -86,6 +96,8 @@ export type AppellationAudit = {
   flaggedByName: number;
   flaggedByAliasOnly: number;
   byRule: Record<string, number>;
+  /** How many flagged records carry each review hint. */
+  review: { possibleDuplicates: number; aliasConflicts: number; namespacePages: number };
   rules: { id: string; description: string }[];
   flaggedRecords: FlaggedRecord[];
 };
@@ -99,6 +111,13 @@ export function matchDesignations(text: string, rules: AuditRule[] = APPELLATION
   });
 }
 
+/** The name with the designation tokens it matched removed: "Douro (DOC)" → "Douro". */
+export function baseName(name: string, nameMatches: { matched: string }[]): string {
+  let s = name;
+  for (const m of nameMatches) s = s.replace(m.matched, " ");
+  return s.replace(/\(\s*\)/g, " ").replace(/\s+/g, " ").trim() || name.trim();
+}
+
 /** Audits records by name and alias. Pure and deterministic; never changes its input. */
 export function auditAppellations(records: AuditRecord[], rules: AuditRule[] = APPELLATION_RULES): AppellationAudit {
   const compiled = rules.map(compile);
@@ -109,15 +128,37 @@ export function auditAppellations(records: AuditRecord[], rules: AuditRule[] = A
       return m ? [{ rule: c.rule.id, field, text, matched: m }] : [];
     });
   };
+  const byName = new Map<string, Set<string>>();
+  const byNameOrAlias = new Map<string, Set<string>>();
+  const index = (map: Map<string, Set<string>>, text: string, id: string) => {
+    const n = normalizeText(text);
+    if (n) map.set(n, (map.get(n) ?? new Set()).add(id));
+  };
+  for (const r of records) {
+    index(byName, r.name, r.externalId);
+    index(byNameOrAlias, r.name, r.externalId);
+    for (const a of r.aliases) index(byNameOrAlias, a, r.externalId);
+  }
+  const others = (map: Map<string, Set<string>>, texts: string[], self: string) =>
+    [...new Set(texts.flatMap((t) => [...(map.get(normalizeText(t)) ?? [])]))].filter((id) => id !== self).sort();
   const byRule: Record<string, number> = Object.fromEntries(rules.map((r) => [r.id, 0]));
   const flaggedRecords: FlaggedRecord[] = [];
   let flaggedByName = 0;
   for (const r of records) {
     const matches = [...check(r.name, "name"), ...r.aliases.flatMap((a) => check(a, "alias"))];
     if (!matches.length) continue;
-    if (matches.some((m) => m.field === "name")) flaggedByName++;
+    const nameMatches = matches.filter((m) => m.field === "name");
+    if (nameMatches.length) flaggedByName++;
     for (const id of new Set(matches.map((m) => m.rule))) byRule[id]++;
-    flaggedRecords.push({ externalId: r.externalId, name: r.name, matches });
+    const base = baseName(r.name, nameMatches);
+    const review: ReviewHints = {
+      group: nameMatches.length ? "designation-in-name" : "alias-only",
+      baseName: base,
+      sameBaseAs: normalizeText(base) === normalizeText(r.name) ? [] : others(byNameOrAlias, [base], r.externalId),
+      aliasNamesOf: others(byName, r.aliases, r.externalId),
+      namespacePage: isWikimediaNamespaceName(r.name),
+    };
+    flaggedRecords.push({ externalId: r.externalId, name: r.name, matches, review });
   }
   flaggedRecords.sort((a, b) => a.name.localeCompare(b.name) || a.externalId.localeCompare(b.externalId));
   const flagged = flaggedRecords.length;
@@ -129,6 +170,11 @@ export function auditAppellations(records: AuditRecord[], rules: AuditRule[] = A
     flaggedByName,
     flaggedByAliasOnly: flagged - flaggedByName,
     byRule,
+    review: {
+      possibleDuplicates: flaggedRecords.filter((f) => f.review.sameBaseAs.length).length,
+      aliasConflicts: flaggedRecords.filter((f) => f.review.aliasNamesOf.length).length,
+      namespacePages: flaggedRecords.filter((f) => f.review.namespacePage).length,
+    },
     rules: rules.map((r) => ({ id: r.id, description: r.description })),
     flaggedRecords,
   };
