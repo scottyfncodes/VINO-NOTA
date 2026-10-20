@@ -25,6 +25,10 @@ on:
         description: Also import into the Preview database (catalog-preview environment)
         type: boolean
         default: false
+      preview_record_types:
+        description: Record types the Preview import may change (comma-separated; others are left untouched)
+        type: string
+        default: "regions,grapes"
 
 permissions:
   contents: read
@@ -92,6 +96,7 @@ jobs:
       PRODUCTION_DB_ENDPOINT_ID: ${{ vars.PRODUCTION_DB_ENDPOINT_ID }}
       DATABASE_URL: ${{ secrets.CATALOG_PREVIEW_DATABASE_URL }}
       SNAPSHOT: snapshot
+      ONLY: ${{ inputs.preview_record_types || 'regions,grapes' }}
     steps:
       - name: Check configuration
         run: |
@@ -110,9 +115,11 @@ jobs:
       - name: Migrate Preview database (same migrations the Preview build applies)
         run: npm run -s db:migrate
       - name: Dry run against Preview
-        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT"
+        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --only "$ONLY" --report preview-dry-run.json
       - name: Import into Preview
-        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --apply --report preview-import.json
+        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --only "$ONLY" --apply --report preview-import.json
+      - name: Re-import into Preview (must change nothing)
+        run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --only "$ONLY" --apply --expect-unchanged --report preview-reimport.json
       - name: Validate Preview
         run: npm run -s catalog:validate -- --source wikidata --report preview-validate.json
       - uses: actions/upload-artifact@v4

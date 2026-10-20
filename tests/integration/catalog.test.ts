@@ -122,6 +122,37 @@ describe("catalog import", () => {
     expect([await count(catalogRegion), await count(catalogAlias)]).toEqual([regions, aliases]);
     expect(await getDb().select().from(catalogRegion).where(eq(catalogRegion.externalId, "Q131278789"))).toEqual([]);
   });
+
+  it("changes only the record types in scope, leaving every other type's rows and aliases alone", async () => {
+    const before = { regions: await count(catalogRegion), producers: await count(catalogProducer), wines: await count(catalogWine), aliases: await count(catalogAlias) };
+    const changed = fixture();
+    changed.producers = []; // would be stale, and their aliases removed, in a full import
+    changed.wines = [];
+    changed.regions.push({ externalId: "Q-rioja", kind: "region", name: "Rioja", country: "ES", parentExternalId: null, aliases: ["Rioja DOCa"] });
+    changed.grapes[0].aliases = ["Cabernet"];
+
+    const dry = await importCatalogBatch(wikidata, changed, { dryRun: true, retrievedAt: at, only: ["regions", "grapes"] });
+    expect(dry.scope).toEqual(["regions", "grapes"]);
+    expect(await count(catalogRegion)).toBe(before.regions);
+
+    const r = await importCatalogBatch(wikidata, changed, { dryRun: false, retrievedAt: at, only: ["regions", "grapes"] });
+    expect(r.regions).toMatchObject({ inserted: 1, stale: 0 });
+    expect(r.grapes).toMatchObject({ inserted: 0, stale: 0 });
+    for (const kind of ["producers", "wines", "products"] as const) expect(r[kind]).toEqual({ inserted: 0, updated: 0, unchanged: 0, stale: 0 });
+    // Bad Country Wines is out of scope, so it isn't even validated.
+    expect(r.rejected).toEqual([]);
+    expect(r.aliases).toEqual({ added: 2, removed: 0 });
+    expect({ producers: await count(catalogProducer), wines: await count(catalogWine), aliases: await count(catalogAlias) }).toEqual({ producers: before.producers, wines: before.wines, aliases: before.aliases + 2 });
+
+    const again = await importCatalogBatch(wikidata, changed, { dryRun: false, retrievedAt: at, only: ["regions", "grapes"] });
+    expect([again.regions.inserted + again.regions.updated + again.grapes.inserted + again.grapes.updated, again.aliases.added + again.aliases.removed]).toEqual([0, 0]);
+    await expect(importCatalogBatch(wikidata, changed, { dryRun: true, retrievedAt: at, only: [] })).rejects.toThrow("Import scope is empty.");
+
+    // Restore the full fixture for the lookups below: the extra region is stale, never deleted.
+    const restored = await importCatalogBatch(wikidata, fixture(), { dryRun: false, retrievedAt: at });
+    expect(restored.regions.stale).toBe(1);
+    expect(restored.aliases.removed).toBe(2);
+  });
 });
 
 describe("catalog lookup", () => {

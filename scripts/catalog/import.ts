@@ -5,7 +5,9 @@
  *   npm run catalog:import -- --source wikidata --dir data/catalog/wikidata/2026-10-19 --apply
  *
  * Options: --report <file> writes the full report (with every rejection);
- * --expect-unchanged fails if anything would change (idempotency check).
+ * --expect-unchanged fails if anything would change (idempotency check);
+ * --only regions,grapes limits the import to those record types and leaves
+ * every other type (rows and aliases) untouched.
  *
  * Dry run is the default: the whole import runs in a transaction that is then
  * rolled back, and the report shows what would change. Re-running a snapshot
@@ -18,7 +20,7 @@ import { join } from "node:path";
 import { CATALOG_SOURCES } from "../../src/server/reference/sources";
 import { wikidataToBatch, type WikidataFiles } from "../../src/server/reference/wikidata";
 import { openFoodFactsToBatch } from "../../src/server/reference/openfoodfacts";
-import { importCatalogBatch } from "../../src/server/reference/import";
+import { IMPORT_KINDS, importCatalogBatch } from "../../src/server/reference/import";
 import { closeDb } from "../../src/server/db";
 import { arg, databaseTarget } from "./target";
 
@@ -36,6 +38,10 @@ async function main() {
   if (apply && !source.approvedForLookup && !argv.includes("--allow-unapproved")) {
     throw new Error(`${source.name} is not approved (see docs/catalog-sources.md). Importing it needs --allow-unapproved after a licensing decision.`);
   }
+  const onlyArg = arg(argv, "--only");
+  const only = onlyArg?.split(",").map((k) => k.trim()).filter(Boolean);
+  const unknown = only?.filter((k) => !(IMPORT_KINDS as readonly string[]).includes(k)) ?? [];
+  if (unknown.length || (only && !only.length)) throw new Error(`--only takes a comma-separated list of: ${IMPORT_KINDS.join(", ")}.`);
   const manifest = JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8")) as { source: string; retrievedAt: string };
   if (manifest.source !== sourceId) throw new Error(`Snapshot is for ${manifest.source}, not ${sourceId}.`);
   const retrievedAt = new Date(manifest.retrievedAt);
@@ -56,8 +62,8 @@ async function main() {
   }
 
   const target = databaseTarget(argv);
-  console.log(`[catalog:import] source=${sourceId} target=${target.label} mode=${apply ? "apply" : "dry-run"} retrievedAt=${manifest.retrievedAt}`);
-  const report = await importCatalogBatch(source, batch, { dryRun: !apply, retrievedAt });
+  console.log(`[catalog:import] source=${sourceId} target=${target.label} mode=${apply ? "apply" : "dry-run"} scope=${only?.join(",") ?? "all"} retrievedAt=${manifest.retrievedAt}`);
+  const report = await importCatalogBatch(source, batch, { dryRun: !apply, retrievedAt, only: only as (typeof IMPORT_KINDS)[number][] | undefined });
   const { rejected, ...counts } = report;
   const summary = { ...counts, ...notes, target: target.label, retrievedAt: manifest.retrievedAt, rejectedCount: rejected.length, rejectedSample: rejected.slice(0, 20) };
   console.log(JSON.stringify(summary, null, 2));

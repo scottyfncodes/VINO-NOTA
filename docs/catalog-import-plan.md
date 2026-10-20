@@ -35,7 +35,7 @@ None of these can be reached from this environment. Only GitHub Actions can quer
 |---|---|
 | Target | A dedicated Preview Neon branch (see §6). Never Production. |
 | Source | Wikidata only (`catalog_source.key = wikidata`). |
-| Record types | **Regions and grapes only.** Producers and wines wait until linkage improves. |
+| Record types | **Regions and grapes only.** Producers and wines wait until linkage improves. This is enforced by `catalog:import --only regions,grapes`, which leaves every other record type's rows and aliases untouched. |
 | Region kinds | As fetched (`region`). No reclassification until §3 is decided. |
 
 **Expected counts**, recounted by the dry run before any apply:
@@ -101,13 +101,14 @@ The importer already implements these rules, and tests cover them:
 5. `npm run catalog:validate -- --source wikidata` exits 0. That means records exist, provenance is complete, identifiers are well-formed and the probe lookups don't error. Also check by hand:
    - its row counts equal the dry run's;
    - its duplicate-name list matches the collisions in §1.
-6. A second apply of the same snapshot reports 0 inserted, 0 updated and 0 stale (idempotency).
+6. A second apply of the same snapshot reports 0 inserted, 0 updated and 0 stale. The Preview job's "Re-import (must change nothing)" step enforces this.
 7. Spot lookups on the Preview deployment: "Margaux", "Rioja", "Douro" and "Tempranillo".
 
 ## 6. Target, error handling, repeatability and rollback
 
 - **Target:**
-  - A new Neon branch, for example `catalog-preview`, created from `main` in project `twilight-paper-99193935`.
+  - A **schema-only** Neon branch, `catalog-preview`, in project `twilight-paper-99193935`. It is created in the Neon Console with auto-delete turned off, so it copies no user rows.
+  - A schema-only branch starts with an empty migration journal. Its `drizzle.__drizzle_migrations` table is seeded with Production's 2 migration hashes (schema metadata, not user data) so that `db:migrate` doesn't re-create existing tables.
   - Its endpoint id is recorded before any write, and must differ from `ep-winter-glade-b7ewqow0`.
   - The import job reads it from the `catalog-preview` GitHub environment secret `CATALOG_PREVIEW_DATABASE_URL`, and gets the Production id from the variable `PRODUCTION_DB_ENDPOINT_ID`. Neither exists yet.
 - **Failure:**
@@ -117,7 +118,7 @@ The importer already implements these rules, and tests cover them:
   - Snapshots are files kept as workflow artifacts, and the importer reads only those files.
   - Re-importing a snapshot always gives the same rows.
 - **Rollback:**
-  - On the dedicated branch, the simplest full rollback is resetting it from its parent (Production, where the catalog is empty). Because that is a Neon operation on a database resource, it needs approval at the time.
+  - A schema-only branch has no parent, so it can't be reset from one. A full rollback means either deleting the Wikidata catalog rows on that branch, or deleting and re-creating the branch. Both need approval at the time.
   - Later, a bad import is reverted by re-importing the previous snapshot. Records missing from a newer snapshot are reported as stale and **never deleted automatically**.
 
 ## 7. Decisions needed
