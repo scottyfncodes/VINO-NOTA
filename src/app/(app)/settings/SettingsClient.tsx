@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { deleteAccountAction, signOutAction, updatePreferencesAction } from "@/app/actions";
 import { CURRENCIES } from "@/lib/domain/currency";
+import { authClient } from "@/lib/auth-client";
+import { VERIFY_CALLBACK_PATH } from "@/server/auth/emails";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Button, Field, Notice, Select } from "@/components/ui/primitives";
 
@@ -35,6 +37,52 @@ export function CurrencyPreference({ initial }: { initial: string }) {
       </div>
       {status && <Notice tone={status.tone}>{status.text}</Notice>}
     </form>
+  );
+}
+
+export function EmailVerification({ email, verified, canSend, linkResult }: { email: string; verified: boolean; canSend: boolean; linkResult: "verified" | "invalid" | null }) {
+  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState<{ tone: "success" | "error"; text: string } | null>(null);
+
+  async function send() {
+    setBusy(true);
+    setStatus(null);
+    try {
+      const r = await authClient.sendVerificationEmail({ email, callbackURL: VERIFY_CALLBACK_PATH });
+      setStatus(
+        !r.error
+          ? { tone: "success", text: `A confirmation link is on its way to ${email}. It expires in 24 hours.` }
+          : r.error.status === 429
+            ? { tone: "error", text: "Too many requests. Please wait a while and try again." }
+            : { tone: "error", text: "We couldn't send the email just now. Please try again." },
+      );
+    } catch {
+      setStatus({ tone: "error", text: "Couldn't reach the server." });
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div style={{ display: "grid", gap: "var(--space-3)", marginBottom: "var(--space-4)" }}>
+      {linkResult === "verified" && verified && (
+        <Notice tone="success" role="status">
+          Email confirmed. Thank you.
+        </Notice>
+      )}
+      {linkResult === "invalid" && <Notice tone="warning">That confirmation link is invalid or has expired.{canSend && !verified ? " Send a new one below." : ""}</Notice>}
+      <p style={{ fontSize: "var(--text-sm)" }}>
+        <span className="muted">Email: </span>
+        {verified ? "Confirmed" : "Not confirmed yet"}
+      </p>
+      {!verified && canSend && (
+        <div>
+          <Button onClick={send} disabled={busy} aria-busy={busy}>
+            {busy ? "One moment…" : "Send confirmation email"}
+          </Button>
+        </div>
+      )}
+      {status && <Notice tone={status.tone}>{status.text}</Notice>}
+    </div>
   );
 }
 

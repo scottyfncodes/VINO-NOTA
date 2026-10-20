@@ -7,13 +7,17 @@ import { getStorage } from "@/server/storage";
 import { plural } from "@/lib/format";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { ButtonLink } from "@/components/ui/primitives";
-import { CurrencyPreference, DeleteAccount, SignOutButton } from "./SettingsClient";
+import { emailConfigured } from "@/server/email";
+import { CurrencyPreference, DeleteAccount, EmailVerification, SignOutButton } from "./SettingsClient";
 import s from "@/components/atlas/atlas.module.css";
 
 export const metadata: Metadata = { title: "Settings" };
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
   const user = await requireUser();
+  const sp = await searchParams;
+  // Set when a confirmation link lands here; Better Auth adds ?error=… for a bad or expired link.
+  const linkResult = sp.error ? "invalid" : sp.verify === "done" ? "verified" : null;
   const [prefs, stats] = await Promise.all([getPreferences(user.id), overviewStats(user.id)]);
   const recognition = recognitionStatus();
   const storage = getStorage().kind;
@@ -29,6 +33,7 @@ export default async function SettingsPage() {
         <p className="muted" style={{ fontSize: "var(--text-sm)", marginBottom: "var(--space-4)" }}>
           Signed in as {user.email}. Your journal holds {plural(stats.wines, "wine")} and {plural(stats.tastings, "tasting")}, visible only to you.
         </p>
+        <EmailVerification email={user.email} verified={user.emailVerified} canSend={emailConfigured()} linkResult={linkResult} />
         <SignOutButton />
       </section>
 

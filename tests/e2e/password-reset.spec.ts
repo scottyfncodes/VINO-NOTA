@@ -6,16 +6,17 @@ import { signUp } from "./helpers";
 // The e2e server runs with EMAIL_TRANSPORT=outbox, which writes mail here instead of sending it.
 const OUTBOX = path.join(__dirname, "..", "..", ".data", "outbox");
 
-async function messagesTo(email: string) {
+const RESET_SUBJECT = "Reset your Vino Nota password";
+
+async function messagesTo(email: string, subject = RESET_SUBJECT) {
   const files = await readdir(OUTBOX).catch(() => [] as string[]);
   const messages = await Promise.all(files.map(async (f) => JSON.parse(await readFile(path.join(OUTBOX, f), "utf8")) as { to: string; subject: string; text: string }));
-  return messages.filter((m) => m.to === email);
+  return messages.filter((m) => m.to === email && m.subject === subject);
 }
 
 async function resetLinkFor(email: string) {
   await expect.poll(async () => (await messagesTo(email)).length, { timeout: 10_000 }).toBe(1);
   const [message] = await messagesTo(email);
-  expect(message.subject).toBe("Reset your Vino Nota password");
   return message.text.match(/https?:\/\/\S+/)![0];
 }
 

@@ -106,7 +106,7 @@ Preview branches are forked from Production, so they start with a copy of Produc
 
 ## Known limitations
 
-- **Email is only used for password reset**, and only when `RESEND_API_KEY` and `EMAIL_FROM` are set; otherwise "Forgot your password?" is hidden. Reset links work once, expire after an hour and sign the account out everywhere. Email addresses are not verified at sign-up.
+- **Email is only used for password reset**, and only when `RESEND_API_KEY` and `EMAIL_FROM` are set; otherwise "Forgot your password?" is hidden. Reset links work once, expire after an hour and sign the account out everywhere. Sign-up also sends a confirmation link (24 hours; resend from Settings). Confirmation is informational: an unconfirmed address can still sign in. With Resend's test sender (`onboarding@resend.dev`), mail reaches only the Resend account owner's address; use a verified domain before inviting others.
 - **No external wine metadata source**: "candidate matches" come from the recognition provider and from the user's own journal; there is no retail/catalogue database.
 - **Regions are not geocoded**: the map shades countries only. The schema supports region coordinates, but they are never inferred.
 - **Small countries** (e.g. Malta) aren't drawn at the 1:110m map scale; they still appear in the index.

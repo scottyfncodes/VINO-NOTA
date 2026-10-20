@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { VERIFY_CALLBACK_PATH } from "@/server/auth/emails";
 import { Button, Field, Input, Notice } from "@/components/ui/primitives";
 import s from "./auth.module.css";
 
@@ -28,7 +29,13 @@ export function AuthForm({ mode, resetAvailable = false }: { mode: "sign-in" | "
       const result =
         mode === "sign-in"
           ? await authClient.signIn.email({ email, password })
-          : await authClient.signUp.email({ email, password, name: String(form.get("name") ?? "").trim() || email.split("@")[0] });
+          : await authClient.signUp.email({
+              email,
+              password,
+              name: String(form.get("name") ?? "").trim() || email.split("@")[0],
+              // Where the confirmation link lands (only sent when email is configured).
+              callbackURL: VERIFY_CALLBACK_PATH,
+            });
       if (result.error) {
         const status = result.error.status;
         setError(

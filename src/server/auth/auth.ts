@@ -5,7 +5,7 @@ import { after } from "next/server";
 import { getDb } from "@/server/db";
 import { account, rateLimit, session, user, verification } from "@/server/db/schema";
 import { emailConfigured, sendEmail } from "@/server/email";
-import { passwordResetEmail, RESET_TOKEN_TTL_SECONDS } from "./emails";
+import { passwordResetEmail, RESET_TOKEN_TTL_SECONDS, verificationEmail, VERIFY_TOKEN_TTL_SECONDS } from "./emails";
 
 /**
  * Lets Better Auth send mail after the response, so a reset request takes the
@@ -67,6 +67,16 @@ function createAuth() {
         },
       }),
     },
+    // Verification is informational: an unverified address can still sign in.
+    ...(emailConfigured() && {
+      emailVerification: {
+        sendOnSignUp: true,
+        expiresIn: VERIFY_TOKEN_TTL_SECONDS,
+        sendVerificationEmail: async ({ user, url }: { user: { email: string }; url: string }) => {
+          await sendEmail(verificationEmail(user.email, url));
+        },
+      },
+    }),
     advanced: { backgroundTasks: { handler: runAfterResponse } },
     session: {
       expiresIn: 60 * 60 * 24 * 30,
@@ -83,6 +93,7 @@ function createAuth() {
         "/sign-up/email": { window: 3600, max: 10 },
         "/request-password-reset": { window: 3600, max: 5 },
         "/reset-password": { window: 60, max: 10 },
+        "/send-verification-email": { window: 3600, max: 5 },
       },
     },
     plugins: [nextCookies()],

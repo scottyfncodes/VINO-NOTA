@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { passwordResetEmail, RESET_TOKEN_TTL_SECONDS } from "@/server/auth/emails";
+import { passwordResetEmail, RESET_TOKEN_TTL_SECONDS, verificationEmail, VERIFY_CALLBACK_PATH, VERIFY_TOKEN_TTL_SECONDS } from "@/server/auth/emails";
 import { emailConfigured, emailTransport, sendEmail } from "@/server/email";
 
 const resend = { RESEND_API_KEY: "re_test_secret", EMAIL_FROM: "Vino Nota <journal@example.test>" };
@@ -56,5 +56,19 @@ describe("passwordResetEmail", () => {
     expect(email.html).toContain("&amp;x=&lt;y&gt;");
     expect(email.html).not.toContain("<y>");
     expect(RESET_TOKEN_TTL_SECONDS).toBe(3600);
+  });
+});
+
+describe("verificationEmail", () => {
+  it("links to the confirmation URL, says when it expires and escapes the HTML", () => {
+    const url = "https://vino.example/api/auth/verify-email?token=t&callbackURL=%2Fsettings%3Fverify%3Ddone&x=<y>";
+    const email = verificationEmail("taster@example.test", url);
+    expect(email.subject).toBe("Confirm your email for Vino Nota");
+    expect(email.text).toContain(url);
+    expect(email.text).toMatch(/expires in 24 hours/);
+    expect(email.html).toContain("&amp;x=&lt;y&gt;");
+    expect(email.html).not.toContain("<y>");
+    expect(VERIFY_TOKEN_TTL_SECONDS).toBe(86400);
+    expect(VERIFY_CALLBACK_PATH).toBe("/settings?verify=done");
   });
 });
