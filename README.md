@@ -93,10 +93,12 @@ The integration suite rebuilds the test database from the committed migrations o
 
 | Environment | Neon branch | How it gets `DATABASE_URL` |
 | --- | --- | --- |
-| Production | `main` (protected by the integration) | Project-level variable from the Neon integration |
+| Production | `main` (`ep-winter-glade-b7ewqow0`; the Vercel integration blocks deleting the branch or its read-write endpoint; Neon's own branch protection is not enabled) | Project-level variable from the Neon integration |
 | Preview | `preview/<git-branch>`, forked from `main` | Injected per deployment by the Neon integration |
 
-The project-level `DATABASE_URL` is also targeted at Preview, so a Preview would fall back to Production if per-preview branching ever stopped working. `src/server/db/target.ts` prevents that: when `VERCEL_ENV=preview`, both the migration script and the runtime client refuse to connect to the endpoint named in `PRODUCTION_DB_ENDPOINT_ID` (set for Preview only). The guard fails closed: a Preview without that variable, or with an unrecognisable host, is refused too.
+The Neon project is `neon-sky-pocket` (`twilight-paper-99193935`), connected through Vercel's Neon integration. Its per-deployment branching should be on for **Preview only**: Production must keep using `main`.
+
+The project-level `DATABASE_URL` is also targeted at Preview, so a Preview would fall back to Production if per-preview branching ever stopped working. `src/server/db/target.ts` prevents that: when `VERCEL_ENV=preview`, both the migration script and the runtime client refuse to connect to Production's endpoint. The guard fails closed: a Preview is refused if `PRODUCTION_DB_ENDPOINT_ID` (set for Preview only) is missing or differs from the endpoint committed in `PRODUCTION_ENDPOINT_ID`, or if the host is unrecognisable. So if Preview branching is switched off, Preview builds fail instead of migrating Production.
 
 Preview branches are forked from Production, so they start with a copy of Production data as of the fork. Preview deployments sit behind Vercel Authentication.
 - Required environment variables: `DATABASE_URL`, `BETTER_AUTH_SECRET`, and a private Blob store (`BLOB_STORE_ID` with Vercel OIDC, or `BLOB_READ_WRITE_TOKEN`). Optional: `ANTHROPIC_API_KEY`, `RECOGNITION_MODEL`, `BETTER_AUTH_URL`.

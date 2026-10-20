@@ -243,4 +243,10 @@ describe("catalog script database guard", async () => {
     expect(withEnv({ DATABASE_URL: neon("ep-preview-branch-def456"), PRODUCTION_DB_ENDPOINT_ID: prod }, () => databaseTarget([]))).toMatchObject({ isProduction: false });
     expect(() => withEnv({ DATABASE_URL: neon("ep-preview-branch-def456"), PRODUCTION_DB_ENDPOINT_ID: "" }, () => databaseTarget([]))).toThrow(/can't be proven non-Production/);
   });
+
+  it("treats the known Production endpoint as Production even without the variable", () => {
+    const env = { DATABASE_URL: neon("ep-winter-glade-b7ewqow0-pooler"), PRODUCTION_DB_ENDPOINT_ID: "", VERCEL_ENV: undefined };
+    expect(() => withEnv(env, () => databaseTarget(["--apply", "--remote-ok"]))).toThrow(/Refusing to write to the Production database \(ep-winter-glade-b7ewqow0\)/);
+    expect(withEnv({ ...env, CATALOG_CONFIRM_ENDPOINT: "ep-winter-glade-b7ewqow0" }, () => databaseTarget(["--apply", "--allow-production"]))).toEqual({ label: "ep-winter-glade-b7ewqow0", isProduction: true });
+  });
 });
