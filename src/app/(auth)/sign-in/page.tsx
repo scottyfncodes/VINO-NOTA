@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { emailConfigured } from "@/server/email";
 import { AuthForm } from "../AuthForm";
 import { Intro } from "../Intro";
 import s from "../auth.module.css";
@@ -11,7 +12,7 @@ export default function SignInPage() {
     <div className={s.page}>
       <Intro />
       <Suspense>
-        <AuthForm mode="sign-in" />
+        <AuthForm mode="sign-in" resetAvailable={emailConfigured()} />
       </Suspense>
     </div>
   );

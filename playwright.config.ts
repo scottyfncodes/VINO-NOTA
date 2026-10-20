@@ -23,6 +23,6 @@ export default defineConfig({
         url: `${baseURL}/sign-in`,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
-        env: { BETTER_AUTH_URL: baseURL, AUTH_RATE_LIMIT: "off" },
+        env: { BETTER_AUTH_URL: baseURL, AUTH_RATE_LIMIT: "off", EMAIL_TRANSPORT: "outbox" },
       },
 });
