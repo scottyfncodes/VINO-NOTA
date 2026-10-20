@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { assertPreviewIsolation, describeDatabaseUrl, PreviewGuardNotConfiguredError, ProductionDatabaseInPreviewError } from "@/server/db/target";
+import {
+  assertPreviewIsolation,
+  describeDatabaseUrl,
+  PRODUCTION_ENDPOINT_ID,
+  PreviewGuardMisconfiguredError,
+  PreviewGuardNotConfiguredError,
+  ProductionDatabaseInPreviewError,
+} from "@/server/db/target";
 
 const PROD = "postgresql://u:secret-pw@ep-winter-glade-b7ewqow0-pooler.c-13.us-east-1.aws.neon.tech/neondb?sslmode=require";
 const PREVIEW = "postgresql://u:secret-pw@ep-green-wave-b7tysfv5-pooler.c-13.us-east-1.aws.neon.tech/neondb?sslmode=require";
@@ -31,6 +38,15 @@ describe("assertPreviewIsolation", () => {
   });
   it("fails closed when the guard is not configured for Preview", () => {
     expect(() => assertPreviewIsolation(PREVIEW, { VERCEL_ENV: "preview" })).toThrow(PreviewGuardNotConfiguredError);
+  });
+  it("pins the verified Production endpoint", () => {
+    expect(PRODUCTION_ENDPOINT_ID).toBe("ep-winter-glade-b7ewqow0");
+  });
+  it("fails closed when the guard variable names a different endpoint", () => {
+    // A wrong value (e.g. another project's endpoint) would otherwise let a Preview fall back to Production.
+    const wrong = { VERCEL_ENV: "preview", PRODUCTION_DB_ENDPOINT_ID: "ep-other-project-xyz789" };
+    expect(() => assertPreviewIsolation(PROD, wrong)).toThrow(PreviewGuardMisconfiguredError);
+    expect(() => assertPreviewIsolation(PREVIEW, wrong)).toThrow(PreviewGuardMisconfiguredError);
   });
   it("refuses an unrecognisable host in Preview", () => {
     expect(() => assertPreviewIsolation("postgresql://u:p@db.example.com/x", { VERCEL_ENV: "preview", ...guard })).toThrow(ProductionDatabaseInPreviewError);

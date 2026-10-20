@@ -4,7 +4,7 @@
  * passes --allow-production AND names the endpoint in CATALOG_CONFIRM_ENDPOINT
  * (so a copied command can't hit Production by accident).
  */
-import { assertPreviewIsolation } from "../../src/server/db/target";
+import { assertPreviewIsolation, PRODUCTION_ENDPOINT_ID } from "../../src/server/db/target";
 
 export function databaseTarget(argv: string[]) {
   const url = process.env.DATABASE_URL;
@@ -12,11 +12,12 @@ export function databaseTarget(argv: string[]) {
   const target = assertPreviewIsolation(url);
   const label = target.endpointId ?? target.host;
   const production = process.env.PRODUCTION_DB_ENDPOINT_ID?.trim().toLowerCase();
-  const isProduction = !!production && target.endpointId === production;
+  // The known Production endpoint counts even when the variable is unset, so --remote-ok can't bypass the confirmation.
+  const isProduction = target.endpointId === PRODUCTION_ENDPOINT_ID || (!!production && target.endpointId === production);
   if (isProduction && (!argv.includes("--allow-production") || process.env.CATALOG_CONFIRM_ENDPOINT !== label)) {
     throw new Error(`Refusing to write to the Production database (${label}). Pass --allow-production and set CATALOG_CONFIRM_ENDPOINT=${label} once the change is approved.`);
   }
-  if (!production && !/^(localhost|127\.0\.0\.1|::1|\[::1\])$/.test(target.host) && !argv.includes("--remote-ok")) {
+  if (!isProduction && !production && !/^(localhost|127\.0\.0\.1|::1|\[::1\])$/.test(target.host) && !argv.includes("--remote-ok")) {
     throw new Error(`PRODUCTION_DB_ENDPOINT_ID is not set, so ${label} can't be proven non-Production. Set it (or pass --remote-ok for a known non-Production branch).`);
   }
   return { label, isProduction };

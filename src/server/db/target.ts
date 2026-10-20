@@ -11,6 +11,14 @@
  * Only the endpoint id (a hostname label) is ever logged — never credentials.
  */
 
+/**
+ * Production's Neon endpoint: branch `main` (br-holy-tree-b7kxdd7v) of project
+ * neon-sky-pocket (twilight-paper-99193935), as confirmed by Production's build
+ * log. It is refused even when PRODUCTION_DB_ENDPOINT_ID is missing or wrong, so
+ * a mistyped or copied value can't silently disable the guard.
+ */
+export const PRODUCTION_ENDPOINT_ID = "ep-winter-glade-b7ewqow0";
+
 export type DbTarget = { endpointId: string | null; host: string; database: string };
 
 /** Extracts a loggable description of a Postgres URL without any credentials. */
@@ -44,15 +52,27 @@ export class PreviewGuardNotConfiguredError extends Error {
   }
 }
 
+export class PreviewGuardMisconfiguredError extends Error {
+  constructor(configured: string) {
+    super(
+      `PRODUCTION_DB_ENDPOINT_ID is ${configured}, but Production's endpoint is ${PRODUCTION_ENDPOINT_ID}. ` +
+        "Fix the variable (or, if Production really moved, update PRODUCTION_ENDPOINT_ID in src/server/db/target.ts).",
+    );
+    this.name = "PreviewGuardMisconfiguredError";
+  }
+}
+
 /**
  * Throws when a Preview deployment would use the Production database.
- * Fails closed: a Preview without PRODUCTION_DB_ENDPOINT_ID configured is refused too.
+ * Fails closed: a Preview without PRODUCTION_DB_ENDPOINT_ID configured, or with
+ * one that disagrees with PRODUCTION_ENDPOINT_ID, is refused too.
  */
 export function assertPreviewIsolation(url: string, env: Record<string, string | undefined> = process.env): DbTarget {
   const target = describeDatabaseUrl(url);
   if (env.VERCEL_ENV !== "preview") return target;
   const production = env.PRODUCTION_DB_ENDPOINT_ID?.trim().toLowerCase();
   if (!production) throw new PreviewGuardNotConfiguredError();
+  if (production !== PRODUCTION_ENDPOINT_ID) throw new PreviewGuardMisconfiguredError(production);
   if (target.endpointId === null || target.endpointId === production) {
     // An unrecognisable host can't be proven isolated, so it is refused as well.
     throw new ProductionDatabaseInPreviewError(target.endpointId ?? target.host);
