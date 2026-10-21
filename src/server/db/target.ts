@@ -8,6 +8,9 @@
  * This guard makes that impossible: in a Vercel Preview environment, a
  * connection whose endpoint matches PRODUCTION_DB_ENDPOINT_ID is refused.
  *
+ * One Preview branch can instead read a dedicated catalog UAT database through
+ * CATALOG_UAT_DATABASE_URL (see selectDatabaseUrl). The same guard applies.
+ *
  * Only the endpoint id (a hostname label) is ever logged — never credentials.
  */
 
@@ -78,4 +81,18 @@ export function assertPreviewIsolation(url: string, env: Record<string, string |
     throw new ProductionDatabaseInPreviewError(target.endpointId ?? target.host);
   }
   return target;
+}
+
+export type DatabaseUrlSource = "DATABASE_URL" | "CATALOG_UAT_DATABASE_URL";
+
+/**
+ * The connection string this deployment uses. A Preview deployment uses
+ * CATALOG_UAT_DATABASE_URL when it is set (it is scoped to the catalog UAT Git
+ * branch only); every other environment, Production included, ignores it and
+ * uses DATABASE_URL. Callers still run assertPreviewIsolation on the result.
+ */
+export function selectDatabaseUrl(env: Record<string, string | undefined> = process.env): { url: string; source: DatabaseUrlSource } | null {
+  const uat = env.CATALOG_UAT_DATABASE_URL?.trim();
+  if (env.VERCEL_ENV === "preview" && uat) return { url: uat, source: "CATALOG_UAT_DATABASE_URL" };
+  return env.DATABASE_URL ? { url: env.DATABASE_URL, source: "DATABASE_URL" } : null;
 }

@@ -6,6 +6,7 @@ import {
   PreviewGuardMisconfiguredError,
   PreviewGuardNotConfiguredError,
   ProductionDatabaseInPreviewError,
+  selectDatabaseUrl,
 } from "@/server/db/target";
 
 const PROD = "postgresql://u:secret-pw@ep-winter-glade-b7ewqow0-pooler.c-13.us-east-1.aws.neon.tech/neondb?sslmode=require";
@@ -62,5 +63,39 @@ describe("assertPreviewIsolation", () => {
     } catch (e) {
       expect((e as Error).message).not.toContain("secret-pw");
     }
+  });
+});
+
+describe("selectDatabaseUrl", () => {
+  const UAT = "postgresql://u:uat-secret@ep-bitter-silence-b7b2e3ug-pooler.c-13.us-east-1.aws.neon.tech/neondb?sslmode=require";
+
+  it("uses CATALOG_UAT_DATABASE_URL on a Preview deployment when it is set", () => {
+    expect(selectDatabaseUrl({ VERCEL_ENV: "preview", DATABASE_URL: PREVIEW, CATALOG_UAT_DATABASE_URL: UAT })).toEqual({ url: UAT, source: "CATALOG_UAT_DATABASE_URL" });
+  });
+
+  it("falls back to DATABASE_URL on a Preview without the override (or with a blank one)", () => {
+    expect(selectDatabaseUrl({ VERCEL_ENV: "preview", DATABASE_URL: PREVIEW })).toEqual({ url: PREVIEW, source: "DATABASE_URL" });
+    expect(selectDatabaseUrl({ VERCEL_ENV: "preview", DATABASE_URL: PREVIEW, CATALOG_UAT_DATABASE_URL: "  " })).toEqual({ url: PREVIEW, source: "DATABASE_URL" });
+  });
+
+  it("never selects the override in Production, development or anywhere outside a Vercel Preview", () => {
+    for (const VERCEL_ENV of ["production", "development", undefined, "Preview", "preview "]) {
+      expect(selectDatabaseUrl({ VERCEL_ENV, DATABASE_URL: PROD, CATALOG_UAT_DATABASE_URL: UAT }), String(VERCEL_ENV)).toEqual({ url: PROD, source: "DATABASE_URL" });
+    }
+  });
+
+  it("returns null when nothing is configured, even if only the override is set outside Preview", () => {
+    expect(selectDatabaseUrl({})).toBeNull();
+    expect(selectDatabaseUrl({ VERCEL_ENV: "production", CATALOG_UAT_DATABASE_URL: UAT })).toBeNull();
+  });
+
+  it("keeps the Production guard: an override pointing at Production is still refused on Preview", () => {
+    const env = { VERCEL_ENV: "preview", DATABASE_URL: PREVIEW, CATALOG_UAT_DATABASE_URL: PROD, ...guard };
+    const selected = selectDatabaseUrl(env)!;
+    expect(selected.source).toBe("CATALOG_UAT_DATABASE_URL");
+    expect(() => assertPreviewIsolation(selected.url, env)).toThrow(ProductionDatabaseInPreviewError);
+    // The UAT endpoint itself passes, and nothing loggable carries the credentials.
+    expect(assertPreviewIsolation(UAT, { ...env, CATALOG_UAT_DATABASE_URL: UAT })).toMatchObject({ endpointId: "ep-bitter-silence-b7b2e3ug" });
+    expect(JSON.stringify(assertPreviewIsolation(UAT, { ...env, CATALOG_UAT_DATABASE_URL: UAT }))).not.toContain("uat-secret");
   });
 });
