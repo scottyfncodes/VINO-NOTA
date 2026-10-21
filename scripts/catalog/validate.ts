@@ -79,7 +79,18 @@ async function main() {
     // Same normalised name under different ids: legitimate homonyms or source duplicates; lookups treat them as ambiguous.
     producerNameCollisions: Number((await one(sql`SELECT count(*)::int AS n FROM (SELECT normalized_name FROM catalog_producer WHERE source_id = ${sourceId} GROUP BY normalized_name HAVING count(*) > 1) d`)).n),
     regionNameCollisions: Number((await one(sql`SELECT count(*)::int AS n FROM (SELECT normalized_name FROM catalog_region WHERE source_id = ${sourceId} GROUP BY normalized_name HAVING count(*) > 1) d`)).n),
+    // Regions that are their own ancestor. The import breaks loops via the region decisions; any left is a structural problem.
+    regionParentLoops: Number(
+      (
+        await one(sql`WITH RECURSIVE walk(start_id, id, depth) AS (
+            SELECT id, parent_id, 1 FROM catalog_region WHERE source_id = ${sourceId} AND parent_id IS NOT NULL
+            UNION ALL SELECT w.start_id, r.parent_id, w.depth + 1 FROM walk w JOIN catalog_region r ON r.id = w.id
+              WHERE r.parent_id IS NOT NULL AND w.id <> w.start_id AND w.depth < 20)
+          SELECT count(DISTINCT start_id)::int AS n FROM walk WHERE id = start_id`)
+      ).n,
+    ),
   };
+  if (quality.regionParentLoops > 0) problems.push(`${quality.regionParentLoops} regions are their own ancestor (parent loop)`);
 
   const none = { value: null, confidence: 0 };
   const probes = [];

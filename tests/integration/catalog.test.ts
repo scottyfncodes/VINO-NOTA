@@ -5,6 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { closeDb, getDb } from "@/server/db";
 import { catalogAlias, catalogContribution, catalogProducer, catalogRegion, catalogSource, catalogWine } from "@/server/db/schema";
 import { importCatalogBatch } from "@/server/reference/import";
+import { applyRegionDecisions, REGION_DECISIONS } from "@/server/reference/region-decisions";
 import { CATALOG_SOURCES } from "@/server/reference/sources";
 import { clearCatalogLookupCache, lookupCatalog, LOOKUP_TIMEOUT_MS } from "@/server/reference/lookup";
 import { recognizeLabel, setRecognitionProviderForTesting, type LabelRecognitionProvider, type RecognitionCandidate } from "@/server/recognition";
@@ -323,5 +324,74 @@ describe("lookup never offers an appellation as the region", () => {
   it("keeps Margaux → Bordeaux / Médoc", async () => {
     expect(await place({ appellation: "Margaux", country: "France" })).toMatchObject({ name: "Margaux", kind: "appellation", region: "Bordeaux", subregion: "Médoc" });
     expect(await place({ appellation: "Margaux AOC" })).toMatchObject({ name: "Margaux", region: "Bordeaux", subregion: "Médoc" });
+  });
+});
+
+describe("reviewed region decisions (Fix 3) through the importer and lookup", () => {
+  // Real Wikidata ids and shapes from the snapshot, as fetched (every place a "region").
+  const asFetched = (): ImportBatch => {
+    const b = fixture();
+    const r = (externalId: string, name: string, parentExternalId: string | null = null, aliases: string[] = [], country: string | null = "PT") =>
+      ({ externalId, kind: "region" as const, name, country, parentExternalId, aliases });
+    b.regions.push(
+      r("Q140379672", "Região Demarcada do Douro (RDD)", "Q191034", ["Douro DOC", "RDD"]),
+      r("Q191034", "Port Wine", "Q140379672", ["Vinho do Porto"]),
+      r("Q1094448", "Douro (DOC)", "Q140379672", ["Douro vinhateiro", "Região Demarcada do Douro"]),
+      r("Q2832668", "Alentejo (DOC)"),
+      r("Q4944340", "Borba (DOC)", "Q2832668"),
+      r("Q1067753", "Vinho Verde (DOC)", null, ["vino verde"]),
+      r("Q374743", "Minho (VR)", "Q1067753"),
+      r("Q2509282", "Valle de la Orotava", null, ["Denominación de Origen Valle de La Orotava"], "ES"),
+      r("Q1290583", "Orotava Valley", null, ["Valle de la Orotava"], "ES"),
+      r("Q2879982", "Arrábida (IPR)", null, ["Bairrada (DOC)"]),
+    );
+    return b;
+  };
+  const ids = ["Q140379672", "Q191034", "Q1094448", "Q2832668", "Q4944340", "Q1067753", "Q374743", "Q2509282", "Q1290583", "Q2879982"];
+  const decisions = Object.fromEntries(ids.filter((id) => REGION_DECISIONS[id]).map((id) => [id, REGION_DECISIONS[id]]));
+  const row = async (externalId: string) => (await getDb().select().from(catalogRegion).where(eq(catalogRegion.externalId, externalId)))[0];
+  const place = async (input: { appellation?: string; region?: string }) =>
+    (await lookupCatalog({ producer: null, name: null, country: null, region: input.region ?? null, appellation: input.appellation ?? null })).evidence.place;
+
+  it("reclassifies in place: kinds and parents update, the decided alias goes, nothing is deleted, and re-applying changes nothing", async () => {
+    const asIs = await importCatalogBatch(wikidata, asFetched(), { dryRun: false, retrievedAt: at });
+    // Before: the Orotava DO and the valley tie, so lookup marks the place ambiguous.
+    clearCatalogLookupCache();
+    expect((await place({ appellation: "Valle de la Orotava" }))?.ambiguous).toBe(true);
+    const before = { regions: await count(catalogRegion), aliases: await count(catalogAlias) };
+
+    const applied = applyRegionDecisions(asFetched().regions, decisions);
+    expect(applied.excluded.map((e) => e.externalId)).toEqual(["Q2879982"]);
+    const r = await importCatalogBatch(wikidata, { ...asFetched(), regions: applied.regions }, { dryRun: false, retrievedAt: at });
+    // RDD (parent), Port, Douro, Alentejo, Borba, Vinho Verde, Minho (parent) and the Orotava DO change; the valley doesn't.
+    // Stale: the excluded record, plus any region an earlier test left that this batch doesn't carry.
+    expect(r.regions).toMatchObject({ inserted: 0, updated: 8, stale: asIs.regions.stale + 1 });
+    // Aliases follow the batch: the decided Douro alias goes, and so does the excluded record's "Bairrada (DOC)".
+    expect(r.aliases).toEqual({ added: 0, removed: 2 });
+    expect([await count(catalogRegion), await count(catalogAlias)]).toEqual([before.regions, before.aliases - 2]);
+    expect(await row("Q2879982")).toBeDefined(); // excluded: reported stale, not deleted
+    clearCatalogLookupCache();
+    expect((await place({ appellation: "Bairrada (DOC)" }))?.name).not.toBe("Arrábida (IPR)");
+
+    const again = await importCatalogBatch(wikidata, { ...asFetched(), regions: applyRegionDecisions(asFetched().regions, decisions).regions }, { dryRun: false, retrievedAt: at });
+    expect(again.regions).toMatchObject({ inserted: 0, updated: 0 });
+    expect(again.aliases).toEqual({ added: 0, removed: 0 });
+  });
+
+  it("stores the reviewed hierarchy: no loop, the VR no longer under the DOC, sub-region kept under its DOC", async () => {
+    const rdd = await row("Q140379672");
+    expect(rdd).toMatchObject({ kind: "region", parentId: null });
+    expect(await row("Q191034")).toMatchObject({ kind: "appellation", parentId: rdd.id });
+    expect(await row("Q374743")).toMatchObject({ kind: "region", parentId: null });
+    expect(await row("Q4944340")).toMatchObject({ kind: "appellation", parentId: (await row("Q2832668")).id });
+  });
+
+  it("gives the lookup outcomes the proposal promises", async () => {
+    clearCatalogLookupCache();
+    expect(await place({ appellation: "Valle de la Orotava" })).toMatchObject({ name: "Valle de la Orotava", kind: "appellation", ambiguous: false, region: null });
+    expect(await place({ appellation: "Douro (DOC)" })).toMatchObject({ kind: "appellation", region: "Região Demarcada do Douro (RDD)" });
+    expect(await place({ appellation: "Borba (DOC)" })).toMatchObject({ kind: "appellation", region: null, subregion: null });
+    expect(await place({ appellation: "Vinho Verde" })).toMatchObject({ name: "Vinho Verde (DOC)", region: null });
+    expect(await place({ region: "Minho (VR)" })).toMatchObject({ name: "Minho (VR)", region: "Minho (VR)" });
   });
 });

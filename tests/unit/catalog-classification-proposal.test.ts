@@ -96,22 +96,23 @@ describe("classification proposal: consistency", () => {
     for (const r of contradicted) expect(r.confidence, r.id).not.toBe("high");
   });
 
-  it("is not applied: nothing in the app or scripts reads it", () => {
-    expect(proposal.status).toMatch(/^proposal/);
+  it("is a record of the review: approved, and nothing in the app or scripts reads it", () => {
+    expect(proposal.status).toMatch(/^approved/);
     const files = (dir: string): string[] => readdirSync(dir).flatMap((f) => (statSync(join(dir, f)).isDirectory() ? files(join(dir, f)) : [join(dir, f)]));
-    for (const f of [...files("src"), ...files("scripts")]) expect(readFileSync(f, "utf8"), f).not.toContain("catalog-classification-proposal");
+    for (const f of [...files("src"), ...files("scripts")]) expect(readFileSync(f, "utf8"), f).not.toContain("catalog-classification-proposal.json");
   });
 });
 
-describe("Fix 3 rules (to implement once the proposal is approved)", () => {
-  it.todo("applies reviewed decisions only to the listed records, and fails on an id that isn't in the snapshot");
-  it.todo("re-imports a kind change as an update in place: aliases untouched, nothing deleted, re-applying changes nothing");
-  it.todo("removing a decision restores the Wikidata kind on the next import");
-  it.todo("breaks the RDD ↔ Port parent loop deterministically, and validation reports any remaining cycle");
-  it.todo("rejects an excluded record with a reason and never deletes an existing row");
-  it.todo("never changes a kind from a class alone when the class contradicts the name (wine, winery)");
-  it.todo("lookup: 'Valle de la Orotava' resolves to the DO without ambiguity");
-  it.todo("lookup: Douro (DOC) gives region 'Região Demarcada do Douro (RDD)'; Borba gives no region and keeps Alentejo (DOC) as parent");
-  it.todo("lookup: Minho (VR) is no longer offered as Vinho Verde's region");
-  it.todo("fails the proposal check when a new snapshot has candidates that aren't reviewed yet");
+describe("approval record", () => {
+  it("records a default for every question", () => {
+    const approved = (proposal as unknown as { approvedDefaults: Record<string, string> }).approvedDefaults;
+    expect(Object.keys(approved).sort()).toEqual(Object.keys(proposal.questions).sort());
+  });
+});
+
+// The Fix 3 rules are tested in tests/unit/region-decisions.test.ts (decisions match this proposal; applying
+// only listed records; unknown ids fail; exclusions; loop breaking; idempotency; no kind from a name or class)
+// and tests/integration/catalog.test.ts (in-place reclassification, re-apply changes nothing, lookup outcomes).
+describe("Fix 3 follow-ups", () => {
+  it.todo("flags candidates in a new snapshot that have no reviewed decision yet");
 });

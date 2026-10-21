@@ -176,7 +176,19 @@ so.
 
 No class is mapped to a kind yet. That is a separate, reviewed decision.
 
-The proposed classification of every candidate is in `docs/catalog-classification-proposal.md`, with its data in `catalog-classification-proposal.json`. It covers the 101 flagged records and the 67 unflagged records with other classes, and it is not applied yet.
+The classification of every candidate (the 101 flagged records and the 67 unflagged records with other classes) is in `docs/catalog-classification-proposal.md`. It was approved with the recommended defaults.
+
+**Reviewed region decisions** (`src/server/reference/region-decisions.ts`, Fix 3). Explicit data keyed by Wikidata id, generated from the approved proposal and checked against it by tests. Nothing is inferred from a name or a class at run time. `catalog:import` applies them to every Wikidata snapshot before importing:
+- **Kinds:** 113 appellations and 2 subregions.
+- **Parents:** 7 links cleared, including the RDD↔Port loop, Minho (VR) under Vinho Verde (DOC), and Tejo (VR) under Cartaxo (IPR). Any other parent loop is broken deterministically, at the loop's lowest id.
+- **Aliases:** 2 dropped ("Região Demarcada do Douro" from Douro (DOC), and "Trentino" from Alto Adige).
+- **Exclusions:** 2 records ("Arrábida (IPR)" Q2879982 and "New Zealand wine").
+  - An excluded record is left out of the batch. Its existing row is reported as stale, never deleted, and its aliases go with the alias sync.
+  - Parents that pointed at an excluded record are cleared.
+- **Unknown ids:** a decision naming an id that's missing from the snapshot stops the import, so a reviewed decision can't be skipped silently.
+- **Reporting:** the import report lists what the decisions changed, and `catalog:validate` fails if any region is its own ancestor.
+
+The decisions take effect only when a snapshot is imported. Re-importing applies them as updates in place.
 
 The first import's audit findings and plan are in `docs/catalog-import-plan.md`.
 
