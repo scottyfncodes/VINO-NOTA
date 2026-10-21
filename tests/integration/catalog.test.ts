@@ -268,7 +268,8 @@ describe("user contributions", () => {
     const rows = await getDb().select().from(catalogContribution).where(eq(catalogContribution.userId, u));
     expect(rows).toHaveLength(1);
     expect(Object.keys(rows[0].fields).sort()).toEqual(["appellation", "country", "name", "producer", "region", "wineType"]);
-    expect(JSON.stringify(rows[0])).not.toMatch(/2016|2018|8\.4/);
+    // Only the identity fields: ids and timestamps can contain these digits by chance.
+    expect(JSON.stringify({ fields: rows[0].fields, fieldOrigins: rows[0].fieldOrigins, identityKey: rows[0].identityKey })).not.toMatch(/2016|2018|8\.4/);
     const exported = await buildAccountExport(u);
     expect(exported.catalogContributions).toHaveLength(1);
     // Contributions never reach the reference catalog on their own.

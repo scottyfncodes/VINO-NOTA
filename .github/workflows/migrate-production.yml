@@ -1,0 +1,97 @@
+name: Production migration
+
+# Applies pending database migrations to Production. Production builds never
+# migrate (scripts/migrate.ts only checks there), so a deployment that needs a
+# migration fails to build until this workflow has applied it; then redeploy.
+#
+# Gates, in order:
+#   1. Runs only on main, and only for a commit whose CI run passed.
+#   2. The "production" GitHub environment: required reviewer approval, and the
+#      only place PRODUCTION_DATABASE_URL lives.
+#   3. The target must be Production's endpoint, and "apply" needs that
+#      endpoint typed into confirm_endpoint.
+# "check" is read-only and is the default.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check = report pending migrations (read-only); apply = run them"
+        type: choice
+        options: [check, apply]
+        default: check
+      confirm_endpoint:
+        description: "For apply only: type the Production endpoint id"
+        required: false
+        default: ""
+
+concurrency:
+  group: production-migration
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  ci-passed:
+    name: CI passed on this commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require main and a successful CI run for this exact commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          [ "$REF" = "refs/heads/main" ] || { echo "::error::Production migrations run from main only (got $REF)."; exit 1; }
+          n=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$SHA&branch=main&status=success" --jq '.total_count')
+          [ "$n" -gt 0 ] || { echo "::error::CI has not passed on $SHA. Production migrations wait for green CI."; exit 1; }
+          echo "CI passed on $SHA."
+
+  migrate:
+    name: ${{ inputs.mode }} Production migrations
+    needs: ci-passed
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+      EXPECTED_ENDPOINT: ${{ vars.PRODUCTION_DB_ENDPOINT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check configuration
+        run: |
+          [ -n "$DATABASE_URL" ] || { echo "::error::PRODUCTION_DATABASE_URL is not set in the production environment."; exit 1; }
+          [ "$EXPECTED_ENDPOINT" = "ep-winter-glade-b7ewqow0" ] || { echo "::error::PRODUCTION_DB_ENDPOINT_ID must be ep-winter-glade-b7ewqow0."; exit 1; }
+          host=$(node -e 'console.log(new URL(process.env.DATABASE_URL).hostname)')
+          case "$host" in "$EXPECTED_ENDPOINT".*|"$EXPECTED_ENDPOINT"-*) ;; *) echo "::error::PRODUCTION_DATABASE_URL does not point at $EXPECTED_ENDPOINT."; exit 1 ;; esac
+      - name: Pending migrations (read-only)
+        id: check
+        run: |
+          set +e
+          npx tsx scripts/migrate.ts --check
+          code=$?
+          set -e
+          case "$code" in
+            0) echo "pending=false" >> "$GITHUB_OUTPUT" ;;
+            2) echo "pending=true" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$code" ;;
+          esac
+      - name: Apply
+        if: inputs.mode == 'apply' && steps.check.outputs.pending == 'true'
+        env:
+          MIGRATION_CONFIRM_ENDPOINT: ${{ inputs.confirm_endpoint }}
+        run: |
+          [ "$MIGRATION_CONFIRM_ENDPOINT" = "$EXPECTED_ENDPOINT" ] || { echo "::error::confirm_endpoint must be $EXPECTED_ENDPOINT to apply."; exit 1; }
+          npx tsx scripts/migrate.ts --allow-production
+      - name: Verify nothing is pending
+        if: inputs.mode == 'apply'
+        run: npx tsx scripts/migrate.ts --check
+      - name: Next step
+        if: inputs.mode == 'apply' && steps.check.outputs.pending == 'true'
+        run: echo "::notice::Migrations applied. Redeploy the latest Production deployment in Vercel so its build check passes."
