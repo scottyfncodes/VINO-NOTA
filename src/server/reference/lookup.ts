@@ -8,6 +8,7 @@ import { getDb } from "@/server/db";
 import { normalizeProducer, normalizeText } from "@/lib/domain/normalize";
 import { countryCodeFromName } from "@/lib/domain/countries";
 import { FILL_SCORE, SUGGEST_SCORE, type CatalogEvidence, type RegionKind } from "@/lib/domain/catalog";
+import { placeHierarchy } from "@/lib/domain/place";
 
 export type LookupInput = { producer: string | null; name: string | null; country: string | null; region: string | null; appellation: string | null };
 export type CatalogMatchSummary = { kind: "producer" | "place" | "wine"; name: string; score: number; source: string };
@@ -33,11 +34,13 @@ export async function lookupCatalog(input: LookupInput): Promise<LookupResult> {
   const producerKey = normalizeProducer(input.producer);
   const nameKey = normalizeText(input.name);
   const placeKey = normalizeText(input.appellation) || normalizeText(input.region);
+  const placeMatchedFrom = normalizeText(input.appellation) ? "appellation" : "region";
   const country = input.country ? countryCodeFromName(input.country) : null;
   const empty: LookupResult = { evidence: {}, matches: [] };
   if (!producerKey && !placeKey) return empty;
 
-  const cacheKey = [producerKey, nameKey, placeKey, country ?? ""].join("|");
+  // The place's region also depends on where the place text came from and on the label's region text.
+  const cacheKey = [producerKey, nameKey, placeKey, placeMatchedFrom, normalizeText(input.region), country ?? ""].join("|");
   const hit = cache.get(cacheKey);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.result;
 
@@ -114,13 +117,17 @@ export async function lookupCatalog(input: LookupInput): Promise<LookupResult> {
                   UNION ALL SELECT r.id, r.parent_id, r.kind, r.name, up.depth + 1 FROM catalog_region r JOIN up ON r.id = up.parent_id WHERE up.depth < 4)
                 SELECT kind, name, depth FROM up WHERE depth > 0 ORDER BY depth`,
           );
-          const ancestor = (kind: RegionKind) => (chain.find((c) => c.kind === kind)?.name as string | undefined) ?? null;
+          const { region, subregion } = placeHierarchy(
+            { kind: best.kind as RegionKind, name: String(best.name) },
+            chain.map((c) => ({ kind: c.kind as RegionKind, name: String(c.name) })),
+            { matchedFrom: placeMatchedFrom, region: input.region },
+          );
           evidence.place = {
             kind: best.kind as RegionKind,
             name: String(best.name),
             country: (best.country as string) ?? null,
-            region: best.kind === "region" ? String(best.name) : ancestor("region"),
-            subregion: best.kind === "subregion" ? String(best.name) : ancestor("subregion"),
+            region,
+            subregion,
             score: Number(best.score),
             confidence: Number(best.confidence),
             source: String(best.source_id),

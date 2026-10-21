@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import os from "node:os";
 import { APPELLATION_AUDIT_DISCLAIMER, APPELLATION_RULES, auditAppellations, baseName, matchDesignations, type AuditRecord } from "@/lib/domain/appellation-audit";
-import { auditMarkdown, regionsFromSnapshot } from "../../scripts/catalog/audit-appellations";
+import { auditMarkdown, auditSnapshot, regionsFromSnapshot } from "../../scripts/catalog/audit-appellations";
 
 const rulesFor = (text: string) => matchDesignations(text).map((m) => m.rule);
 const rec = (externalId: string, name: string, aliases: string[] = []): AuditRecord => ({ externalId, name, aliases });
@@ -216,9 +216,10 @@ describe("snapshot audit script", () => {
     const raw = JSON.stringify(regions);
     writeFileSync(join(dir, "regions.json"), raw);
     const records = regionsFromSnapshot(dir);
+    // This snapshot predates class evidence, so classes are null (not an empty list).
     expect(records).toEqual([
-      { externalId: "Q10", name: "Margaux AOC", aliases: [] },
-      { externalId: "Q11", name: "Rioja", aliases: ["Rioja DOCa", "La Rioja"] },
+      { externalId: "Q10", name: "Margaux AOC", aliases: [], classes: null },
+      { externalId: "Q11", name: "Rioja", aliases: ["Rioja DOCa", "La Rioja"], classes: null },
     ]);
     expect(auditAppellations(records)).toMatchObject({ examined: 2, flagged: 2 });
     expect(readFileSync(join(dir, "regions.json"), "utf8")).toBe(raw);
@@ -240,5 +241,87 @@ describe("snapshot audit script", () => {
     // Still manual-only and Preview import still opt-in.
     expect(wf).not.toMatch(/^\s+(push|schedule|pull_request):/m);
     expect(wf).toMatch(/import_to_preview:\n(?:.*\n){2}\s+default: false/);
+  });
+});
+
+describe("Wikidata class evidence in the audit", () => {
+  const BASE = "Q2140699";
+  const wineRegion = { id: BASE, label: "wine-producing region" };
+  const aoc = { id: "Q1234", label: "appellation d'origine contrôlée" };
+  const docg = { id: "Q5678", label: "DOCG" };
+  const withClasses = (r: AuditRecord, classes: AuditRecord["classes"]): AuditRecord => ({ ...r, classes });
+  const records = [
+    withClasses(rec("Q532734", "Margaux AOC"), [wineRegion, aoc]),
+    withClasses(rec("Q1019358", "Béarn AOC"), [wineRegion]),
+    withClasses(rec("Q1", "Barolo"), [wineRegion, docg]), // not flagged by name, but has another class
+    withClasses(rec("Q2", "Mosel"), [wineRegion]),
+    withClasses(rec("Q3", "Fitou AOC"), []), // the record came back without classes
+  ];
+  const audit = auditAppellations(records, undefined, { baseClassId: BASE });
+  const flagged = (id: string) => audit.flaggedRecords.find((f) => f.externalId === id)!;
+
+  it("keeps each flagged record's classes and says what they need, without mapping any class to a kind", () => {
+    expect(flagged("Q532734")).toMatchObject({ classes: [wineRegion, aoc], review: { classReview: "other-classes" } });
+    expect(flagged("Q1019358")).toMatchObject({ classes: [wineRegion], review: { classReview: "base-class-only" } });
+    expect(flagged("Q3")).toMatchObject({ classes: [], review: { classReview: "no-class-data" } });
+    expect(JSON.stringify(audit)).not.toMatch(/"kind"/);
+  });
+
+  it("summarises every class and lists unflagged records with other classes for review", () => {
+    expect(audit.classEvidence).toEqual({
+      available: true,
+      baseClassId: BASE,
+      recordsWithOtherClasses: 2,
+      byClass: [
+        { ...wineRegion, records: 4, flagged: 2 },
+        { ...aoc, records: 1, flagged: 1 },
+        { ...docg, records: 1, flagged: 0 },
+      ],
+      unflaggedWithOtherClasses: [{ externalId: "Q1", name: "Barolo", classes: [wineRegion, docg] }],
+    });
+  });
+
+  it("is deterministic regardless of record order", () => {
+    expect(auditAppellations([...records].reverse(), undefined, { baseClassId: BASE })).toEqual(audit);
+  });
+
+  it("reports when the snapshot carries no class evidence", () => {
+    const old = auditAppellations([rec("Q532734", "Margaux AOC"), rec("Q2", "Mosel")], undefined, { baseClassId: BASE });
+    expect(old.classEvidence).toMatchObject({ available: false, recordsWithOtherClasses: 0, byClass: [], unflaggedWithOtherClasses: [] });
+    expect(old.flaggedRecords[0]).toMatchObject({ classes: null, review: { classReview: "no-class-data" } });
+    const md = auditMarkdown(old);
+    expect(md).toContain("| Q532734 | Margaux AOC | AOC (name: “Margaux AOC”) | (no class data) |");
+    expect(md).toContain("Not in this snapshot (fetched before class evidence was recorded)");
+  });
+
+  it("shows the classes next to the heuristic in the markdown, marking records to review", () => {
+    const md = auditMarkdown(audit);
+    expect(md).toContain("| Wikidata ID | Name | Matched rules (field: text) | Wikidata classes (P31) | Review |");
+    expect(md).toContain("| Q532734 | Margaux AOC | AOC (name: “Margaux AOC”) | REVIEW: Q2140699 wine-producing region, Q1234 appellation d'origine contrôlée |");
+    expect(md).toContain("| Q1019358 | Béarn AOC | AOC (name: “Béarn AOC”) | Q2140699 wine-producing region |");
+    expect(md).toContain("2 of 5 regions have classes beyond Q2140699; 1 of them were not flagged by name.");
+    expect(md).toContain("| Q5678 | DOCG | 1 | 0 |");
+    expect(md).toContain("| Q1 | Barolo | Q2140699 wine-producing region, Q5678 DOCG |");
+    expect(md).toContain("no class is mapped to a kind");
+  });
+
+  it("reads classes from a new snapshot through the same parser, treating the fetched class as the base", () => {
+    const dir = mkdtempSync(join(os.tmpdir(), "audit-classes-"));
+    const lit = (value: string) => ({ type: "literal", value });
+    const wd = (id: string) => ({ type: "uri", value: `http://www.wikidata.org/entity/${id}` });
+    const regions = {
+      head: { vars: ["item", "itemLabel", "alts", "classes"] },
+      results: {
+        bindings: [
+          { item: wd("Q532734"), itemLabel: lit("Margaux AOC"), classes: lit("Q2140699=wine-producing region|Q1234=appellation d'origine contrôlée") },
+          { item: wd("Q2"), itemLabel: lit("Mosel"), classes: lit("Q2140699=wine-producing region") },
+        ],
+      },
+    };
+    writeFileSync(join(dir, "regions.json"), JSON.stringify(regions));
+    expect(regionsFromSnapshot(dir)[0].classes).toEqual([aoc, wineRegion]); // sorted by numeric id
+    const a = auditSnapshot(dir);
+    expect(a.classEvidence).toMatchObject({ available: true, baseClassId: BASE, recordsWithOtherClasses: 1 });
+    expect(a.flaggedRecords[0].review.classReview).toBe("other-classes");
   });
 });

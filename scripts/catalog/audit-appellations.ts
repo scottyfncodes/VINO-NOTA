@@ -13,16 +13,39 @@
 import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { wikidataToBatch, type SparqlResult } from "../../src/server/reference/wikidata";
-import { auditAppellations, type AppellationAudit, type FlaggedRecord } from "../../src/lib/domain/appellation-audit";
+import { regionClasses, WIKIDATA_CLASSES, wikidataToBatch, type SparqlResult } from "../../src/server/reference/wikidata";
+import { auditAppellations, type AppellationAudit, type AuditClass, type FlaggedRecord } from "../../src/lib/domain/appellation-audit";
 import { arg } from "./target";
 
 const empty: SparqlResult = { head: { vars: [] }, results: { bindings: [] } };
 
-/** The region records exactly as an import of this snapshot would receive them. */
+/**
+ * The region records exactly as an import of this snapshot would receive them,
+ * plus each record's Wikidata classes as review evidence (null for a snapshot
+ * fetched before classes were recorded).
+ */
 export function regionsFromSnapshot(dir: string) {
   const regions = JSON.parse(readFileSync(join(dir, "regions.json"), "utf8")) as SparqlResult;
-  return wikidataToBatch({ regions, producers: empty, grapes: empty, wines: empty }).regions.map((r) => ({ externalId: r.externalId, name: r.name, aliases: r.aliases }));
+  const classes = regionClasses(regions);
+  return wikidataToBatch({ regions, producers: empty, grapes: empty, wines: empty }).regions.map((r) => ({
+    externalId: r.externalId,
+    name: r.name,
+    aliases: r.aliases,
+    classes: classes ? (classes.get(r.externalId) ?? []) : null,
+  }));
+}
+
+/** Audits a snapshot directory; the class the regions were fetched by is not counted as an "other" class. */
+export function auditSnapshot(dir: string) {
+  return auditAppellations(regionsFromSnapshot(dir), undefined, { baseClassId: WIKIDATA_CLASSES.wineRegion.id });
+}
+
+const cell = (s: string) => s.replace(/\|/g, "\\|");
+const classText = (classes: AuditClass[]) => classes.map((c) => (c.label ? `${c.id} ${c.label}` : c.id)).join(", ");
+
+function classCell(f: FlaggedRecord) {
+  if (f.review.classReview === "no-class-data") return "(no class data)";
+  return `${f.review.classReview === "other-classes" ? "REVIEW: " : ""}${classText(f.classes ?? [])}`;
 }
 
 function reviewCell(f: FlaggedRecord) {
@@ -33,8 +56,26 @@ function reviewCell(f: FlaggedRecord) {
   return notes.join("; ");
 }
 
+/** Class evidence for review. No class is mapped to a kind here; that is a separate, approved change. */
+function classEvidenceMarkdown(a: AppellationAudit, limit: number) {
+  const e = a.classEvidence;
+  if (!e.available) return [`### Wikidata class evidence`, ``, `Not in this snapshot (fetched before class evidence was recorded). Re-fetch to review classes.`];
+  return [
+    `### Wikidata class evidence (for review; no class is mapped to a kind)`,
+    ``,
+    `${e.recordsWithOtherClasses} of ${a.examined} regions have classes beyond ${e.baseClassId ?? "the fetched class"}; ${e.unflaggedWithOtherClasses.length} of them were not flagged by name.`,
+    ``,
+    `| Class | Label | Regions | Flagged |`,
+    `|---|---|---|---|`,
+    ...e.byClass.slice(0, limit).map((c) => `| ${c.id} | ${cell(c.label ?? "(no English label)")} | ${c.records} | ${c.flagged} |`),
+    ``,
+    `| Wikidata ID | Name (not flagged by name) | Wikidata classes (P31) |`,
+    `|---|---|---|`,
+    ...(e.unflaggedWithOtherClasses.length ? e.unflaggedWithOtherClasses.slice(0, limit).map((r) => `| ${r.externalId} | ${cell(r.name)} | ${cell(classText(r.classes))} |`) : [`| (none) | | |`]),
+  ];
+}
+
 export function auditMarkdown(a: AppellationAudit, flaggedListLimit = 500) {
-  const cell = (s: string) => s.replace(/\|/g, "\\|");
   const rules = Object.entries(a.byRule).filter(([, n]) => n > 0).sort((x, y) => y[1] - x[1]);
   const lines = [
     `## Appellation audit of wine-producing regions (report only)`,
@@ -49,11 +90,12 @@ export function auditMarkdown(a: AppellationAudit, flaggedListLimit = 500) {
     ``,
     `Review hints (pointers, not decisions): ${a.review.possibleDuplicates} possible duplicate concepts, ${a.review.aliasConflicts} possible alias mix-ups, ${a.review.namespacePages} Wikimedia namespace pages (rejected by validation).`,
     ``,
-    `| Wikidata ID | Name | Matched rules (field: text) | Review |`,
-    `|---|---|---|---|`,
-    ...a.flaggedRecords.slice(0, flaggedListLimit).map((f) => `| ${f.externalId} | ${cell(f.name)} | ${cell(f.matches.map((m) => `${m.rule} (${m.field}: “${m.text}”)`).join("; "))} | ${cell(reviewCell(f))} |`),
+    `| Wikidata ID | Name | Matched rules (field: text) | Wikidata classes (P31) | Review |`,
+    `|---|---|---|---|---|`,
+    ...a.flaggedRecords.slice(0, flaggedListLimit).map((f) => `| ${f.externalId} | ${cell(f.name)} | ${cell(f.matches.map((m) => `${m.rule} (${m.field}: “${m.text}”)`).join("; "))} | ${cell(classCell(f))} | ${cell(reviewCell(f))} |`),
   ];
   if (a.flaggedRecords.length > flaggedListLimit) lines.push(``, `…${a.flaggedRecords.length - flaggedListLimit} more in the JSON report.`);
+  lines.push(``, ...classEvidenceMarkdown(a, flaggedListLimit));
   return lines.join("\n");
 }
 
@@ -61,7 +103,7 @@ function main() {
   const argv = process.argv.slice(2);
   const dir = arg(argv, "--dir");
   if (!dir) throw new Error("Usage: --dir <snapshot dir> [--report <file>]");
-  const audit = auditAppellations(regionsFromSnapshot(dir));
+  const audit = auditSnapshot(dir);
   const report = arg(argv, "--report");
   if (report) writeFileSync(report, JSON.stringify(audit, null, 2));
   const md = auditMarkdown(audit);

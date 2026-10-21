@@ -48,6 +48,16 @@ confirms.
 - **Place:** the appellation (or else the region) the label named. Matches are
   narrowed to the label's country. A place found in several countries is marked
   ambiguous and fills nothing.
+- **Region and subregion from a place** (`src/lib/domain/place.ts`):
+  - A place matched from the label's appellation text is the appellation the
+    label named. It supplies its own name as the region only when the label's
+    region text names it too; otherwise only an ancestor can.
+  - A name carrying a wine designation ("Margaux AOC", "Douro (DOC)", using
+    the appellation audit's rules) is never offered as a region or subregion,
+    whatever kind the catalog gives it.
+  - Ancestors that fail either rule are skipped, so a missing value stays
+    missing rather than becoming a wrong one. Real appellations still get
+    their hierarchy: Margaux → region Bordeaux, subregion Médoc.
 - **Wine:** matched only among the wines of an exactly matched producer, never
   by name alone.
 
@@ -149,6 +159,22 @@ to check, never decisions:
   be an alias mix-up.
 - `namespacePage`: a Wikimedia category or template item. Validation rejects
   these, because they are never places.
+- `classReview`: what the record's Wikidata classes say. The values are
+  `other-classes` (classes beyond the one it was fetched by, to review),
+  `base-class-only`, or `no-class-data`.
+
+**Class evidence.** The regions query also records every Wikidata class
+(P31) of each region, with its English label. `regionClasses` in
+`src/server/reference/wikidata.ts` reads them separately from the import, so
+they never change what is imported.
+
+The audit lists each flagged record's classes next to its heuristic match. It
+also adds a summary of every class, and a list of records the name heuristic
+missed that still have other classes (e.g. a DOCG named just "Barolo").
+Snapshots fetched before this change have no class data, and the report says
+so.
+
+No class is mapped to a kind yet. That is a separate, reviewed decision.
 
 The first import's audit findings and plan are in `docs/catalog-import-plan.md`.
 
