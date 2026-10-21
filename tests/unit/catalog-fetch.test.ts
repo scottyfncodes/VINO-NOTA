@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import os from "node:os";
 import { fetchSnapshot, PROPERTIES, queries, sparql, verifyIds } from "../../scripts/catalog/fetch-wikidata";
-import { EXCLUDED_WIKIDATA_CLASSES, WIKIDATA_CLASSES, wikidataToBatch } from "@/server/reference/wikidata";
+import { EXCLUDED_WIKIDATA_CLASSES, regionClasses, WIKIDATA_CLASSES, wikidataToBatch, type SparqlResult } from "@/server/reference/wikidata";
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers });
 const empty = { results: { bindings: [] } };
@@ -134,5 +134,59 @@ describe("configured Wikidata classes", () => {
     // A missing label (id deleted or merged on Wikidata) also stops the fetch.
     const missing = deps([json({ results: { bindings: [] } })]);
     await expect(verifyIds(missing.deps)).rejects.toThrow("don't match their expected labels");
+  });
+});
+
+describe("region class evidence", () => {
+  const uri = (id: string) => ({ type: "uri", value: `http://www.wikidata.org/entity/${id}` });
+  const lit = (value: string) => ({ type: "literal", value });
+  const files = (regions: SparqlResult) => ({ regions, producers: { head: { vars: [] }, results: { bindings: [] } }, grapes: { head: { vars: [] }, results: { bindings: [] } }, wines: { head: { vars: [] }, results: { bindings: [] } } });
+  const base = [
+    { item: uri("Q532734"), itemLabel: lit("Margaux AOC"), iso: lit("FR"), alts: lit("Margaux") },
+    { item: uri("Q1569384"), itemLabel: lit("Rioja"), iso: lit("ES") },
+    { item: uri("Q9"), itemLabel: lit("Q9") }, // unlabelled: skipped by the import
+  ];
+  const withClasses: SparqlResult = {
+    head: { vars: ["item", "itemLabel", "iso", "parent", "alts", "classes"] },
+    results: {
+      bindings: [
+        { ...base[0], classes: lit("Q2140699=wine-producing region|Q1234=appellation d'origine contrôlée|Q77=") },
+        { ...base[1], classes: lit("Q2140699=wine-producing region") },
+        { ...base[2], classes: lit("Q2140699=wine-producing region") },
+      ],
+    },
+  };
+
+  it("asks Wikidata for every P31 class with its English label, and verifies P31 before fetching", () => {
+    const q = queries(100).regions;
+    expect(q).toContain('(GROUP_CONCAT(DISTINCT ?classEntry; separator="|") AS ?classes)');
+    expect(q).toContain("?item wdt:P31 ?cls .");
+    expect(q).toContain('OPTIONAL { ?cls rdfs:label ?clsLabel FILTER(LANG(?clsLabel) = "en") }');
+    expect(PROPERTIES.P31).toBe("instance of");
+  });
+
+  it("parses each region's classes, sorted by id, with null for a missing label", () => {
+    const classes = regionClasses(withClasses)!;
+    expect(classes.get("Q532734")).toEqual([
+      { id: "Q77", label: null },
+      { id: "Q1234", label: "appellation d'origine contrôlée" },
+      { id: "Q2140699", label: "wine-producing region" },
+    ]);
+    expect(classes.get("Q1569384")).toEqual([{ id: "Q2140699", label: "wine-producing region" }]);
+  });
+
+  it("skips malformed and repeated entries, and keeps labels containing '='", () => {
+    const r: SparqlResult = { head: { vars: ["item", "classes"] }, results: { bindings: [{ item: uri("Q1"), classes: lit("garbage|Q5=a=b|Q5=dup||P31=property|Q2140699=wine-producing region") }] } };
+    expect(regionClasses(r)!.get("Q1")).toEqual([{ id: "Q5", label: "a=b" }, { id: "Q2140699", label: "wine-producing region" }]);
+  });
+
+  it("returns null for a snapshot fetched before classes were recorded", () => {
+    expect(regionClasses({ head: { vars: ["item", "itemLabel"] }, results: { bindings: base } })).toBeNull();
+  });
+
+  it("never changes what the import receives", () => {
+    const without: SparqlResult = { head: { vars: ["item", "itemLabel", "iso", "parent", "alts"] }, results: { bindings: base } };
+    expect(wikidataToBatch(files(withClasses))).toEqual(wikidataToBatch(files(without)));
+    expect(JSON.stringify(wikidataToBatch(files(withClasses)))).not.toContain("classes");
   });
 });

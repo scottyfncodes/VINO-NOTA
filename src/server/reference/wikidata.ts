@@ -33,6 +33,9 @@ export const EXCLUDED_WIKIDATA_CLASSES = ["appellation"] as const;
 type Binding = Record<string, { type: string; value: string } | undefined>;
 export type SparqlResult = { head: { vars: string[] }; results: { bindings: Binding[] } };
 
+/** One Wikidata class (P31) an item is an instance of. `label` is null when the class has no English label. */
+export type WikidataClass = { id: string; label: string | null };
+
 const qid = (uri: string | undefined) => (uri ? (uri.match(/\/entity\/(Q\d+)$/)?.[1] ?? null) : null);
 const text = (b: Binding, key: string) => b[key]?.value?.trim() || null;
 const aliases = (b: Binding) => (text(b, "alts") ?? "").split("|").map((a) => a.trim()).filter(Boolean);
@@ -41,6 +44,30 @@ const labelOf = (b: Binding, id: string) => {
   const l = text(b, "itemLabel");
   return l && l !== id ? l : null;
 };
+
+/**
+ * Every region's P31 classes, as review evidence for the appellation audit.
+ * Separate from wikidataToBatch on purpose: classes never reach the import.
+ * Returns null for a snapshot fetched before classes were recorded (its
+ * regions query has no ?classes column). Classes are sorted by numeric id so
+ * the output is deterministic; malformed entries are skipped.
+ */
+export function regionClasses(regions: SparqlResult): Map<string, WikidataClass[]> | null {
+  if (!regions.head.vars.includes("classes")) return null;
+  const out = new Map<string, WikidataClass[]>();
+  for (const b of regions.results.bindings) {
+    const id = qid(b.item?.value);
+    if (!id) continue;
+    const seen = new Map<string, WikidataClass>();
+    for (const entry of (b.classes?.value ?? "").split("|")) {
+      const m = entry.match(/^(Q\d+)=([^]*)$/);
+      if (!m || seen.has(m[1])) continue;
+      seen.set(m[1], { id: m[1], label: m[2].trim() || null });
+    }
+    out.set(id, [...seen.values()].sort((x, y) => Number(x.id.slice(1)) - Number(y.id.slice(1))));
+  }
+  return out;
+}
 
 export type WikidataFiles = { regions: SparqlResult; producers: SparqlResult; grapes: SparqlResult; wines: SparqlResult };
 

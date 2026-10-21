@@ -27,6 +27,7 @@ const MAX_WAIT_MS = 120_000;
 const LANGS = `"en","fr","it","de","es","pt"`;
 
 export const PROPERTIES = {
+  P31: "instance of",
   P17: "country",
   P297: "ISO 3166-1 alpha-2 code",
   P361: "part of",
@@ -44,11 +45,17 @@ export function queries(limit: number) {
   return {
     // Direct instances only: subclasses of wine-producing region include appellation
     // systems (e.g. American Viticultural Area), and appellations are excluded for now.
-    regions: `SELECT ?item (SAMPLE(?label) AS ?itemLabel) (SAMPLE(?isoCode) AS ?iso) (SAMPLE(?p) AS ?parent) (GROUP_CONCAT(DISTINCT ?alt; separator="|") AS ?alts) WHERE {
+    // ?classes keeps every P31 class ("Q123=label") as review evidence; the import ignores it.
+    regions: `SELECT ?item (SAMPLE(?label) AS ?itemLabel) (SAMPLE(?isoCode) AS ?iso) (SAMPLE(?p) AS ?parent) (GROUP_CONCAT(DISTINCT ?alt; separator="|") AS ?alts) (GROUP_CONCAT(DISTINCT ?classEntry; separator="|") AS ?classes) WHERE {
   ?item wdt:P31 wd:${C.wineRegion.id} .
   ${enLabel}
   OPTIONAL { ?item wdt:P17 ?c . ?c wdt:P297 ?isoCode }
   OPTIONAL { ?item wdt:P361 ?p }
+  OPTIONAL {
+    ?item wdt:P31 ?cls .
+    OPTIONAL { ?cls rdfs:label ?clsLabel FILTER(LANG(?clsLabel) = "en") }
+    BIND(CONCAT(STRAFTER(STR(?cls), "/entity/"), "=", COALESCE(?clsLabel, "")) AS ?classEntry)
+  }
   ${altLabels}
 } GROUP BY ?item LIMIT ${limit}`,
     producers: `SELECT ?item (SAMPLE(?label) AS ?itemLabel) (SAMPLE(?isoCode) AS ?iso) (SAMPLE(?r) AS ?region) (GROUP_CONCAT(DISTINCT ?alt; separator="|") AS ?alts) WHERE {

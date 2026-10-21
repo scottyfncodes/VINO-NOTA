@@ -285,3 +285,43 @@ describe("access control", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("lookup never offers an appellation as the region", () => {
+  // Shapes from the real Wikidata snapshot: appellations stored as plain regions.
+  const withMisclassified = (): ImportBatch => {
+    const b = fixture();
+    b.regions.push(
+      { externalId: "Q-cadillac", kind: "region", name: "Cadillac AOC", country: "FR", parentExternalId: null, aliases: [] },
+      { externalId: "Q-barolo", kind: "region", name: "Barolo", country: "IT", parentExternalId: null, aliases: [] },
+      { externalId: "Q-rioja", kind: "region", name: "Rioja", country: "ES", parentExternalId: null, aliases: ["Rioja DOCa"] },
+    );
+    return b;
+  };
+  const place = async (input: { appellation?: string; region?: string; country?: string }) =>
+    (await lookupCatalog({ producer: null, name: null, country: input.country ?? null, region: input.region ?? null, appellation: input.appellation ?? null })).evidence.place;
+
+  beforeAll(async () => {
+    await importCatalogBatch(wikidata, withMisclassified(), { dryRun: false, retrievedAt: at });
+    clearCatalogLookupCache();
+  });
+
+  it("matches a designation-bearing region from the label's appellation, but offers no region from it", async () => {
+    expect(await place({ appellation: "Cadillac" })).toMatchObject({ name: "Cadillac AOC", kind: "region", region: null, subregion: null });
+    expect(await place({ region: "Cadillac AOC" })).toMatchObject({ name: "Cadillac AOC", region: null });
+  });
+
+  it("does not turn an appellation the label named into its region", async () => {
+    expect(await place({ appellation: "Barolo", country: "Italy" })).toMatchObject({ name: "Barolo", region: null });
+  });
+
+  it("keeps a region the label's region names", async () => {
+    expect(await place({ region: "Rioja" })).toMatchObject({ name: "Rioja", region: "Rioja" });
+    expect(await place({ appellation: "Rioja DOCa", region: "Rioja" })).toMatchObject({ name: "Rioja", region: "Rioja" });
+    expect(await place({ appellation: "Rioja DOCa" })).toMatchObject({ name: "Rioja", region: null });
+  });
+
+  it("keeps Margaux → Bordeaux / Médoc", async () => {
+    expect(await place({ appellation: "Margaux", country: "France" })).toMatchObject({ name: "Margaux", kind: "appellation", region: "Bordeaux", subregion: "Médoc" });
+    expect(await place({ appellation: "Margaux AOC" })).toMatchObject({ name: "Margaux", region: "Bordeaux", subregion: "Médoc" });
+  });
+});

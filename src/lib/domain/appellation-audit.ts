@@ -6,6 +6,11 @@
  * A match says only that the name contains a designation term. It does NOT
  * establish the item's actual classification, and every flagged record needs
  * manual review. Nothing here filters, reclassifies or changes catalog data.
+ *
+ * When the snapshot carries each record's Wikidata classes (P31), the audit
+ * lists them as evidence next to the heuristic and points out records with
+ * classes beyond the one they were fetched by, flagged or not. It never maps
+ * a class to a kind: that is a separate, reviewed decision.
  */
 import { isWikimediaNamespaceName } from "./catalog";
 import { normalizeText } from "./normalize";
@@ -74,7 +79,10 @@ function compile(rule: AuditRule): CompiledRule {
   return { rule, test: (_text, normalized) => phrases.find((p) => ` ${normalized} `.includes(` ${p} `)) ?? null };
 }
 
-export type AuditRecord = { externalId: string; name: string; aliases: string[] };
+/** A Wikidata class (P31) a record is an instance of; label is null when the class has no English label. */
+export type AuditClass = { id: string; label: string | null };
+/** `classes` is null (or absent) when the snapshot predates class evidence. */
+export type AuditRecord = { externalId: string; name: string; aliases: string[]; classes?: AuditClass[] | null };
 export type AuditMatch = { rule: string; field: "name" | "alias"; text: string; matched: string };
 /**
  * Pointers for the human reviewer, never decisions. `group` says where the
@@ -84,8 +92,25 @@ export type AuditMatch = { rule: string; field: "name" | "alias"; text: string; 
  * record's aliases (a possible alias mix-up). `namespacePage` marks a
  * Wikimedia category or template item, which validation rejects.
  */
-export type ReviewHints = { group: "designation-in-name" | "alias-only"; baseName: string; sameBaseAs: string[]; aliasNamesOf: string[]; namespacePage: boolean };
-export type FlaggedRecord = { externalId: string; name: string; matches: AuditMatch[]; review: ReviewHints };
+export type ReviewHints = { group: "designation-in-name" | "alias-only"; baseName: string; sameBaseAs: string[]; aliasNamesOf: string[]; namespacePage: boolean; classReview: ClassReview };
+/**
+ * What the class evidence says, for review only: `no-class-data` (snapshot
+ * predates it, or the record has none), `base-class-only` (just the class it
+ * was fetched by) or `other-classes` (more classes to review).
+ */
+export type ClassReview = "no-class-data" | "base-class-only" | "other-classes";
+export type FlaggedRecord = { externalId: string; name: string; matches: AuditMatch[]; classes: AuditClass[] | null; review: ReviewHints };
+export type ClassEvidence = {
+  /** False when no examined record carries class data (an older snapshot). */
+  available: boolean;
+  /** The class the records were fetched by; not counted as an "other" class. */
+  baseClassId: string | null;
+  recordsWithOtherClasses: number;
+  /** Every class seen, with how many examined and flagged records have it. Most common first. */
+  byClass: (AuditClass & { records: number; flagged: number })[];
+  /** Records the name heuristic missed that still have other classes: candidates for review too. */
+  unflaggedWithOtherClasses: { externalId: string; name: string; classes: AuditClass[] }[];
+};
 export type AppellationAudit = {
   disclaimer: string;
   examined: number;
@@ -96,6 +121,7 @@ export type AppellationAudit = {
   flaggedByName: number;
   flaggedByAliasOnly: number;
   byRule: Record<string, number>;
+  classEvidence: ClassEvidence;
   /** How many flagged records carry each review hint. */
   review: { possibleDuplicates: number; aliasConflicts: number; namespacePages: number };
   rules: { id: string; description: string }[];
@@ -119,7 +145,10 @@ export function baseName(name: string, nameMatches: { matched: string }[]): stri
 }
 
 /** Audits records by name and alias. Pure and deterministic; never changes its input. */
-export function auditAppellations(records: AuditRecord[], rules: AuditRule[] = APPELLATION_RULES): AppellationAudit {
+export function auditAppellations(records: AuditRecord[], rules: AuditRule[] = APPELLATION_RULES, options: { baseClassId?: string } = {}): AppellationAudit {
+  const baseClassId = options.baseClassId ?? null;
+  const otherClasses = (r: AuditRecord) => (r.classes ?? []).filter((c) => c.id !== baseClassId);
+  const classReview = (r: AuditRecord): ClassReview => (!r.classes?.length ? "no-class-data" : otherClasses(r).length ? "other-classes" : "base-class-only");
   const compiled = rules.map(compile);
   const check = (text: string, field: AuditMatch["field"]): AuditMatch[] => {
     const normalized = normalizeText(text);
@@ -157,11 +186,33 @@ export function auditAppellations(records: AuditRecord[], rules: AuditRule[] = A
       sameBaseAs: normalizeText(base) === normalizeText(r.name) ? [] : others(byNameOrAlias, [base], r.externalId),
       aliasNamesOf: others(byName, r.aliases, r.externalId),
       namespacePage: isWikimediaNamespaceName(r.name),
+      classReview: classReview(r),
     };
-    flaggedRecords.push({ externalId: r.externalId, name: r.name, matches, review });
+    flaggedRecords.push({ externalId: r.externalId, name: r.name, matches, classes: r.classes ?? null, review });
   }
   flaggedRecords.sort((a, b) => a.name.localeCompare(b.name) || a.externalId.localeCompare(b.externalId));
   const flagged = flaggedRecords.length;
+  const flaggedIds = new Set(flaggedRecords.map((f) => f.externalId));
+  const classCounts = new Map<string, AuditClass & { records: number; flagged: number }>();
+  for (const r of records) {
+    for (const c of r.classes ?? []) {
+      const entry = classCounts.get(c.id) ?? { id: c.id, label: c.label, records: 0, flagged: 0 };
+      entry.records++;
+      if (flaggedIds.has(r.externalId)) entry.flagged++;
+      classCounts.set(c.id, entry);
+    }
+  }
+  const byNumericId = (a: { id: string }, b: { id: string }) => Number(a.id.slice(1)) - Number(b.id.slice(1));
+  const classEvidence: ClassEvidence = {
+    available: records.some((r) => !!r.classes?.length),
+    baseClassId,
+    recordsWithOtherClasses: records.filter((r) => otherClasses(r).length).length,
+    byClass: [...classCounts.values()].sort((a, b) => b.records - a.records || byNumericId(a, b)),
+    unflaggedWithOtherClasses: records
+      .filter((r) => !flaggedIds.has(r.externalId) && otherClasses(r).length)
+      .map((r) => ({ externalId: r.externalId, name: r.name, classes: r.classes! }))
+      .sort((a, b) => a.name.localeCompare(b.name) || a.externalId.localeCompare(b.externalId)),
+  };
   return {
     disclaimer: APPELLATION_AUDIT_DISCLAIMER,
     examined: records.length,
@@ -170,6 +221,7 @@ export function auditAppellations(records: AuditRecord[], rules: AuditRule[] = A
     flaggedByName,
     flaggedByAliasOnly: flagged - flaggedByName,
     byRule,
+    classEvidence,
     review: {
       possibleDuplicates: flaggedRecords.filter((f) => f.review.sameBaseAs.length).length,
       aliasConflicts: flaggedRecords.filter((f) => f.review.aliasNamesOf.length).length,
