@@ -176,6 +176,8 @@ so.
 
 No class is mapped to a kind yet. That is a separate, reviewed decision.
 
+The proposed classification of every candidate is in `docs/catalog-classification-proposal.md`, with its data in `catalog-classification-proposal.json`. It covers the 101 flagged records and the 67 unflagged records with other classes, and it is not applied yet.
+
 The first import's audit findings and plan are in `docs/catalog-import-plan.md`.
 
 
