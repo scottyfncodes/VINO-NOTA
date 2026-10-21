@@ -1,0 +1,4454 @@
+{
+ "status": "proposal (not applied; nothing in the app reads this file)",
+ "evidenceRun": "39538719311",
+ "evidenceArtifact": "wikidata-snapshot-39538719311",
+ "commit": "e813598",
+ "hierarchySource": "catalog-preview (snapshot run 39534929327, same 514 records), read 2026-10-21",
+ "baseClass": "Q2140699",
+ "groups": {
+  "pt-doc": {
+   "title": "Portuguese DOCs (top level): name and class agree",
+   "kind": "appellation",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "Wikidata labels them '(DOC)' and they carry the 'denominação de origem controlada' class. Name and class agree.",
+   "parent": null,
+   "questions": []
+  },
+  "pt-doc-sub": {
+   "title": "Portuguese DOC sub-regions (child of a DOC)",
+   "kind": "appellation",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "rationale": "Named '(DOC)' and linked by Wikidata 'part of' to a parent DOC; 14 of 19 also carry the DOC class. Proposed: kind appellation, keeping the parent link, so the DOC→sub-region hierarchy survives. The alternative, kind 'subregion', would never fill anything: names with a designation are never offered as a subregion.",
+   "parent": "keep",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  "pt-ipr": {
+   "title": "Portuguese IPRs (Indicação de Proveniência Regulamentada)",
+   "kind": "appellation",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "rationale": "They carry the IPR class, a regulated designation of provenance. Proposed: appellation, keeping parent links to their DOC. Assumption: several IPRs have since been promoted to DOC or merged (e.g. Pico, Biscoitos, Graciosa, Lafões, Encostas da Nave, Varosa); the kind is appellation either way, but their current status needs the IVV register.",
+   "parent": "keep",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  "pt-vr": {
+   "title": "Portuguese Vinhos Regionais (VR)",
+   "kind": "region",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "rationale": "They carry the 'Vinhos regionais' class. A VR is a broad regional indication (PGI level) and the closest thing in this catalog to a wine region, so they keep kind region. Assumption: a VR is broader than the DOCs inside it, so a VR must never be a DOC's child.",
+   "parent": null,
+   "questions": []
+  },
+  "douro-port": {
+   "title": "Douro, Port and the RDD (parent loop)",
+   "kind": "see rows",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "rationale": "RDD and 'Port Wine' are each other's parent, which is a loop. RDD is the demarcated region that contains DOC Douro and DOC Porto. Proposed: RDD stays a region with no parent; Douro (DOC) and Port Wine become appellations under RDD; Alto Douro Wine Region (the UNESCO landscape) stays a separate region, not merged.",
+   "parent": null,
+   "questions": [
+    "Q-DOURO"
+   ]
+  },
+  "madeira": {
+   "title": "Madeira wine (DOC)",
+   "kind": "appellation",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "needs-decision",
+   "rationale": "It carries the DOC class and is labelled '(DOC)', but the item is about the wine ('Madeira wine'). Proposed: appellation, and keep it (it is the only Madeira DOC record).",
+   "parent": null,
+   "questions": [
+    "Q-MADEIRA"
+   ]
+  },
+  "arrabida-dup": {
+   "title": "Duplicate 'Arrábida (IPR)': Q2879982",
+   "kind": "exclude-candidate",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "rationale": "Two records share the label 'Arrábida (IPR)'. Q16010776 has the IPR class and sits under Palmela (DOC): the real Arrábida. Q2879982 has the DOC class, no parent, and its only alias is 'Bairrada (DOC)', so it is probably Bairrada DOC with a wrong English label. That can't be confirmed from the snapshot.",
+   "parent": null,
+   "questions": [
+    "Q-ARRABIDA"
+   ]
+  },
+  "fr-aoc-name": {
+   "title": "French AOCs named 'X AOC'",
+   "kind": "appellation",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "The Wikidata label itself ends in 'AOC'. Only Côtes-du-Rhône Villages AOC also carries the AOC class (high); the rest rest on the label alone (medium).",
+   "parent": null,
+   "questions": []
+  },
+  "fr-aoc-alias": {
+   "title": "French AOCs with '(AOC)' only in an alias",
+   "kind": "appellation",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "rationale": "Their aliases are '<name> (AOC)', and they carry no class besides wine-producing region. Assumption: these names are AOCs (true for all 14, from domain knowledge). Chenas and Côteaux du Giennois are also wrongly typed 'winery' in Wikidata; see their rows.",
+   "parent": null,
+   "questions": []
+  },
+  "fr-other": {
+   "title": "Other French candidates (unflagged)",
+   "kind": "see rows",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "rationale": "Decided one by one: Beaujolais cru, Rhône village wine, vineyard area, wine region, hill range.",
+   "parent": null,
+   "questions": []
+  },
+  "es-do-name": {
+   "title": "Spanish DOs named with the designation",
+   "kind": "appellation",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "The label carries DO, DOP or PDO. Tierra del Vino de Zamora DO also carries the 'appellation' class.",
+   "parent": null,
+   "questions": []
+  },
+  "es-do-dual": {
+   "title": "Spanish DOs whose name is also the everyday region name",
+   "kind": "appellation",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "rationale": "Their aliases are DO or DOCa forms, but the bare name (Rioja, Ribera del Duero…) is also used as a region. Abona carries the 'appellation' class (evidence); the others are base-only. Proposed: appellation. Since PR #17, a label's appellation text never makes them the region anyway.",
+   "parent": null,
+   "questions": [
+    "Q-ES-DUAL"
+   ]
+  },
+  "es-orotava": {
+   "title": "Valle de la Orotava (DO) vs Orotava Valley (valley)",
+   "kind": "see rows",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "Two records, one name. Q2509282 is the DO (aliases 'Denominación de Origen…', '(vino)'). Q1290583 is the valley (classes valley, landscape, comarca) and carries 'Valle de la Orotava' as an alias. Today both are regions with equal score, so a lookup of 'Valle de la Orotava' is marked ambiguous and fills nothing. Proposed: Q2509282 → appellation, Q1290583 stays region. Lookup then prefers the appellation and the ambiguity goes away.",
+   "parent": null,
+   "questions": []
+  },
+  "es-pgi": {
+   "title": "Spanish PGIs (Vino de la Tierra)",
+   "kind": "appellation",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "rationale": "Labelled 'PGI', with 'Vino de la Tierra' aliases. A PGI is a protected indication, not a designation of origin. The schema has only region/subregion/appellation; 'appellation' is the slot a label puts it in. Ribera del Queiles carries the 'designation of origin' class, which contradicts its label (assumption: the label is right; the register decides).",
+   "parent": null,
+   "questions": [
+    "Q-ES-PGI"
+   ]
+  },
+  "es-other": {
+   "title": "Sherry Triangle",
+   "kind": "region",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "Class 'region'; it's the geographic area (Marco de Jerez), not DO Jerez itself. Stays a region.",
+   "parent": null,
+   "questions": []
+  },
+  "it-dup": {
+   "title": "Italian DOC duplicates and the items typed 'wine'",
+   "kind": "appellation",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "rationale": "Bivongi DOC, Friuli Annia DOC and Colli Romagna Centrale DOC are typed 'wine'. Bivongi and Friuli Annia also have a same-named region record (Q140131443 Bivongi, Q140131124 Friuli Annia). Colli Piacentini (typed 'hill group', alias 'Colli piacentini (DOC)') has a twin, Q140131139. Proposed: the DOC-labelled record becomes the appellation; whether to drop or keep the plain twins (Q14013xxxx, base class only) is your decision. Alto Adige is typed 'wine', and its aliases wrongly include 'Trentino'.",
+   "parent": null,
+   "questions": [
+    "Q-IT-DUP"
+   ]
+  },
+  "it-region": {
+   "title": "Italian areas typed 'region' (dual DOC/area names)",
+   "kind": "region",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "Wikidata types them as a region, hill chain, cultural landscape and so on. The same names are also DOC(G)s (Chianti, Roero, Valpolicella, Franciacorta…), but nothing in the evidence says the record is the designation. They stay regions; PR #17 already stops the appellation text making them the region. Franciacorta is the weakest (a DOCG name typed only 'region').",
+   "parent": null,
+   "questions": []
+  },
+  "ch": {
+   "title": "Switzerland",
+   "kind": "appellation",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "Dézaley carries the AOC class (high). La Côte has 'La Côte AOC' as an alias and is also a Vaud sub-region (medium).",
+   "parent": null,
+   "questions": []
+  },
+  "at": {
+   "title": "Austria",
+   "kind": "appellation",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "Labelled 'DAC'; no class to confirm it.",
+   "parent": null,
+   "questions": []
+  },
+  "nz-gi": {
+   "title": "New Zealand GIs",
+   "kind": "region",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "rationale": "They carry the 'geographical indication' class. A New Zealand GI is the official wine region (assumption, consistent with every label), so they stay regions. Waiheke Island stays under Auckland; North Canterbury's parent 'New Zealand wine' is a country-level item (see that row).",
+   "parent": null,
+   "questions": []
+  },
+  "nz-sub": {
+   "title": "New Zealand sub-areas typed 'trademark'",
+   "kind": "subregion",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "rationale": "Gimblett Gravels and Bridge Pa Triangle sit under Hawke's Bay and are typed 'trademark' (a growers' mark, not a GI). Proposed: subregion of Hawke's Bay, so lookup gives subregion plus region Hawke's Bay. Or keep them as regions.",
+   "parent": null,
+   "questions": [
+    "Q-NZ-SUB"
+   ]
+  },
+  "nz-country": {
+   "title": "'New Zealand wine' (country-level item)",
+   "kind": "exclude-candidate",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "needs-decision",
+   "rationale": "Typed 'aspect in a geographic region': it is New Zealand viticulture, not a wine region. It is North Canterbury's parent, so lookup would offer 'New Zealand wine' as North Canterbury's region.",
+   "parent": null,
+   "questions": [
+    "Q-NZ-COUNTRY"
+   ]
+  },
+  "cl-do": {
+   "title": "Chilean DOs (typed PDO)",
+   "kind": "region",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "rationale": "Typed 'Protected designation of origin'. In Chile the DO names are the official wine regions, subregions and zones (Valle Central ⊃ Valle del Rapel ⊃ Colchagua/Cachapoal), so they stay regions. Wikidata gives them no parent links.",
+   "parent": null,
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  "other-designation": {
+   "title": "Other designation evidence",
+   "kind": "see rows",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "rationale": "Don Valley (RU) is typed 'designation of origin'. Nemea (GR, a PDO in reality) carries only an unlabelled class (Q2555824). Register check needed.",
+   "parent": null,
+   "questions": [
+    "Q-OTHER-REG"
+   ]
+  },
+  "other-region": {
+   "title": "Other regions with non-designation extra classes",
+   "kind": "region",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "rationale": "The extra classes are geographic or administrative (settlement, valley, landscape, district, town, region of Western Australia, Hungarian small region). Nothing suggests a designation, so they stay regions. Recaș, Silagiu and Koelenhof are towns typed as wine regions: a data-quality note only.",
+   "parent": null,
+   "questions": []
+  }
+ },
+ "questions": {
+  "Q-PT-SUB": "Portuguese DOC sub-regions (19, e.g. Borba under Alentejo): model them as appellations with their parent DOC (recommended), or as subregions?",
+  "Q-PT-IPR": "Portuguese IPRs (9): accept them as appellations now, or wait for an IVV register check of which are still IPRs and which were promoted or merged?",
+  "Q-DOURO": "Douro/Port: approve RDD as a region with no parent (breaking the RDD↔Port loop), Douro (DOC) and Port Wine as appellations under it, and dropping the 'Região Demarcada do Douro' alias from Douro (DOC)?",
+  "Q-MADEIRA": "Madeira wine (DOC): keep as the Madeira DOC appellation, or drop it because the item describes the wine?",
+  "Q-ARRABIDA": "Q2879982 'Arrábida (IPR)' with alias 'Bairrada (DOC)': drop it (recommended until Wikidata is checked), keep it as Arrábida, or treat it as Bairrada DOC?",
+  "Q-ES-DUAL": "Spanish DOs named like regions (Rioja, Ribera del Duero, Bierzo, Cariñena, Somontano, Pla de Bages, Abona): appellation (recommended) or keep region?",
+  "Q-ES-PGI": "Spanish PGIs (4): store as appellation (recommended; the slot a label uses), or keep region? Is Ribera del Queiles a PGI (label) or a DO (class)?",
+  "Q-IT-DUP": "Italian twins (Bivongi, Friuli Annia, Colli Piacentini): keep the DOC-labelled record as the appellation and drop the plain Q14013xxxx twin, or keep both?",
+  "Q-NZ-SUB": "Gimblett Gravels and Bridge Pa Triangle: subregion of Hawke's Bay, or keep region?",
+  "Q-NZ-COUNTRY": "'New Zealand wine' (country-level item): drop it and clear North Canterbury's parent?",
+  "Q-CL": "Chilean DOs (8): keep as regions (recommended)? Should Rapel ⊂ Valle Central and Colchagua/Cachapoal ⊂ Rapel be added, even though Wikidata has no parent links?",
+  "Q-OTHER-REG": "Don Valley (RU) and Nemea (GR): accept Don Valley as an appellation on its class alone, and keep Nemea a region until a register check?",
+  "Q-MINHO": "Minho (VR) / Vinho Verde (DOC): remove the inverted parent link (recommended)? Should Vinho Verde get Minho (VR) as a region parent? (Lookup would then offer 'Minho (VR)' as the region.)",
+  "Q-VENTOUX": "Côtes du Ventoux AOC: remove its parent link to Côtes du Rhône AOC?",
+  "Q-UNESCO": "Langhe and Montferrat: remove their parent link to the UNESCO landscape record?"
+ },
+ "records": [
+  {
+   "id": "Q2832671",
+   "name": "Alenquer (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Alenquer (DOC)”); DOC (alias: “Alenquer DOC”); DOC (alias: “Alenquer (DOC)”); DOC (alias: “Alenquer (DOC)”); DOC (alias: “Alenquer (DOC)”); DOC (alias: “Alenquer (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2832668",
+   "name": "Alentejo (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Alentejo (DOC)”); DOC (alias: “Alentejo DOC”); DOC (alias: “Alentejo DOC”); DOC (alias: “Alentejo (DOC)”); DOC (alias: “Alentejo (DOC)”); DOC (alias: “Alentejo (DOC)”); DOC (alias: “Alentejo (DOC)”); DOC (alias: “Alentejo (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2864234",
+   "name": "Arruda (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Arruda (DOC)”); DOC (alias: “Arruda DOC”); DOC (alias: “Arruda (DOC)”); DOC (alias: “Arruda (DOC)”); DOC (alias: “Arruda (DOC)”); DOC (alias: “Arruda (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2894017",
+   "name": "Beira Interior (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Beira Interior (DOC)”); DOC (alias: “Beira Interior (DOC)”); DOC (alias: “Beira Interior (DOC)”); DOC (alias: “Beira Interior (DOC)”); DOC (alias: “Beira Interior (DOC)”); DOC (alias: “Beira interior (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2927430",
+   "name": "Bucelas (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Bucelas (DOC)”); DOC (alias: “Bucelas (DOC)”); DOC (alias: “Bucelas (DOC)”); DOC (alias: “Bucelas (DOC)”); DOC (alias: “Bucelas (DOC)”); DOC (alias: “Bucelas (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2937990",
+   "name": "Carcavelos (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Carcavelos (DOC)”); DOC (alias: “Carcavelos (DOC)”); DOC (alias: “Carcavelos (DOC)”); DOC (alias: “Carcavelos (DOC)”); DOC (alias: “Carcavelos (DOC)”); DOC (alias: “Carcavelos (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2982350",
+   "name": "Colares (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Colares (DOC)”); DOC (alias: “Colares (DOC)”); DOC (alias: “Colares (DOC)”); DOC (alias: “Colares (DOC)”); DOC (alias: “Colares (DOC)”); DOC (alias: “Colares (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q140562000",
+   "name": "Do Tejo (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Do Tejo (DOC)”); DOC (alias: “DOC do Tejo”); DOC (alias: “DOC Tejo”); DOC (alias: “DOC Tejo”); DOC (alias: “Do Tejo (DOC)”); DOC (alias: “Do Tejo (DOC)”); DOC (alias: “Ribatejo (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1269612",
+   "name": "Dão (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Dão  (DOC)”); DOC (alias: “Dão (DOC)”); DOC (alias: “Dão  (DOC)”); DOC (alias: “Dão  (DOC)”); DOC (alias: “Dão  (DOC)”); DOC (alias: “Dão (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3053850",
+   "name": "Encostas d'Aire (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Encostas d'Aire (DOC)”); DOC (alias: “Encostas d'Aire (DOC)”); DOC (alias: “Encostas d'Aire (DOC)”); DOC (alias: “Encostas d'Aire (DOC)”); DOC (alias: “Encostas d'Aire (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3216175",
+   "name": "Lagoa (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Lagoa (DOC)”); DOC (alias: “Lagoa (DOC)”); DOC (alias: “Lagoa (DOC)”); DOC (alias: “Lagoa (DOC)”); DOC (alias: “Lagoa (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3216201",
+   "name": "Lagos (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Lagos (DOC)”); DOC (alias: “Lagos (DOC)”); DOC (alias: “Lagos (DOC)”); DOC (alias: “Lagos (DOC)”); DOC (alias: “Lagos (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3264017",
+   "name": "Lourinhã (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Lourinhã (DOC)”); DOC (alias: “Lourinhã (DOC)”); DOC (alias: “Lourinhã (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Assumption: DOC Lourinhã covers aguardente (brandy), not wine.",
+   "questions": []
+  },
+  {
+   "id": "Q281996",
+   "name": "Moscatel de Setúbal (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Moscatel de Setúbal (DOC)”); DOC (alias: “Setúbal DOC”); DOC (alias: “Moscatel de Setúbal (DOC)”); DOC (alias: “Moscatel de Setúbal (DOC)”); DOC (alias: “Moscatel de Setúbal (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2864253",
+   "name": "Palmela (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Palmela (DOC)”); DOC (alias: “Palmela (DOC)”); DOC (alias: “Palmela (DOC)”); DOC (alias: “Palmela (DOC)”); DOC (alias: “Palmela (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3399320",
+   "name": "Portimão (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Portimão (DOC)”); DOC (alias: “Portimão (DOC)”); DOC (alias: “Portimão (DOC)”); DOC (alias: “Portimão (DOC)”); DOC (alias: “Portimão (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3516298",
+   "name": "Tavira (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Tavira  (DOC)”); DOC (alias: “Tavira (DOC)”); DOC (alias: “Tavira (DOC)”); DOC (alias: “Tavira  (DOC)”); DOC (alias: “Tavira (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3532486",
+   "name": "Torres Vedras (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Torres Vedras (DOC)”); DOC (alias: “Torres Vedrs (DOC)”); DOC (alias: “Torres Vedras (DOC)”); DOC (alias: “Torres Vedras (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3541228",
+   "name": "Trás-os-Montes (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Trás-os-Montes (DOC)”); DOC (alias: “Trás-os-Montes (DOC)”); DOC (alias: “Trás-os-Montes (DOC)”); DOC (alias: “Trás-os-Montes (DOC)”); DOC (alias: “Trás-os-Montes (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3546429",
+   "name": "Távora-Varosa (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Távora-Varosa (DOC)”); DOC (alias: “Távora-Varosa (DOC)”); DOC (alias: “Tavora-Varosa DOC”); DOC (alias: “Távora-Varosa (DOC)”); DOC (alias: “Távora-Varosa (DOC)”); DOC (alias: “Távora-Varosa (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1067753",
+   "name": "Vinho Verde (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Vinho Verde (DOC)”); DOC (alias: “Vinho Verde (DOC)”); DOC (alias: “Vinho Verde (DOC)”); DOC (alias: “Vinho Verde (DOC)”); DOC (alias: “Vinho Verde (DOC)”); DOC (alias: “Vinho Verde (DOC)”); DOC (alias: “Vinho Verde (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Currently Minho (VR)'s parent, which should be removed.",
+   "questions": []
+  },
+  {
+   "id": "Q3593638",
+   "name": "Óbidos (DOC)",
+   "set": "flagged",
+   "group": "pt-doc",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Óbidos (DOC)”); DOC (alias: “Obidos DOC”); DOC (alias: “Óbidos (DOC)”); DOC (alias: “Óbidos (DOC)”); DOC (alias: “Óbidos (DOC)”); DOC (alias: “Óbidos (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q16250875",
+   "name": "Almeirim (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q140562000",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Almeirim (DOC)”); DOC (alias: “Almeirim (DOC)”); DOC (alias: “Almeirim (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q4944340",
+   "name": "Borba (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2832668",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Borba (DOC)”); DOC (alias: “Borba (DOC)”); DOC (alias: “Borba (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q5049724",
+   "name": "Castelo Rodrigo (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2894017",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Castelo Rodrigo (DOC)”); DOC (alias: “Castelo Rodrigo (DOC)”); DOC (alias: “Castelo Rodrigo (DOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q5070264",
+   "name": "Chamusca (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q140562000",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Chamusca (DOC)”); DOC (alias: “Chamusca (DOC)”); DOC (alias: “Chamusca (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q2961726",
+   "name": "Chaves (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": null,
+   "parent": "Q3541228",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Chaves (DOC)”); DOC (alias: “Chaves (DOC)”); DOC (alias: “Chaves (DOC)”); DOC (alias: “Chaves (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q5173389",
+   "name": "Coruche (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q140562000",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Coruche (DOC)”); DOC (alias: “Coruche (DOC)”); DOC (alias: “Coruche (DOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q5178877",
+   "name": "Cova da Beira (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2894017",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Cova da Beira (DOC)”); DOC (alias: “Cova da Beira (DOC)”); DOC (alias: “Cova da Beira (DOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q5595971",
+   "name": "Granja-Amareleja (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2832668",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Granja-Amareleja (DOC)”); DOC (alias: “Granja-Amareleja (DOC)”); DOC (alias: “Granja-Amareleja (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q6925854",
+   "name": "Moura (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2832668",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Moura (DOC)”); DOC (alias: “Moura (DOC)”); DOC (alias: “Moura (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7195876",
+   "name": "Pinhel (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2894017",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Pinhel (DOC)”); DOC (alias: “Pinhel (DOC)”); DOC (alias: “Pinhel (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7200946",
+   "name": "Planalto Mirandês (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q3541228",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Planalto Mirandês (DOC)”); DOC (alias: “Planalto Mirandês (DOC)”); DOC (alias: “Planalto Mirandês (DOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7231505",
+   "name": "Portalegre (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2832668",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Portalegre (DOC)”); DOC (alias: “Portalegre (DOC)”); DOC (alias: “Portalegre (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7306190",
+   "name": "Redondo (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2832668",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Redondo (DOC)”); DOC (alias: “Redondo (DOC)”); DOC (alias: “Redondo (DOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7309570",
+   "name": "Reguengos (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2832668",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Reguengos (DOC)”); DOC (alias: “Reguengos (DOC)”); DOC (alias: “Reguengos (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7420081",
+   "name": "Santarém (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q140562000",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Santarém (DOC)”); DOC (alias: “Santarém (DOC)”); DOC (alias: “Santarém (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7818261",
+   "name": "Tomar (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q140562000",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Tomar (DOC)”); DOC (alias: “Tomar (DOC)”); DOC (alias: “Tomar (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7912581",
+   "name": "Valpaços (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q3541228",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Valpaços (DOC)”); DOC (alias: “Valpaços (DOC)”); DOC (alias: “Valpaços (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q7928085",
+   "name": "Vidigueira (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2832668",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Vidigueira (DOC)”); DOC (alias: “Vidigueira (DOC)”); DOC (alias: “Vidigueira (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q5418766",
+   "name": "Évora (DOC)",
+   "set": "flagged",
+   "group": "pt-doc-sub",
+   "country": "PT",
+   "parent": "Q2832668",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Évora (DOC)”); DOC (alias: “Évora (DOC)”); DOC (alias: “Évora (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-PT-SUB"
+   ]
+  },
+  {
+   "id": "Q2832196",
+   "name": "Alcobaça (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": null,
+   "parent": "Q3053850",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q16010776",
+   "name": "Arrábida (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": null,
+   "parent": "Q2864253",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "The real Arrábida IPR (under Palmela).",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q4917248",
+   "name": "Biscoitos (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q2940449",
+   "name": "Cartaxo (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": "PT",
+   "parent": "Q140562000",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "Under Do Tejo (DOC); currently also the parent of Tejo (VR), which should be removed.",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q3053843",
+   "name": "Encostas da Nave (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": null,
+   "parent": "Q3546429",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "Under Távora-Varosa (DOC).",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q5884018",
+   "name": "Graciosa (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q6471797",
+   "name": "Lafões (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q3382513",
+   "name": "Pico (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q17355602",
+   "name": "Varosa (IPR)",
+   "set": "unflagged",
+   "group": "pt-ipr",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13582250",
+     "label": "Indicação de Proveniência Regulamentada"
+    }
+   ],
+   "classSignals": [
+    "IPR (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "Assumption: a predecessor of Távora-Varosa (DOC); possible historical duplicate.",
+   "questions": [
+    "Q-PT-IPR"
+   ]
+  },
+  {
+   "id": "Q2835663",
+   "name": "Algarve (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2875320",
+   "name": "Açores (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q4881369",
+   "name": "Beiras (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q5316634",
+   "name": "Duriense (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3242467",
+   "name": "Lisboa (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q374743",
+   "name": "Minho (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": null,
+   "parent": "Q1067753",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "remove",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Minho (VR) is listed under Vinho Verde (DOC), but the VR is the broader area. Remove the parent.",
+   "questions": [
+    "Q-MINHO"
+   ]
+  },
+  {
+   "id": "Q3518577",
+   "name": "Península de Setúbal (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3430102",
+   "name": "Tejo (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": "PT",
+   "parent": "Q2940449",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "remove",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Tejo (VR) is listed under Cartaxo (IPR), an inverted hierarchy. Remove the parent.",
+   "questions": []
+  },
+  {
+   "id": "Q7703313",
+   "name": "Terras Madeirenses (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q121365790",
+   "name": "Terras de Sicó (VR)",
+   "set": "unflagged",
+   "group": "pt-vr",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3560266",
+     "label": "Vinhos regionais"
+    }
+   ],
+   "classSignals": [
+    "Vinho Regional (PT VR)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Alias 'Sub-Região Terras de Sicó'; assumption: a sub-region of a wider VR.",
+   "questions": []
+  },
+  {
+   "id": "Q649738",
+   "name": "Alto Douro Wine Region",
+   "set": "unflagged",
+   "group": "douro-port",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q210272",
+     "label": "cultural heritage"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "UNESCO cultural landscape inside the RDD. Related, not a duplicate; no merge.",
+   "questions": [
+    "Q-DOURO"
+   ]
+  },
+  {
+   "id": "Q1094448",
+   "name": "Douro (DOC)",
+   "set": "flagged",
+   "group": "douro-port",
+   "country": "PT",
+   "parent": "Q140379672",
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Douro (DOC)”); DOC (alias: “Douro DOC”); DOC (alias: “Douro (DOC)”); DOC (alias: “Douro (DOC)”); DOC (alias: “Douro (DOC)”); DOC (alias: “Douro (DOC)”); DOC (alias: “Douro (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "DOC class plus label. Parent stays RDD. Its alias 'Região Demarcada do Douro' is the RDD's name and should be dropped.",
+   "questions": [
+    "Q-DOURO"
+   ]
+  },
+  {
+   "id": "Q191034",
+   "name": "Port Wine",
+   "set": "unflagged",
+   "group": "douro-port",
+   "country": null,
+   "parent": "Q140379672",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "DOC class (DOC Porto). Parent stays RDD. The record's label is the wine ('Port Wine').",
+   "questions": [
+    "Q-DOURO"
+   ]
+  },
+  {
+   "id": "Q140379672",
+   "name": "Região Demarcada do Douro (RDD)",
+   "set": "flagged",
+   "group": "douro-port",
+   "country": "PT",
+   "parent": "Q191034",
+   "currentKind": "region",
+   "nameEvidence": "DOC (alias: “Douro DOC”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "remove",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "Remove its parent (Port Wine) to break the loop. Its 'Douro DOC' alias clashes with the Douro (DOC) record.",
+   "questions": [
+    "Q-DOURO"
+   ]
+  },
+  {
+   "id": "Q27697",
+   "name": "Madeira wine (DOC)",
+   "set": "flagged",
+   "group": "madeira",
+   "country": null,
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Madeira wine (DOC)”); DOC (alias: “Vinho da Madeira (DOC)”); DOC (alias: “Madeira (DOC)”); DOC (alias: “Madeira (DOC)”); DOC (alias: “Madeira wine (DOC)”); DOC (alias: “Madeira (DOC)”); DOC (alias: “Madère (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "needs-decision",
+   "note": "No country on record (Wikidata has none).",
+   "questions": [
+    "Q-MADEIRA"
+   ]
+  },
+  {
+   "id": "Q2879982",
+   "name": "Arrábida (IPR)",
+   "set": "flagged",
+   "group": "arrabida-dup",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (alias: “Bairrada (DOC)”); DOC (alias: “Bairrada (DOC)”); DOC (alias: “Bairrada (DOC)”); DOC (alias: “Bairrada (DOC)”)",
+   "classes": [
+    {
+     "id": "Q451752",
+     "label": "denominação de origem controlada"
+    }
+   ],
+   "classSignals": [
+    "DOC (PT)"
+   ],
+   "proposedKind": "exclude-candidate",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ARRABIDA"
+   ]
+  },
+  {
+   "id": "Q1019358",
+   "name": "Béarn AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Béarn AOC”); AOC (alias: “Bearn AOC”); AOC (alias: “Béarn AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1025147",
+   "name": "Cadillac AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Cadillac AOC”); AOC (alias: “Cadillac AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1090298",
+   "name": "Château-Chalon AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Château-Chalon AOC”); AOC (alias: “Chateau-Chalon AOC”); AOC (alias: “Château-Chalon AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1136597",
+   "name": "Coteaux de Pierrevert AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Coteaux de Pierrevert AOC”); AOC (alias: “Coteaux-de-pierrevert (AOC)”); AOC (alias: “AOC Coteaux De Pierrevert”); AOC (alias: “AOC Coteaux de Pierrevert”); AOC (alias: “Aoc coteaux de pierrevert”); AOC (alias: “Coteaux de Pierrevert AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1151005",
+   "name": "Côtes du Rhône AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Côtes du Rhône AOC”); AOC (alias: “Côtes-du-Rhône (AOC)”); AOC (alias: “Côtes-du-rhône (AOC)”); AOC (alias: “Côtes-du-rhône 'AOC)”); AOC (alias: “Cotes du Rhone AOC”); AOC (alias: “Côtes du Rhône AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1151010",
+   "name": "Côtes du Roussillon AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Côtes du Roussillon AOC”); AOC (alias: “Côtes-du-Roussillon (AOC)”); AOC (alias: “Côtes-du-roussillon (AOC)”); AOC (alias: “Cotes du Roussillon AOC”); AOC (alias: “Côtes du Roussillon AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q973682",
+   "name": "Côtes du Ventoux AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": "Q1151005",
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Côtes du Ventoux AOC”); AOC (alias: “Cotes du Ventoux AOC”); AOC (alias: “Côtes du Ventoux AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "remove?",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Parent is Côtes du Rhône AOC. Assumption: Ventoux is a separate southern-Rhône AOC, not part of the Côtes du Rhône AOC.",
+   "questions": [
+    "Q-VENTOUX"
+   ]
+  },
+  {
+   "id": "Q1151015",
+   "name": "Côtes du Vivarais AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Côtes du Vivarais AOC”); AOC (alias: “Côtes-du-vivarais (AOC)”); AOC (alias: “Cotes du Vivarais AOC”); AOC (alias: “Côtes du Vivarais AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1422135",
+   "name": "Côtes-du-Rhône Villages AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Côtes-du-Rhône Villages AOC”); AOC (alias: “Cotes du Rhone Villages AOC”); AOC (alias: “Côtes-du-Rhône Villages AOC”)",
+   "classes": [
+    {
+     "id": "Q1565828",
+     "label": "appellation d'origine contrôlée"
+    }
+   ],
+   "classSignals": [
+    "AOC"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Also carries the AOC class.",
+   "questions": []
+  },
+  {
+   "id": "Q470974",
+   "name": "Fitou AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Fitou AOC”); AOC (alias: “AOC Fitou”); AOC (alias: “Fitou AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1150996",
+   "name": "Fronton AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Fronton AOC”); AOC (alias: “Fronton AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q532734",
+   "name": "Margaux AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Margaux AOC”); AOC (alias: “Margaux AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2120260",
+   "name": "Maury AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Maury AOC”); AOC (alias: “Maury AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2123199",
+   "name": "Quincy AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Quincy AOC”); AOC (alias: “Quincy AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2146579",
+   "name": "Reuilly AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Reuilly AOC”); AOC (alias: “Reuilly AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2167339",
+   "name": "Rosette AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Rosette AOC”); AOC (alias: “Rosette AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q507055",
+   "name": "Vinsobres AOC",
+   "set": "flagged",
+   "group": "fr-aoc-name",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (name: “Vinsobres AOC”); AOC (alias: “Vinsobres AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q892806",
+   "name": "Bonnezeaux",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Bonnezeaux (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1090927",
+   "name": "Chenas",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Chenas (AOC)”)",
+   "classes": [
+    {
+     "id": "Q156362",
+     "label": "winery"
+    },
+    {
+     "id": "Q3558198",
+     "label": "Beaujolais vineyard"
+    }
+   ],
+   "classSignals": [
+    "winery"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Wikidata types it 'winery' (wrong) and 'Beaujolais vineyard' (a Beaujolais cru).",
+   "questions": []
+  },
+  {
+   "id": "Q1136603",
+   "name": "Coteaux du Languedoc",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Coteaux-du-languedoc (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Alias 'La Clape' is a separate cru; assumption: the AOC was renamed 'Languedoc'.",
+   "questions": []
+  },
+  {
+   "id": "Q1136602",
+   "name": "Coteaux du Loir",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Coteaux-du-loir (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1136606",
+   "name": "Coteaux du Lyonnais",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Coteaux-du-lyonnais (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1150937",
+   "name": "Côte Roannaise",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Côte roannaise (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1136598",
+   "name": "Côteaux du Giennois",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Coteaux-du-giennois (AOC)”)",
+   "classes": [
+    {
+     "id": "Q156362",
+     "label": "winery"
+    }
+   ],
+   "classSignals": [
+    "winery"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Wikidata types it 'winery' (wrong).",
+   "questions": []
+  },
+  {
+   "id": "Q1150990",
+   "name": "Côtes de Provence",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Côtes-de-provence (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1150991",
+   "name": "Côtes du Forez",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Côtes-du-forez (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1150995",
+   "name": "Côtes du Jura wine",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Côtes-du-jura (AOC)”); AOC (alias: “Côtes du Jura (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1151017",
+   "name": "Côtes d’Auvergne",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Côtes-d'auvergne (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2922357",
+   "name": "Hautes-Côtes de Beaune",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": "Q1016093",
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Bourgogne hautes-côtes-de-beaune (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Under Burgundy wine region, so lookup gives region 'Burgundy wine region'.",
+   "questions": []
+  },
+  {
+   "id": "Q1683850",
+   "name": "Jasnières",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Jasnières (AOC)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q3560958",
+   "name": "Viré-Clessé",
+   "set": "flagged",
+   "group": "fr-aoc-alias",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “Viré-clessé (AOC)”); AOC (alias: “AOC Viré-Clessé”); AOC (alias: “AOC viré-clessé”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1016093",
+   "name": "Burgundy wine region",
+   "set": "unflagged",
+   "group": "fr-other",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q2555824",
+     "label": null
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Parent of Hautes-Côtes de Beaune.",
+   "questions": []
+  },
+  {
+   "id": "Q1074779",
+   "name": "Chiroubles",
+   "set": "unflagged",
+   "group": "fr-other",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q3558198",
+     "label": "Beaujolais vineyard"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "'Beaujolais vineyard' class; assumption: a Beaujolais cru is an AOC.",
+   "questions": []
+  },
+  {
+   "id": "Q3297627",
+   "name": "Saint-Thierry Massif",
+   "set": "unflagged",
+   "group": "fr-other",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q46831",
+     "label": "mountain range"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Hill range (Champagne).",
+   "questions": []
+  },
+  {
+   "id": "Q28497141",
+   "name": "Vaison-la-romaine wine",
+   "set": "unflagged",
+   "group": "fr-other",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q1891041",
+     "label": "Rhône wine"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "A Côtes-du-Rhône Villages village wine ('Rhône wine' class). Appellation-level; could also be dropped as a wine item.",
+   "questions": []
+  },
+  {
+   "id": "Q763660",
+   "name": "Vignoble de Chablis",
+   "set": "unflagged",
+   "group": "fr-other",
+   "country": "FR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q22715",
+     "label": "vineyard"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "'vineyard' class: the Chablis vineyard area. Stays a region; a label's appellation 'Chablis' gives no region (PR #17).",
+   "questions": []
+  },
+  {
+   "id": "Q2887617",
+   "name": "Calatayud PDO",
+   "set": "flagged",
+   "group": "es-do-name",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "PDO/PGI (name: “Calatayud PDO”); ES-phrase (alias: “denominación de origen Calatayud”); DO (alias: “D.O. Calatayud”); ES-phrase (alias: “Calatayud denominación de origen”); DO (alias: “Calatayud D.O.”); DO (alias: “Calatayud DO”); AOP (alias: “Calatayud AOP”); DOP (alias: “D.O.P. Calatayud”); PDO/PGI (alias: “Calatayud PDO”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2935540",
+   "name": "Campo de Borja (DO)",
+   "set": "flagged",
+   "group": "es-do-name",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DO (name: “Campo de Borja (DO)”); ES-phrase (alias: “Denominación de Origen Campo de Borja”); ES-phrase (alias: “Denominacion de Origen Campo de Borja”); DO (alias: “Campo de Borja (DO)”); DO (alias: “D.O. Campo de Borja”); DO (alias: “Campo de Borja (DO)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1754563",
+   "name": "Priorat (DO)",
+   "set": "flagged",
+   "group": "es-do-name",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DO (name: “Priorat (DO)”); DOCa (alias: “DOQ Priorat”); ES-phrase (alias: “Denominacion de Origen Priorato”); ES-phrase (alias: “Denominación de Origen Calificada Priorato”); ES-phrase (alias: “Denominacion de Origen Calificada Priorato”); DO (alias: “Priorat (DO)”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q544423",
+   "name": "Tierra del Vino de Zamora DO",
+   "set": "flagged",
+   "group": "es-do-name",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DO (name: “Tierra del Vino de Zamora DO”); DO (alias: “Tierra del Vino de Zamora DO”)",
+   "classes": [
+    {
+     "id": "Q2858704",
+     "label": "appellation"
+    }
+   ],
+   "classSignals": [
+    "appellation"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Also carries the 'appellation' class.",
+   "questions": []
+  },
+  {
+   "id": "Q322801",
+   "name": "Abona",
+   "set": "flagged",
+   "group": "es-do-dual",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "ES-phrase (alias: “Denominación de Origen Abona”); ES-phrase (alias: “Denominacion de Origen Abona”)",
+   "classes": [
+    {
+     "id": "Q2858704",
+     "label": "appellation"
+    }
+   ],
+   "classSignals": [
+    "appellation"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "Carries the 'appellation' class.",
+   "questions": [
+    "Q-ES-DUAL"
+   ]
+  },
+  {
+   "id": "Q624640",
+   "name": "Bierzo",
+   "set": "flagged",
+   "group": "es-do-dual",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DO (alias: “DO Bierzo”); ES-phrase (alias: “Denominación de Origen Bierzo”); ES-phrase (alias: “Denominacion de Origen Bierzo”); DOP (alias: “Bierzo DOP”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-DUAL"
+   ]
+  },
+  {
+   "id": "Q2832748",
+   "name": "Cariñena",
+   "set": "flagged",
+   "group": "es-do-dual",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DO (alias: “Cariñena DO”); DO (alias: “Carinena DO”); AOC (alias: “AOC Cariñena”); AOC (alias: “AOC Carinena”); ES-phrase (alias: “Denominación de Origen Cariñena”); ES-phrase (alias: “Denominación de Origen Carinena”); ES-phrase (alias: “Denominacion de Origen Cariñena”); ES-phrase (alias: “Denominacion de Origen Carinena”); DO (alias: “D.O. Cariñena”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-DUAL"
+   ]
+  },
+  {
+   "id": "Q6746472",
+   "name": "Designation of Origin Pla de Bages (Wine Region)",
+   "set": "flagged",
+   "group": "es-do-dual",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "ES-phrase (alias: “Denominación de Origen Pla de Bages”); ES-phrase (alias: “Denominación de origen Pla de Bagés”); ES-phrase (alias: “Denominación de origen Pla de Bages”); ES-phrase (alias: “Denominacion de origen Plà de Bagés”); ES-phrase (alias: “Denominacion de origen Plà de Bages”); ES-phrase (alias: “Denominacion de origen Pla de Bagés”); ES-phrase (alias: “Denominacion de Origen Pla de Bages”); DO (alias: “DO Pla de Bages”); DO (alias: “DO Pla de Bages”); ES-phrase (alias: “Denominación de origen Plà de Bages”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-DUAL"
+   ]
+  },
+  {
+   "id": "Q2167338",
+   "name": "Ribera del Duero",
+   "set": "flagged",
+   "group": "es-do-dual",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DO (alias: “Ribera del Duero DO”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-DUAL"
+   ]
+  },
+  {
+   "id": "Q1569384",
+   "name": "Rioja",
+   "set": "flagged",
+   "group": "es-do-dual",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (alias: “D.O.C. Rioja”); ES-phrase (alias: “Denominacion de Origen Rioja”); ES-phrase (alias: “Denominación de Origen Calificada Rioja”); ES-phrase (alias: “Denominacion de Origen Calificada Rioja”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-DUAL"
+   ]
+  },
+  {
+   "id": "Q1938017",
+   "name": "Somontano",
+   "set": "flagged",
+   "group": "es-do-dual",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DO (alias: “D.O. Somontano”); DO (alias: “Somontano DO”); AOP (alias: “AOP Somontano”); ES-phrase (alias: “Denominación de Origen Somontano”); ES-phrase (alias: “Denominacion de Origen Somontano”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-DUAL"
+   ]
+  },
+  {
+   "id": "Q1290583",
+   "name": "Orotava Valley",
+   "set": "unflagged",
+   "group": "es-orotava",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q39816",
+     "label": "valley"
+    },
+    {
+     "id": "Q107425",
+     "label": "landscape"
+    },
+    {
+     "id": "Q1345234",
+     "label": "comarca of Spain"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "The valley record.",
+   "questions": []
+  },
+  {
+   "id": "Q2509282",
+   "name": "Valle de la Orotava",
+   "set": "flagged",
+   "group": "es-orotava",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "ES-phrase (alias: “Denominación de Origen Valle de La Orotava”); ES-phrase (alias: “Denominación de Origen Valle de la Orotava”); ES-phrase (alias: “Denominacion de Origen Valle de La Orotava”); ES-phrase (alias: “Denominacion de Origen Valle de la Orotava”)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "The DO record.",
+   "questions": []
+  },
+  {
+   "id": "Q7322326",
+   "name": "Ribera del Gállego-Cinco Villas PGI",
+   "set": "flagged",
+   "group": "es-pgi",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "PDO/PGI (name: “Ribera del Gállego-Cinco Villas PGI”); PDO/PGI (alias: “Ribera del Gállego-Cinco Villas PGI”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-PGI"
+   ]
+  },
+  {
+   "id": "Q7322327",
+   "name": "Ribera del Jiloca PGI",
+   "set": "flagged",
+   "group": "es-pgi",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "PDO/PGI (name: “Ribera del Jiloca PGI”); PDO/PGI (alias: “Ribera del Jiloca PGI”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-PGI"
+   ]
+  },
+  {
+   "id": "Q1384248",
+   "name": "Ribera del Queiles PGI",
+   "set": "flagged",
+   "group": "es-pgi",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "PDO/PGI (name: “Ribera del Queiles PGI”); PDO/PGI (alias: “Ribera del Queiles PGI”)",
+   "classes": [
+    {
+     "id": "Q325668",
+     "label": "designation of origin"
+    }
+   ],
+   "classSignals": [
+    "designation of origin"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "Class 'designation of origin' contradicts the 'PGI' label.",
+   "questions": [
+    "Q-ES-PGI"
+   ]
+  },
+  {
+   "id": "Q7909361",
+   "name": "Valdejalón PGI",
+   "set": "flagged",
+   "group": "es-pgi",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "PDO/PGI (name: “Valdejalón PGI”); PDO/PGI (alias: “Valdejalón PGI”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-ES-PGI"
+   ]
+  },
+  {
+   "id": "Q30674832",
+   "name": "Sherry Triangle",
+   "set": "unflagged",
+   "group": "es-other",
+   "country": "ES",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q140131057",
+   "name": "Alto Adige",
+   "set": "unflagged",
+   "group": "it-dup",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q282",
+     "label": "wine"
+    }
+   ],
+   "classSignals": [
+    "wine"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "Typed 'wine'. Both a DOC and a province; aliases wrongly include 'Trentino'. Proposed: keep region and drop the 'Trentino' alias.",
+   "questions": [
+    "Q-IT-DUP"
+   ]
+  },
+  {
+   "id": "Q139916958",
+   "name": "Bivongi DOC",
+   "set": "flagged",
+   "group": "it-dup",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Bivongi DOC”); DOC (alias: “Bivongi DOC”); DOC (alias: “Bivongi DOC”); DOC (alias: “Bivongi DOC”); DOC (alias: “Bivongi DOC”); DOC (alias: “Bivongi DOC”); DOC (alias: “Bivongi DOC”)",
+   "classes": [
+    {
+     "id": "Q282",
+     "label": "wine"
+    }
+   ],
+   "classSignals": [
+    "wine"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "Typed 'wine'. Twin: Q140131443 'Bivongi'.",
+   "questions": [
+    "Q-IT-DUP"
+   ]
+  },
+  {
+   "id": "Q2983286",
+   "name": "Colli Piacentini",
+   "set": "flagged",
+   "group": "it-dup",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (alias: “Coteaux piacentins (DOC)”); DOC (alias: “Colli piacentini (DOC)”)",
+   "classes": [
+    {
+     "id": "Q19850234",
+     "label": "hill group"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "Typed 'hill group'; alias 'Colli piacentini (DOC)'. Twin: Q140131139.",
+   "questions": [
+    "Q-IT-DUP"
+   ]
+  },
+  {
+   "id": "Q26260858",
+   "name": "Colli Romagna Centrale DOC",
+   "set": "flagged",
+   "group": "it-dup",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Colli Romagna Centrale DOC”); DOC (alias: “Colli Romagna Centrale DOC”); DOC (alias: “Colli Romagna Centrale DOC”); DOC (alias: “Colli Romagna Centrale DOC”); DOC (alias: “Colli Romagna Centrale DOC”); DOC (alias: “Colli Romagna Centrale DOC”); DOC (alias: “Colli Romagna Centrale DOC”)",
+   "classes": [
+    {
+     "id": "Q282",
+     "label": "wine"
+    }
+   ],
+   "classSignals": [
+    "wine"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "Typed 'wine'. Alias 'Vins d'Émilie-Romagne' is too broad.",
+   "questions": [
+    "Q-IT-DUP"
+   ]
+  },
+  {
+   "id": "Q16557744",
+   "name": "Friuli Annia DOC",
+   "set": "flagged",
+   "group": "it-dup",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DOC (name: “Friuli Annia DOC”); DOC (alias: “Friuli Annia DOC”); DOC (alias: “Friuli Annia DOC”); DOC (alias: “Friuli Annia DOC”); DOC (alias: “Friuli Annia DOC”); DOC (alias: “Friuli Annia DOC”); DOC (alias: “Friuli Annia DOC”)",
+   "classes": [
+    {
+     "id": "Q282",
+     "label": "wine"
+    }
+   ],
+   "classSignals": [
+    "wine"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "Typed 'wine'. Twin: Q140131124 'Friuli Annia'.",
+   "questions": [
+    "Q-IT-DUP"
+   ]
+  },
+  {
+   "id": "Q1071629",
+   "name": "Chianti",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q241136",
+   "name": "Euganean Hills",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q9381142",
+     "label": "hill chain"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q140131034",
+   "name": "Franciacorta",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "A DOCG name typed only 'region'. Assumption-based alternative: appellation.",
+   "questions": []
+  },
+  {
+   "id": "Q1109872",
+   "name": "Gorizia Hills",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "SI",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q46831",
+     "label": "mountain range"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Typed 'mountain range'; alias 'Collio' is also a DOC name.",
+   "questions": []
+  },
+  {
+   "id": "Q19865",
+   "name": "Langhe",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": "Q17296768",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Parent: the UNESCO landscape (Q17296768).",
+   "questions": []
+  },
+  {
+   "id": "Q65029145",
+   "name": "Le Colline del Prosecco di Conegliano e Valdobbiadene",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q22698",
+     "label": "park"
+    },
+    {
+     "id": "Q1129474",
+     "label": "cultural landscape"
+    },
+    {
+     "id": "Q3270079",
+     "label": "hogback"
+    },
+    {
+     "id": "Q9381142",
+     "label": "hill chain"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q19868",
+   "name": "Montferrat",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": "Q17296768",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    },
+    {
+     "id": "Q1620908",
+     "label": "historical region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "keep",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Parent: the UNESCO landscape (Q17296768).",
+   "questions": []
+  },
+  {
+   "id": "Q19870",
+   "name": "Roero",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q17296768",
+   "name": "The Vineyard Landscape of Piedmont: Langhe-Roero and Monferrato",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q1129474",
+     "label": "cultural landscape"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "UNESCO landscape, currently the parent of Langhe and Montferrat. Assumption: a UNESCO site is a poor region parent.",
+   "questions": [
+    "Q-UNESCO"
+   ]
+  },
+  {
+   "id": "Q852467",
+   "name": "Valpolicella",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    },
+    {
+     "id": "Q105224099",
+     "label": "group of valleys"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q448096",
+   "name": "Vulture",
+   "set": "unflagged",
+   "group": "it-region",
+   "country": "IT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q1270756",
+   "name": "Dézaley",
+   "set": "unflagged",
+   "group": "ch",
+   "country": "CH",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q1565828",
+     "label": "appellation d'origine contrôlée"
+    }
+   ],
+   "classSignals": [
+    "AOC"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "AOC class; Lavaux grand cru.",
+   "questions": []
+  },
+  {
+   "id": "Q666244",
+   "name": "La Côte",
+   "set": "flagged",
+   "group": "ch",
+   "country": "CH",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "AOC (alias: “La Côte AOC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "Alias 'La Côte AOC'.",
+   "questions": []
+  },
+  {
+   "id": "Q55632668",
+   "name": "Schilcherland DAC",
+   "set": "flagged",
+   "group": "at",
+   "country": "AT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "DAC (name: “Schilcherland DAC”); DAC (alias: “Schilcherland DAC”); DAC (alias: “Schilcherland DAC”)",
+   "classes": [],
+   "classSignals": [],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q117085188",
+   "name": "Auckland wine region",
+   "set": "flagged",
+   "group": "nz-gi",
+   "country": "NZ",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "GI (alias: “Auckland GI”)",
+   "classes": [
+    {
+     "id": "Q117085231",
+     "label": "geographical indication"
+    }
+   ],
+   "classSignals": [
+    "geographical indication (NZ GI)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q5061573",
+   "name": "Central Otago wine region",
+   "set": "flagged",
+   "group": "nz-gi",
+   "country": "NZ",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "GI (alias: “Central Otago GI”)",
+   "classes": [
+    {
+     "id": "Q117085231",
+     "label": "geographical indication"
+    }
+   ],
+   "classSignals": [
+    "geographical indication (NZ GI)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q85765961",
+   "name": "Hawke's Bay wine region",
+   "set": "unflagged",
+   "group": "nz-gi",
+   "country": "NZ",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q117085231",
+     "label": "geographical indication"
+    }
+   ],
+   "classSignals": [
+    "geographical indication (NZ GI)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q85783963",
+   "name": "Marlborough wine region",
+   "set": "unflagged",
+   "group": "nz-gi",
+   "country": "NZ",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q117085231",
+     "label": "geographical indication"
+    }
+   ],
+   "classSignals": [
+    "geographical indication (NZ GI)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q117074142",
+   "name": "North Canterbury wine region",
+   "set": "unflagged",
+   "group": "nz-gi",
+   "country": "NZ",
+   "parent": "Q918446",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q117085231",
+     "label": "geographical indication"
+    }
+   ],
+   "classSignals": [
+    "geographical indication (NZ GI)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "keep",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Parent 'New Zealand wine' (country-level item).",
+   "questions": []
+  },
+  {
+   "id": "Q117074428",
+   "name": "Waiheke Island wine region",
+   "set": "unflagged",
+   "group": "nz-gi",
+   "country": "NZ",
+   "parent": "Q117085188",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q117085231",
+     "label": "geographical indication"
+    }
+   ],
+   "classSignals": [
+    "geographical indication (NZ GI)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "keep",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "Under Auckland.",
+   "questions": []
+  },
+  {
+   "id": "Q131767653",
+   "name": "Waitaki Valley",
+   "set": "flagged",
+   "group": "nz-gi",
+   "country": "NZ",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "GI (alias: “Waitaki Valley GI”)",
+   "classes": [
+    {
+     "id": "Q117085231",
+     "label": "geographical indication"
+    }
+   ],
+   "classSignals": [
+    "geographical indication (NZ GI)"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence+assumption",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q119953341",
+   "name": "Bridge Pa Triangle",
+   "set": "unflagged",
+   "group": "nz-sub",
+   "country": "NZ",
+   "parent": "Q85765961",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q167270",
+     "label": "trademark"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "subregion",
+   "parentAction": "keep",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-NZ-SUB"
+   ]
+  },
+  {
+   "id": "Q119953361",
+   "name": "Gimblett Gravels",
+   "set": "unflagged",
+   "group": "nz-sub",
+   "country": "NZ",
+   "parent": "Q85765961",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q167270",
+     "label": "trademark"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "subregion",
+   "parentAction": "keep",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-NZ-SUB"
+   ]
+  },
+  {
+   "id": "Q918446",
+   "name": "New Zealand wine",
+   "set": "unflagged",
+   "group": "nz-country",
+   "country": "NZ",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q74817647",
+     "label": "aspect in a geographic region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "exclude-candidate",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-NZ-COUNTRY"
+   ]
+  },
+  {
+   "id": "Q6159201",
+   "name": "Cachapoal Valley",
+   "set": "unflagged",
+   "group": "cl-do",
+   "country": "CL",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13439060",
+     "label": "Protected designation of origin"
+    }
+   ],
+   "classSignals": [
+    "PDO"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  {
+   "id": "Q6159082",
+   "name": "Colchagua Valley",
+   "set": "unflagged",
+   "group": "cl-do",
+   "country": "CL",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13439060",
+     "label": "Protected designation of origin"
+    }
+   ],
+   "classSignals": [
+    "PDO"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  {
+   "id": "Q5061975",
+   "name": "Valle Central",
+   "set": "unflagged",
+   "group": "cl-do",
+   "country": "CL",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13439060",
+     "label": "Protected designation of origin"
+    }
+   ],
+   "classSignals": [
+    "PDO"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  {
+   "id": "Q6159210",
+   "name": "Valle del Elqui",
+   "set": "unflagged",
+   "group": "cl-do",
+   "country": "CL",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13439060",
+     "label": "Protected designation of origin"
+    }
+   ],
+   "classSignals": [
+    "PDO"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  {
+   "id": "Q6159230",
+   "name": "Valle del Itata",
+   "set": "unflagged",
+   "group": "cl-do",
+   "country": "CL",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13439060",
+     "label": "Protected designation of origin"
+    }
+   ],
+   "classSignals": [
+    "PDO"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  {
+   "id": "Q6159234",
+   "name": "Valle del Lontué",
+   "set": "unflagged",
+   "group": "cl-do",
+   "country": "CL",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13439060",
+     "label": "Protected designation of origin"
+    }
+   ],
+   "classSignals": [
+    "PDO"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  {
+   "id": "Q6159235",
+   "name": "Valle del Maipo",
+   "set": "unflagged",
+   "group": "cl-do",
+   "country": "CL",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13439060",
+     "label": "Protected designation of origin"
+    }
+   ],
+   "classSignals": [
+    "PDO"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  {
+   "id": "Q5573789",
+   "name": "Valle del Rapel",
+   "set": "unflagged",
+   "group": "cl-do",
+   "country": "CL",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q13439060",
+     "label": "Protected designation of origin"
+    }
+   ],
+   "classSignals": [
+    "PDO"
+   ],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "medium",
+   "basis": "evidence+assumption",
+   "status": "needs-decision",
+   "note": "",
+   "questions": [
+    "Q-CL"
+   ]
+  },
+  {
+   "id": "Q121150641",
+   "name": "Don Valley",
+   "set": "unflagged",
+   "group": "other-designation",
+   "country": "RU",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q325668",
+     "label": "designation of origin"
+    }
+   ],
+   "classSignals": [
+    "designation of origin"
+   ],
+   "proposedKind": "appellation",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "Typed 'designation of origin'.",
+   "questions": [
+    "Q-OTHER-REG"
+   ]
+  },
+  {
+   "id": "Q1283900",
+   "name": "Nemea",
+   "set": "unflagged",
+   "group": "other-designation",
+   "country": "GR",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q2555824",
+     "label": null
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "low",
+   "basis": "evidence+assumption",
+   "status": "needs-register",
+   "note": "Unlabelled class Q2555824; assumption: a PDO. Stays a region until the register is checked.",
+   "questions": [
+    "Q-OTHER-REG"
+   ]
+  },
+  {
+   "id": "Q123003993",
+   "name": "Koelenhof",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "ZA",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q486972",
+     "label": "human settlement"
+    },
+    {
+     "id": "Q3395383",
+     "label": "agricultural land"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q65040905",
+   "name": "Koshu Valley",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "JP",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q39816",
+     "label": "valley"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q2448665",
+   "name": "Landscape of the Pico Island Vineyard Culture",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "PT",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q210272",
+     "label": "cultural heritage"
+    },
+    {
+     "id": "Q759882",
+     "label": "protected landscape area"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q125701413",
+   "name": "Muldersvlei district",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "ZA",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q82794",
+     "label": "region"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q325555",
+   "name": "Recaș",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "RO",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q1200957",
+     "label": "tourist destination"
+    },
+    {
+     "id": "Q16858213",
+     "label": "town in Romania"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q744483",
+   "name": "Silagiu",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "RO",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q1200957",
+     "label": "tourist destination"
+    },
+    {
+     "id": "Q15921247",
+     "label": "constituent locality"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q641419",
+   "name": "Swan Valley",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "AU",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q60297",
+     "label": "Regions of Western Australia"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q828125",
+   "name": "Tokaj wine region",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "HU",
+   "parent": null,
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q1162817",
+     "label": "geographical small region of Hungary"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "none",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  },
+  {
+   "id": "Q128996548",
+   "name": "vineyards of Nierstein",
+   "set": "unflagged",
+   "group": "other-region",
+   "country": "DE",
+   "parent": "Q567327",
+   "currentKind": "region",
+   "nameEvidence": "none (not flagged by name)",
+   "classes": [
+    {
+     "id": "Q15642541",
+     "label": "human-geographic territorial entity"
+    }
+   ],
+   "classSignals": [],
+   "proposedKind": "region",
+   "parentAction": "keep",
+   "confidence": "high",
+   "basis": "evidence",
+   "status": "proposed",
+   "note": "",
+   "questions": []
+  }
+ ]
+}
