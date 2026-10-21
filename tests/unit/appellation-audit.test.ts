@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import os from "node:os";
-import { APPELLATION_AUDIT_DISCLAIMER, APPELLATION_RULES, auditAppellations, matchDesignations, type AuditRecord } from "@/lib/domain/appellation-audit";
+import { APPELLATION_AUDIT_DISCLAIMER, APPELLATION_RULES, auditAppellations, baseName, matchDesignations, type AuditRecord } from "@/lib/domain/appellation-audit";
 import { auditMarkdown, regionsFromSnapshot } from "../../scripts/catalog/audit-appellations";
 
 const rulesFor = (text: string) => matchDesignations(text).map((m) => m.rule);
@@ -147,6 +147,56 @@ describe("audit report", () => {
   });
 });
 
+describe("review hints", () => {
+  // Shapes taken from the first real snapshot audit (Wikidata, 516 regions).
+  const records = [
+    rec("Q1094448", "Douro (DOC)", ["Douro DOC"]),
+    rec("Q140379672", "Região Demarcada do Douro (RDD)", ["Douro"]),
+    rec("Q2879982", "Arrábida (IPR)", ["Bairrada (DOC)"]),
+    rec("Q2879983", "Bairrada (DOC)"),
+    rec("Q131278789", "Category:Aylés (DO)"),
+    rec("Q322801", "Abona", ["Denominación de Origen Abona"]),
+    rec("Q1019358", "Béarn AOC"),
+  ];
+  const audit = auditAppellations(records);
+  const hints = (id: string) => audit.flaggedRecords.find((f) => f.externalId === id)!.review;
+
+  it("strips only the matched designation to get the base name", () => {
+    expect(baseName("Douro (DOC)", matchDesignations("Douro (DOC)"))).toBe("Douro");
+    expect(baseName("Béarn AOC", matchDesignations("Béarn AOC"))).toBe("Béarn");
+    expect(baseName("Abona", [])).toBe("Abona");
+    expect(baseName("AOC", [{ matched: "AOC" }])).toBe("AOC"); // never empty
+  });
+
+  it("groups by where the designation was found", () => {
+    expect(hints("Q1094448").group).toBe("designation-in-name");
+    expect(hints("Q322801").group).toBe("alias-only");
+    expect(hints("Q2879982").group).toBe("alias-only");
+  });
+
+  it("points at possible duplicate concepts and alias mix-ups without deciding them", () => {
+    expect(hints("Q1094448")).toMatchObject({ baseName: "Douro", sameBaseAs: ["Q140379672"], aliasNamesOf: [] });
+    expect(hints("Q2879982")).toMatchObject({ sameBaseAs: [], aliasNamesOf: ["Q2879983"] });
+    expect(hints("Q1019358")).toMatchObject({ baseName: "Béarn", sameBaseAs: [], aliasNamesOf: [] });
+    // Its own alias never counts as a duplicate of itself.
+    expect(hints("Q2879983").aliasNamesOf).toEqual([]);
+  });
+
+  it("marks Wikimedia namespace pages and counts every hint", () => {
+    expect(hints("Q131278789").namespacePage).toBe(true);
+    expect(hints("Q1094448").namespacePage).toBe(false);
+    expect(audit.review).toEqual({ possibleDuplicates: 1, aliasConflicts: 1, namespacePages: 1 });
+  });
+
+  it("shows the hints in the markdown", () => {
+    const md = auditMarkdown(audit);
+    expect(md).toContain("1 possible duplicate concepts, 1 possible alias mix-ups, 1 Wikimedia namespace pages");
+    expect(md).toContain("designation-in-name; same base name “Douro” as Q140379672");
+    expect(md).toContain("alias-only; alias is the name of Q2879983");
+    expect(md).toContain("designation-in-name; namespace page");
+  });
+});
+
 describe("snapshot audit script", () => {
   const wd = (id: string) => ({ type: "uri", value: `http://www.wikidata.org/entity/${id}` });
   const lit = (value: string) => ({ type: "literal", value });
@@ -178,7 +228,7 @@ describe("snapshot audit script", () => {
     const src = readFileSync("scripts/catalog/audit-appellations.ts", "utf8");
     expect(src).not.toMatch(/server\/db|reference\/import|reference\/lookup|DATABASE_URL|fetch\(|sparql|importCatalogBatch/);
     const domain = readFileSync("src/lib/domain/appellation-audit.ts", "utf8");
-    expect(domain).not.toMatch(/import .* from "(?!\.\/normalize")/);
+    expect(domain).not.toMatch(/import .* from "(?!\.\/(normalize|catalog)")/);
   });
 
   it("runs in the ingest workflow after the fetch and before any database step, writing into the artifact", () => {

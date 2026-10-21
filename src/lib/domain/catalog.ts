@@ -77,6 +77,9 @@ export type Rejection = { kind: keyof ImportBatch; externalId: string; reason: s
 export type ValidatedBatch = { batch: ImportBatch; rejected: Rejection[]; duplicates: { kind: keyof ImportBatch; externalId: string }[] };
 
 const COUNTRY = /^[A-Z]{2}$/;
+/** Wikimedia housekeeping pages ("Category:Aylés (DO)") sometimes carry a place's class; they are never places themselves. */
+const WIKIMEDIA_NAMESPACE = /^(Category|Template|Wikipedia|Portal|Help|Module|File):/i;
+export const isWikimediaNamespaceName = (name: string) => WIKIMEDIA_NAMESPACE.test(name.trim());
 const clean = (s: string | null | undefined) => (s ?? "").trim().replace(/\s+/g, " ");
 const cleanAliases = (name: string, aliases: string[]) => {
   const own = normalizeText(name);
@@ -125,7 +128,8 @@ export function validateBatch(input: ImportBatch): ValidatedBatch {
     return out;
   };
   const countryProblem = (c: string | null) => (c !== null && !COUNTRY.test(c) ? `invalid country code "${c}"` : null);
-  const nameProblem = (n: string) => (!clean(n) ? "missing name" : clean(n).length > 200 ? "name too long" : null);
+  const nameProblem = (n: string) =>
+    !clean(n) ? "missing name" : clean(n).length > 200 ? "name too long" : isWikimediaNamespaceName(n) ? "a Wikimedia namespace page, not a record" : null;
 
   const regions = keep("regions", input.regions, (r) => nameProblem(r.name) ?? countryProblem(r.country), (r) => ({ ...r, name: clean(r.name), aliases: cleanAliases(r.name, r.aliases) }));
   const producers = keep("producers", input.producers, (r) => nameProblem(r.name) ?? countryProblem(r.country), (r) => ({ ...r, name: clean(r.name), aliases: cleanAliases(r.name, r.aliases) }));

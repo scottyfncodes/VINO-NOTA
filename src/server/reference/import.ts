@@ -3,6 +3,10 @@
  * nothing does. Records are matched by (source, external id), so re-running the
  * same snapshot changes nothing. Records missing from a new snapshot are
  * reported as stale, never deleted automatically.
+ *
+ * `only` limits an import to some record types. Every other type is left
+ * exactly as it is: not written, not counted as stale, and its aliases are
+ * neither added nor removed.
  */
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
@@ -26,7 +30,12 @@ export type ImportReport = {
   aliases: { added: number; removed: number };
   rejected: Rejection[];
   duplicates: number;
+  /** The record types this import was allowed to change. */
+  scope: (keyof ImportBatch)[];
 };
+
+export const IMPORT_KINDS = ["regions", "producers", "grapes", "wines", "products"] as const satisfies readonly (keyof ImportBatch)[];
+const ALIAS_ENTITY = { regions: "region", producers: "producer", grapes: "grape", wines: "wine" } as const;
 
 class DryRunRollback extends Error {}
 const CHUNK = 500;
@@ -74,8 +83,16 @@ async function idMap(tx: Tx, table: typeof catalogRegion | typeof catalogProduce
   return new Map(rows.map((r) => [r.externalId, r.id]));
 }
 
-export async function importCatalogBatch(source: CatalogSourceMeta, input: ImportBatch, options: { dryRun: boolean; retrievedAt: Date }): Promise<ImportReport> {
-  const { batch, rejected, duplicates } = validateBatch(input);
+export async function importCatalogBatch(
+  source: CatalogSourceMeta,
+  input: ImportBatch,
+  options: { dryRun: boolean; retrievedAt: Date; only?: (keyof ImportBatch)[] },
+): Promise<ImportReport> {
+  const scope = IMPORT_KINDS.filter((k) => !options.only || options.only.includes(k));
+  if (!scope.length) throw new Error("Import scope is empty.");
+  const inScope = (k: keyof ImportBatch) => scope.includes(k);
+  // Out-of-scope records are dropped before validation, and their existing rows are never loaded, so nothing about them changes.
+  const { batch, rejected, duplicates } = validateBatch(Object.fromEntries(IMPORT_KINDS.map((k) => [k, inScope(k) ? input[k] : []])) as unknown as ImportBatch);
   const report: ImportReport = {
     source: source.id,
     dryRun: options.dryRun,
@@ -87,6 +104,7 @@ export async function importCatalogBatch(source: CatalogSourceMeta, input: Impor
     aliases: { added: 0, removed: 0 },
     rejected,
     duplicates: duplicates.length,
+    scope,
   };
   const at = options.retrievedAt;
   try {
@@ -102,7 +120,7 @@ export async function importCatalogBatch(source: CatalogSourceMeta, input: Impor
       // Regions (parents linked in a second pass, once every id exists).
       const regionRows = batch.regions.map((r) => ({ externalId: r.externalId, sourceId: source.id, kind: r.kind, name: r.name, normalizedName: normalizeText(r.name), country: r.country, confidence: source.confidence, lastVerifiedAt: at, parentExternal: r.parentExternalId }));
       const existingRegions = new Map(
-        (await tx.select().from(catalogRegion).where(eq(catalogRegion.sourceId, source.id))).map((r) => [r.externalId, { ...r, parentExternal: null as string | null }]),
+        (inScope("regions") ? await tx.select().from(catalogRegion).where(eq(catalogRegion.sourceId, source.id)) : []).map((r) => [r.externalId, { ...r, parentExternal: null as string | null }]),
       );
       const regionIdByExternal0 = new Map([...existingRegions.values()].map((r) => [r.id, r.externalId]));
       for (const r of existingRegions.values()) r.parentExternal = r.parentId ? (regionIdByExternal0.get(r.parentId) ?? null) : null;
@@ -117,12 +135,12 @@ export async function importCatalogBatch(source: CatalogSourceMeta, input: Impor
       }
 
       const producerRows = batch.producers.map((p) => ({ externalId: p.externalId, sourceId: source.id, name: p.name, normalizedName: normalizeProducer(p.name), country: p.country, regionId: p.regionExternalId ? (regionIds.get(p.regionExternalId) ?? null) : null, confidence: source.confidence, lastVerifiedAt: at }));
-      const existingProducers = new Map((await tx.select().from(catalogProducer).where(eq(catalogProducer.sourceId, source.id))).map((r) => [r.externalId, r as Record<string, unknown>]));
+      const existingProducers = new Map((inScope("producers") ? await tx.select().from(catalogProducer).where(eq(catalogProducer.sourceId, source.id)) : []).map((r) => [r.externalId, r as Record<string, unknown>]));
       await upsert(tx, catalogProducer, diff(producerRows, existingProducers, ["name", "country", "regionId", "confidence"], report.producers), ["name", "normalizedName", "country", "regionId", "confidence", "lastVerifiedAt"]);
       const producerIds = await idMap(tx, catalogProducer, source.id);
 
       const grapeRows = batch.grapes.map((g) => ({ externalId: g.externalId, sourceId: source.id, name: g.name, normalizedName: normalizeText(g.name), lastVerifiedAt: at }));
-      const existingGrapes = new Map((await tx.select().from(catalogGrape).where(eq(catalogGrape.sourceId, source.id))).map((r) => [r.externalId, r as Record<string, unknown>]));
+      const existingGrapes = new Map((inScope("grapes") ? await tx.select().from(catalogGrape).where(eq(catalogGrape.sourceId, source.id)) : []).map((r) => [r.externalId, r as Record<string, unknown>]));
       await upsert(tx, catalogGrape, diff(grapeRows, existingGrapes, ["name"], report.grapes), ["name", "normalizedName", "lastVerifiedAt"]);
       const grapeIds = await idMap(tx, catalogGrape, source.id);
 
@@ -139,7 +157,7 @@ export async function importCatalogBatch(source: CatalogSourceMeta, input: Impor
         lastVerifiedAt: at,
         grapeKey: w.grapeExternalIds.slice().sort().join(","),
       }));
-      const existingWines = await tx.select().from(catalogWine).where(eq(catalogWine.sourceId, source.id));
+      const existingWines = inScope("wines") ? await tx.select().from(catalogWine).where(eq(catalogWine.sourceId, source.id)) : [];
       const existingWineGrapes = existingWines.length
         ? await tx.select({ wineId: catalogWineGrape.wineId, grapeId: catalogWineGrape.grapeId }).from(catalogWineGrape).where(inArray(catalogWineGrape.wineId, existingWines.map((w) => w.id)))
         : [];
@@ -177,7 +195,7 @@ export async function importCatalogBatch(source: CatalogSourceMeta, input: Impor
         lastVerifiedAt: at,
       }));
       const existingProducts = new Map(
-        (await tx.select().from(catalogProduct).where(eq(catalogProduct.sourceId, source.id))).map((r) => [r.externalId, { ...r, alcoholPct: r.alcoholPct === null ? null : String(Number(r.alcoholPct)) } as Record<string, unknown>]),
+        (inScope("products") ? await tx.select().from(catalogProduct).where(eq(catalogProduct.sourceId, source.id)) : []).map((r) => [r.externalId, { ...r, alcoholPct: r.alcoholPct === null ? null : String(Number(r.alcoholPct)) } as Record<string, unknown>]),
       );
       await upsert(
         tx,
@@ -205,7 +223,10 @@ export async function importCatalogBatch(source: CatalogSourceMeta, input: Impor
       addAliases("producer", producerIds, batch.producers, normalizeProducer);
       addAliases("grape", grapeIds, batch.grapes, normalizeText);
       addAliases("wine", wineIds, batch.wines, normalizeText);
-      const existingAliases = await tx.select().from(catalogAlias).where(eq(catalogAlias.sourceId, source.id));
+      const aliasEntities = scope.flatMap((k) => (k === "products" ? [] : [ALIAS_ENTITY[k]]));
+      const existingAliases = aliasEntities.length
+        ? await tx.select().from(catalogAlias).where(and(eq(catalogAlias.sourceId, source.id), inArray(catalogAlias.entity, aliasEntities)))
+        : [];
       const key = (a: { entity: string; entityId: string; normalizedAlias: string }) => `${a.entity}|${a.entityId}|${a.normalizedAlias}`;
       const existingKeys = new Set(existingAliases.map(key));
       const desiredKeys = new Set(desiredAliases.map(key));
