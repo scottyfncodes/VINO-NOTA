@@ -1,6 +1,10 @@
 # Fix 3: region classification proposal
 
-Status: **proposal. Nothing has been reclassified.** No catalog data, kinds, parent links or aliases have changed in `catalog-preview` or Production. The app doesn't read `catalog-classification-proposal.json`.
+Status: **approved on 2026-10-21 with the recommended defaults** (listed under "Decisions needed").
+
+- **Where it lives:** the decisions are implemented as reviewed data in `src/server/reference/region-decisions.ts`, which tests check against this proposal.
+- **When it takes effect:** only on the next import. Until then, no catalog data in `catalog-preview` or Production has changed.
+- **This file is not read by the app.** `catalog-classification-proposal.json` is a record of the review.
 
 Sources:
 - **Class evidence:** run [39538719311](https://github.com/scottyfncodes/VINO-NOTA/actions/runs/39538719311) on `main` at `e813598` (artifact `wikidata-snapshot-39538719311`).
@@ -29,23 +33,23 @@ Every row says whether its conclusion rests on **evidence** (the Wikidata label,
 6. **Unknown or geographic classes** (valley, town, landscape, trademark…) leave the record unchanged.
 7. **Hierarchy:** parent links are kept unless they form a loop or invert breadth, e.g. a VR under a DOC. Only those links are proposed for removal.
 
-## Decisions needed
+## Decisions needed (approved defaults in bold)
 
-- **Q-PT-SUB** (19 records): Portuguese DOC sub-regions (19, e.g. Borba under Alentejo): model them as appellations with their parent DOC (recommended), or as subregions?
-- **Q-PT-IPR** (9 records): Portuguese IPRs (9): accept them as appellations now, or wait for an IVV register check of which are still IPRs and which were promoted or merged?
-- **Q-DOURO** (4 records): Douro/Port: approve RDD as a region with no parent (breaking the RDD↔Port loop), Douro (DOC) and Port Wine as appellations under it, and dropping the 'Região Demarcada do Douro' alias from Douro (DOC)?
-- **Q-MADEIRA** (1 record): Madeira wine (DOC): keep as the Madeira DOC appellation, or drop it because the item describes the wine?
-- **Q-ARRABIDA** (1 record): Q2879982 'Arrábida (IPR)' with alias 'Bairrada (DOC)': drop it (recommended until Wikidata is checked), keep it as Arrábida, or treat it as Bairrada DOC?
-- **Q-ES-DUAL** (7 records): Spanish DOs named like regions (Rioja, Ribera del Duero, Bierzo, Cariñena, Somontano, Pla de Bages, Abona): appellation (recommended) or keep region?
-- **Q-ES-PGI** (4 records): Spanish PGIs (4): store as appellation (recommended; the slot a label uses), or keep region? Is Ribera del Queiles a PGI (label) or a DO (class)?
-- **Q-IT-DUP** (5 records): Italian twins (Bivongi, Friuli Annia, Colli Piacentini): keep the DOC-labelled record as the appellation and drop the plain Q14013xxxx twin, or keep both?
-- **Q-NZ-SUB** (2 records): Gimblett Gravels and Bridge Pa Triangle: subregion of Hawke's Bay, or keep region?
-- **Q-NZ-COUNTRY** (1 record): 'New Zealand wine' (country-level item): drop it and clear North Canterbury's parent?
-- **Q-CL** (8 records): Chilean DOs (8): keep as regions (recommended)? Should Rapel ⊂ Valle Central and Colchagua/Cachapoal ⊂ Rapel be added, even though Wikidata has no parent links?
-- **Q-OTHER-REG** (2 records): Don Valley (RU) and Nemea (GR): accept Don Valley as an appellation on its class alone, and keep Nemea a region until a register check?
-- **Q-MINHO** (1 record): Minho (VR) / Vinho Verde (DOC): remove the inverted parent link (recommended)? Should Vinho Verde get Minho (VR) as a region parent? (Lookup would then offer 'Minho (VR)' as the region.)
-- **Q-VENTOUX** (1 record): Côtes du Ventoux AOC: remove its parent link to Côtes du Rhône AOC?
-- **Q-UNESCO** (1 record): Langhe and Montferrat: remove their parent link to the UNESCO landscape record?
+- **Q-PT-SUB** (19 records): Portuguese DOC sub-regions (19, e.g. Borba under Alentejo): model them as appellations with their parent DOC (recommended), or as subregions? **Approved: appellation, keeping the parent DOC.**
+- **Q-PT-IPR** (9 records): Portuguese IPRs (9): accept them as appellations now, or wait for an IVV register check of which are still IPRs and which were promoted or merged? **Approved: appellation now (the kind is the same either way); register check later.**
+- **Q-DOURO** (4 records): Douro/Port: approve RDD as a region with no parent (breaking the RDD↔Port loop), Douro (DOC) and Port Wine as appellations under it, and dropping the 'Região Demarcada do Douro' alias from Douro (DOC)? **Approved: RDD region with no parent; Douro (DOC) and Port Wine appellations under it; alias 'Região Demarcada do Douro' dropped from Douro (DOC).**
+- **Q-MADEIRA** (1 record): Madeira wine (DOC): keep as the Madeira DOC appellation, or drop it because the item describes the wine? **Approved: keep as the Madeira DOC appellation.**
+- **Q-ARRABIDA** (1 record): Q2879982 'Arrábida (IPR)' with alias 'Bairrada (DOC)': drop it (recommended until Wikidata is checked), keep it as Arrábida, or treat it as Bairrada DOC? **Approved: exclude Q2879982 until Wikidata is checked.**
+- **Q-ES-DUAL** (7 records): Spanish DOs named like regions (Rioja, Ribera del Duero, Bierzo, Cariñena, Somontano, Pla de Bages, Abona): appellation (recommended) or keep region? **Approved: appellation.**
+- **Q-ES-PGI** (4 records): Spanish PGIs (4): store as appellation (recommended; the slot a label uses), or keep region? Is Ribera del Queiles a PGI (label) or a DO (class)? **Approved: appellation; Ribera del Queiles treated as a PGI (label).**
+- **Q-IT-DUP** (5 records): Italian twins (Bivongi, Friuli Annia, Colli Piacentini): keep the DOC-labelled record as the appellation and drop the plain Q14013xxxx twin, or keep both? **Approved: DOC-labelled records become appellations; the plain twins are kept, also as appellations (nothing removed).**
+- **Q-NZ-SUB** (2 records): Gimblett Gravels and Bridge Pa Triangle: subregion of Hawke's Bay, or keep region? **Approved: subregion of Hawke's Bay.**
+- **Q-NZ-COUNTRY** (1 record): 'New Zealand wine' (country-level item): drop it and clear North Canterbury's parent? **Approved: exclude 'New Zealand wine'; clear North Canterbury's parent.**
+- **Q-CL** (8 records): Chilean DOs (8): keep as regions (recommended)? Should Rapel ⊂ Valle Central and Colchagua/Cachapoal ⊂ Rapel be added, even though Wikidata has no parent links? **Approved: keep as regions; no hierarchy added.**
+- **Q-OTHER-REG** (2 records): Don Valley (RU) and Nemea (GR): accept Don Valley as an appellation on its class alone, and keep Nemea a region until a register check? **Approved: Don Valley appellation; Nemea stays a region.**
+- **Q-MINHO** (1 record): Minho (VR) / Vinho Verde (DOC): remove the inverted parent link (recommended)? Should Vinho Verde get Minho (VR) as a region parent? (Lookup would then offer 'Minho (VR)' as the region.) **Approved: remove Minho (VR)'s parent; no new parent for Vinho Verde.**
+- **Q-VENTOUX** (1 record): Côtes du Ventoux AOC: remove its parent link to Côtes du Rhône AOC? **Approved: remove the parent link.**
+- **Q-UNESCO** (1 record): Langhe and Montferrat: remove their parent link to the UNESCO landscape record? **Approved: remove Langhe's and Montferrat's parent links.**
 
 ## Exceptions and specific resolutions
 
