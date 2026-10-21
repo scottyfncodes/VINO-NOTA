@@ -110,7 +110,13 @@ The importer already implements these rules, and tests cover them:
   - A **schema-only** Neon branch, `catalog-preview`, in project `twilight-paper-99193935`. It is created in the Neon Console with auto-delete turned off, so it copies no user rows.
   - A schema-only branch starts with an empty migration journal. Its `drizzle.__drizzle_migrations` table is seeded with Production's 2 migration hashes (schema metadata, not user data) so that `db:migrate` doesn't re-create existing tables.
   - Its endpoint id is recorded before any write, and must differ from `ep-winter-glade-b7ewqow0`.
-  - The import job reads it from the `catalog-preview` GitHub environment secret `CATALOG_PREVIEW_DATABASE_URL`, and gets the Production id from the variable `PRODUCTION_DB_ENDPOINT_ID`. Neither exists yet.
+  - The import job reads it from the `catalog-preview` GitHub environment secret `CATALOG_PREVIEW_DATABASE_URL`, and gets the Production id from the variable `PRODUCTION_DB_ENDPOINT_ID`.
+  - Before anything else, the job runs `catalog:inspect-target` read-only. It fails unless the secret points at the `preview_endpoint_id` input and the database holds no user accounts.
+  - The workflow input `preview_mode` takes three values:
+    - `verify` (the default) stops after that check;
+    - `dry-run` adds the migration (a no-op) and the dry run;
+    - `import` applies, re-imports and validates.
+  - `snapshot_run_id` makes an import use the exact snapshot whose dry run was reviewed.
 - **Failure:**
   - Each source imports in one transaction. Any error rolls the whole batch back; an integration test covers this.
   - Re-running the same snapshot is the recovery step. It is safe because the import is idempotent; a new integration test covers this too.

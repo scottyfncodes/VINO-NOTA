@@ -7,11 +7,15 @@
 # audits region names for appellation designations (heuristic, report only).
 # Needs no secrets.
 #
-# Job 2 (only when import_to_preview is ticked): import the same snapshot into a
-# Preview database. Runs in the `catalog-preview` environment and needs its
-# CATALOG_PREVIEW_DATABASE_URL secret plus the PRODUCTION_DB_ENDPOINT_ID
-# variable; the isolation guard refuses the Production endpoint and fails
-# closed if the variable is missing.
+# Job 2 (only when import_to_preview is ticked): works on the Preview database
+# in the `catalog-preview` environment (CATALOG_PREVIEW_DATABASE_URL secret,
+# PRODUCTION_DB_ENDPOINT_ID variable). It first proves, read-only, that the
+# secret points at preview_endpoint_id and holds no user accounts. Then, by
+# preview_mode: verify stops there; dry-run also migrates and dry-runs; import
+# also applies, re-imports (must change nothing) and validates. snapshot_run_id
+# imports an earlier run's snapshot (e.g. the one whose dry run was reviewed)
+# instead of fetching a new one. The isolation guard refuses the Production
+# endpoint and fails closed if the variable is missing.
 name: Catalog ingest (Wikidata)
 
 on:
@@ -25,6 +29,19 @@ on:
         description: Also import into the Preview database (catalog-preview environment)
         type: boolean
         default: false
+      preview_mode:
+        description: "Preview job: verify (read-only target check), dry-run, or import"
+        type: choice
+        options: [verify, dry-run, import]
+        default: verify
+      preview_endpoint_id:
+        description: Neon endpoint the Preview secret must point at (e.g. ep-purple-hat-b7y33lux)
+        type: string
+        default: ""
+      snapshot_run_id:
+        description: Re-use the snapshot from this earlier run instead of fetching a new one
+        type: string
+        default: ""
       preview_record_types:
         description: Record types the Preview import may change (comma-separated; others are left untouched)
         type: string
@@ -32,6 +49,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # to download an earlier run's snapshot artifact
 
 concurrency:
   group: catalog-ingest
@@ -39,6 +57,8 @@ concurrency:
 
 jobs:
   fetch-and-validate:
+    # Skipped when re-using an earlier snapshot, and for a verify-only Preview run (which needs no snapshot).
+    if: ${{ inputs.snapshot_run_id == '' && !(inputs.import_to_preview == true && inputs.preview_mode == 'verify') }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -86,7 +106,7 @@ jobs:
 
   import-preview:
     needs: fetch-and-validate
-    if: ${{ inputs.import_to_preview == true }}
+    if: ${{ !cancelled() && inputs.import_to_preview == true && (needs.fetch-and-validate.result == 'success' || (needs.fetch-and-validate.result == 'skipped' && (inputs.snapshot_run_id != '' || inputs.preview_mode == 'verify'))) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: catalog-preview
@@ -96,31 +116,46 @@ jobs:
       PRODUCTION_DB_ENDPOINT_ID: ${{ vars.PRODUCTION_DB_ENDPOINT_ID }}
       DATABASE_URL: ${{ secrets.CATALOG_PREVIEW_DATABASE_URL }}
       SNAPSHOT: snapshot
+      MODE: ${{ inputs.preview_mode || 'verify' }}
+      EXPECTED_ENDPOINT: ${{ inputs.preview_endpoint_id }}
+      SNAPSHOT_RUN: ${{ inputs.snapshot_run_id || github.run_id }}
       ONLY: ${{ inputs.preview_record_types || 'regions,grapes' }}
     steps:
       - name: Check configuration
         run: |
           [ -n "$DATABASE_URL" ] || { echo "::error::CATALOG_PREVIEW_DATABASE_URL is not set in the catalog-preview environment."; exit 1; }
           [ -n "$PRODUCTION_DB_ENDPOINT_ID" ] || { echo "::error::PRODUCTION_DB_ENDPOINT_ID variable is not set in the catalog-preview environment."; exit 1; }
+          [ -n "$EXPECTED_ENDPOINT" ] || { echo "::error::Set the preview_endpoint_id input to the endpoint the secret must point at."; exit 1; }
+          [ "$EXPECTED_ENDPOINT" != "$PRODUCTION_DB_ENDPOINT_ID" ] || { echo "::error::preview_endpoint_id is the Production endpoint."; exit 1; }
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Prove the target (read only; endpoint and no user accounts)
+        run: npm run -s catalog:inspect-target -- --expect-endpoint "$EXPECTED_ENDPOINT" --expect-no-users
       - uses: actions/download-artifact@v4
+        if: ${{ env.MODE != 'verify' }}
         with:
-          name: wikidata-snapshot-${{ github.run_id }}
+          name: wikidata-snapshot-${{ env.SNAPSHOT_RUN }}
           path: snapshot
+          run-id: ${{ env.SNAPSHOT_RUN }}
+          github-token: ${{ github.token }}
       - name: Migrate Preview database (same migrations the Preview build applies)
+        if: ${{ env.MODE != 'verify' }}
         run: npm run -s db:migrate
       - name: Dry run against Preview
+        if: ${{ env.MODE != 'verify' }}
         run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --only "$ONLY" --report preview-dry-run.json
       - name: Import into Preview
+        if: ${{ env.MODE == 'import' }}
         run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --only "$ONLY" --apply --report preview-import.json
       - name: Re-import into Preview (must change nothing)
+        if: ${{ env.MODE == 'import' }}
         run: npm run -s catalog:import -- --source wikidata --dir "$SNAPSHOT" --only "$ONLY" --apply --expect-unchanged --report preview-reimport.json
       - name: Validate Preview
+        if: ${{ env.MODE == 'import' }}
         run: npm run -s catalog:validate -- --source wikidata --report preview-validate.json
       - uses: actions/upload-artifact@v4
         if: always()

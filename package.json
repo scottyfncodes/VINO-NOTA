@@ -20,7 +20,8 @@
     "catalog:review": "tsx scripts/catalog/review.ts",
     "catalog:validate": "tsx scripts/catalog/validate.ts",
     "catalog:resolve-ids": "tsx scripts/catalog/resolve-wikidata.ts",
-    "catalog:audit-appellations": "tsx scripts/catalog/audit-appellations.ts"
+    "catalog:audit-appellations": "tsx scripts/catalog/audit-appellations.ts",
+    "catalog:inspect-target": "tsx scripts/catalog/inspect-target.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
