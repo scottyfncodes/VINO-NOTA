@@ -8,7 +8,7 @@ import { getDb } from "@/server/db";
 import { normalizeProducer, normalizeText } from "@/lib/domain/normalize";
 import { countryCodeFromName } from "@/lib/domain/countries";
 import { FILL_SCORE, SUGGEST_SCORE, type CatalogEvidence, type RegionKind } from "@/lib/domain/catalog";
-import { placeHierarchy } from "@/lib/domain/place";
+import { placeHierarchy, placeQueries } from "@/lib/domain/place";
 
 export type LookupInput = { producer: string | null; name: string | null; country: string | null; region: string | null; appellation: string | null };
 export type CatalogMatchSummary = { kind: "producer" | "place" | "wine"; name: string; score: number; source: string };
@@ -30,17 +30,22 @@ const rows = async (tx: { execute: (q: ReturnType<typeof sql>) => Promise<unknow
   return (Array.isArray(r) ? r : ((r as { rows?: Row[] }).rows ?? [])) as Row[];
 };
 
+/** Fuzzy candidates good enough to suggest, keeping every one tied at the top score so tie-breaks and ambiguity see them all. */
+const topScoring = (found: Row[]) => {
+  const ok = found.filter((r) => Number(r.score) >= SUGGEST_SCORE);
+  return ok.filter((r) => Number(r.score) === Number(ok[0]?.score));
+};
+
 export async function lookupCatalog(input: LookupInput): Promise<LookupResult> {
   const producerKey = normalizeProducer(input.producer);
   const nameKey = normalizeText(input.name);
-  const placeKey = normalizeText(input.appellation) || normalizeText(input.region);
-  const placeMatchedFrom = normalizeText(input.appellation) ? "appellation" : "region";
+  const places = placeQueries(input.appellation, input.region);
   const country = input.country ? countryCodeFromName(input.country) : null;
   const empty: LookupResult = { evidence: {}, matches: [] };
-  if (!producerKey && !placeKey) return empty;
+  if (!producerKey && !places.length) return empty;
 
-  // The place's region also depends on where the place text came from and on the label's region text.
-  const cacheKey = [producerKey, nameKey, placeKey, placeMatchedFrom, normalizeText(input.region), country ?? ""].join("|");
+  // The place depends on both the label's appellation and region text.
+  const cacheKey = [producerKey, nameKey, normalizeText(input.appellation), normalizeText(input.region), country ?? ""].join("|");
   const hit = cache.get(cacheKey);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.result;
 
@@ -69,7 +74,7 @@ export async function lookupCatalog(input: LookupInput): Promise<LookupResult> {
                 WHERE p.normalized_name % ${producerKey}
                 ORDER BY score DESC LIMIT 5`,
           );
-          found = found.filter((r) => Number(r.score) >= SUGGEST_SCORE).slice(0, 1);
+          found = topScoring(found);
         }
         if (found.length) {
           const countries = new Set(found.map((r) => r.country));
@@ -81,25 +86,37 @@ export async function lookupCatalog(input: LookupInput): Promise<LookupResult> {
         }
       }
 
-      // Place: the appellation (or region) the label named, with its hierarchy.
-      if (placeKey) {
-        let found = await rows(
+      // Place: the appellation the label named (as written, then without its designation), else its region
+      // text, with the hierarchy. Exact matches for every text in one query; fuzzy only per source.
+      if (places.length) {
+        const keys = places.map((q) => q.key);
+        const exact = await rows(
           tx,
-          sql`SELECT DISTINCT r.id, r.kind, r.name, r.country, r.confidence, r.source_id, 1.0::float AS score
+          sql`SELECT DISTINCT r.id, r.kind, r.name, r.country, r.confidence, r.source_id, 1.0::float AS score, k.key
               FROM catalog_region r JOIN catalog_source s ON s.id = r.source_id AND s.approved_for_lookup
               LEFT JOIN catalog_alias a ON a.entity = 'region' AND a.entity_id = r.id
-              WHERE r.normalized_name = ${placeKey} OR a.normalized_alias = ${placeKey}
-              LIMIT 10`,
+              JOIN unnest(ARRAY[${sql.join(keys.map((k) => sql`${k}`), sql`, `)}]::text[]) AS k(key) ON r.normalized_name = k.key OR a.normalized_alias = k.key
+              LIMIT 40`,
         );
-        if (!found.length) {
-          found = await rows(
-            tx,
-            sql`SELECT r.id, r.kind, r.name, r.country, r.confidence, r.source_id, similarity(r.normalized_name, ${placeKey})::float AS score
-                FROM catalog_region r JOIN catalog_source s ON s.id = r.source_id AND s.approved_for_lookup
-                WHERE r.normalized_name % ${placeKey}
-                ORDER BY score DESC LIMIT 3`,
+        const fuzzy = async (key: string) =>
+          topScoring(
+            await rows(
+              tx,
+              sql`SELECT r.id, r.kind, r.name, r.country, r.confidence, r.source_id, similarity(r.normalized_name, ${key})::float AS score
+                  FROM catalog_region r JOIN catalog_source s ON s.id = r.source_id AND s.approved_for_lookup
+                  WHERE r.normalized_name % ${key}
+                  ORDER BY score DESC, r.id LIMIT 10`,
+            ),
           );
-          found = found.filter((r) => Number(r.score) >= SUGGEST_SCORE).slice(0, 1);
+        let found: Row[] = [];
+        let placeMatchedFrom: "appellation" | "region" = "appellation";
+        for (const source of ["appellation", "region"] as const) {
+          const tried = places.filter((q) => q.matchedFrom === source);
+          if (!tried.length) continue;
+          const firstExact = tried.find((q) => exact.some((r) => r.key === q.key));
+          found = firstExact ? exact.filter((r) => r.key === firstExact.key) : await fuzzy(tried[0].key);
+          placeMatchedFrom = source;
+          if (found.length) break;
         }
         if (country) {
           const inCountry = found.filter((r) => r.country === country || r.country === null);
