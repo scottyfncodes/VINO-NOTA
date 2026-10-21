@@ -96,3 +96,33 @@ export function selectDatabaseUrl(env: Record<string, string | undefined> = proc
   if (env.VERCEL_ENV === "preview" && uat) return { url: uat, source: "CATALOG_UAT_DATABASE_URL" };
   return env.DATABASE_URL ? { url: env.DATABASE_URL, source: "DATABASE_URL" } : null;
 }
+
+export type MigrationPlan = { action: "migrate" } | { action: "check"; reason: string } | { action: "refuse"; reason: string };
+
+/**
+ * What `scripts/migrate.ts` may do against this target. Production is never
+ * migrated from a build: a Production build only checks that nothing is
+ * pending, so a deployment that needs a migration fails until the approved
+ * Production migration workflow has applied it. Applying to Production also
+ * needs --allow-production and the endpoint typed in MIGRATION_CONFIRM_ENDPOINT.
+ */
+export function migrationPlan(target: DbTarget, env: Record<string, string | undefined>, argv: string[]): MigrationPlan {
+  const isProduction = target.endpointId === PRODUCTION_ENDPOINT_ID;
+  if (env.VERCEL && (isProduction || env.VERCEL_ENV === "production")) {
+    return { action: "check", reason: "Production builds never migrate; the Production migration workflow does." };
+  }
+  if (argv.includes("--check")) return { action: "check", reason: "--check" };
+  if (!isProduction) return { action: "migrate" };
+  if (argv.includes("--allow-production") && env.MIGRATION_CONFIRM_ENDPOINT?.trim().toLowerCase() === PRODUCTION_ENDPOINT_ID) {
+    return { action: "migrate" };
+  }
+  return {
+    action: "refuse",
+    reason: `Refusing to migrate the Production database (${PRODUCTION_ENDPOINT_ID}). Use the Production migration workflow, which passes --allow-production and MIGRATION_CONFIRM_ENDPOINT.`,
+  };
+}
+
+/** Journal entries newer than the last applied migration, the same rule drizzle's migrator uses. */
+export function pendingMigrations(journal: { tag: string; when: number }[], lastAppliedMillis: number | null): string[] {
+  return journal.filter((m) => lastAppliedMillis === null || m.when > lastAppliedMillis).map((m) => m.tag);
+}

@@ -5,6 +5,8 @@ import {
   PRODUCTION_ENDPOINT_ID,
   PreviewGuardMisconfiguredError,
   PreviewGuardNotConfiguredError,
+  migrationPlan,
+  pendingMigrations,
   ProductionDatabaseInPreviewError,
   selectDatabaseUrl,
 } from "@/server/db/target";
@@ -97,5 +99,49 @@ describe("selectDatabaseUrl", () => {
     // The UAT endpoint itself passes, and nothing loggable carries the credentials.
     expect(assertPreviewIsolation(UAT, { ...env, CATALOG_UAT_DATABASE_URL: UAT })).toMatchObject({ endpointId: "ep-bitter-silence-b7b2e3ug" });
     expect(JSON.stringify(assertPreviewIsolation(UAT, { ...env, CATALOG_UAT_DATABASE_URL: UAT }))).not.toContain("uat-secret");
+  });
+});
+
+describe("migrationPlan", () => {
+  const prod = describeDatabaseUrl(PROD);
+  const preview = describeDatabaseUrl(PREVIEW);
+  const local = describeDatabaseUrl("postgresql://vino:vino@localhost:5432/vinonota");
+  const confirmed = { MIGRATION_CONFIRM_ENDPOINT: PRODUCTION_ENDPOINT_ID };
+
+  it("never migrates from a Production build, even with the override flags", () => {
+    for (const target of [prod, preview, local]) {
+      expect(migrationPlan(target, { VERCEL: "1", VERCEL_ENV: "production", ...confirmed }, ["--allow-production"]).action).toBe("check");
+    }
+    // A Production endpoint reached from any Vercel build is check-only too.
+    expect(migrationPlan(prod, { VERCEL: "1", VERCEL_ENV: "preview" }, []).action).toBe("check");
+  });
+
+  it("lets Preview builds, CI and local runs migrate their own databases", () => {
+    expect(migrationPlan(preview, { VERCEL: "1", VERCEL_ENV: "preview" }, [])).toEqual({ action: "migrate" });
+    expect(migrationPlan(local, {}, [])).toEqual({ action: "migrate" });
+    expect(migrationPlan(local, {}, ["--check"]).action).toBe("check");
+  });
+
+  it("refuses Production outside a build unless both --allow-production and the typed endpoint are given", () => {
+    expect(migrationPlan(prod, {}, []).action).toBe("refuse");
+    expect(migrationPlan(prod, {}, ["--allow-production"]).action).toBe("refuse");
+    expect(migrationPlan(prod, confirmed, []).action).toBe("refuse");
+    expect(migrationPlan(prod, { MIGRATION_CONFIRM_ENDPOINT: "ep-other-endpoint-b7aaaaaa" }, ["--allow-production"]).action).toBe("refuse");
+    expect(migrationPlan(prod, confirmed, ["--allow-production"])).toEqual({ action: "migrate" });
+    // Checking Production is read-only and always allowed.
+    expect(migrationPlan(prod, {}, ["--check"]).action).toBe("check");
+  });
+});
+
+describe("pendingMigrations", () => {
+  const journal = [
+    { tag: "0000_initial", when: 100 },
+    { tag: "0001_catalog", when: 200 },
+    { tag: "0002_next", when: 300 },
+  ];
+  it("lists entries newer than the last applied one, like drizzle's migrator", () => {
+    expect(pendingMigrations(journal, null)).toEqual(["0000_initial", "0001_catalog", "0002_next"]);
+    expect(pendingMigrations(journal, 200)).toEqual(["0002_next"]);
+    expect(pendingMigrations(journal, 300)).toEqual([]);
   });
 });
