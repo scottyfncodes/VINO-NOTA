@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { namesDesignation, placeHierarchy, type PlaceNode } from "@/lib/domain/place";
+import { namesDesignation, placeHierarchy, placeQueries, tidyRegionName, type PlaceNode } from "@/lib/domain/place";
 
 const region = (name: string): PlaceNode => ({ kind: "region", name });
 const subregion = (name: string): PlaceNode => ({ kind: "subregion", name });
@@ -41,7 +41,7 @@ describe("placeHierarchy", () => {
   it("skips designation-bearing ancestors instead of offering them", () => {
     // Côtes du Ventoux AOC's parent in the real snapshot is "Côtes du Rhône AOC", stored as a region.
     expect(placeHierarchy(region("Côtes du Ventoux AOC"), [region("Côtes du Rhône AOC")], fromRegion("Côtes du Ventoux"))).toEqual({ region: null, subregion: null });
-    expect(placeHierarchy(appellation("Borba"), [region("Alentejo (DOC)"), region("Portugal wine")], fromAppellation)).toEqual({ region: "Portugal wine", subregion: null });
+    expect(placeHierarchy(appellation("Borba"), [region("Alentejo (DOC)"), region("Portugal wine")], fromAppellation)).toEqual({ region: "Portugal", subregion: null });
     expect(placeHierarchy(appellation("X"), [subregion("Bairrada (DOC)"), subregion("Beiras")], fromAppellation)).toEqual({ region: null, subregion: "Beiras" });
   });
 });
@@ -50,5 +50,56 @@ describe("namesDesignation", () => {
   it("uses the appellation audit's rules", () => {
     for (const name of ["Margaux AOC", "Douro (DOC)", "Priorat (DO)", "Calatayud PDO", "Schilcherland DAC", "Barolo DOCG"]) expect(namesDesignation(name)).toBe(true);
     for (const name of ["Rioja", "Bordeaux", "Douro", "Médoc", "Vale do Douro", "Dão", "Central Otago wine region"]) expect(namesDesignation(name)).toBe(false);
+  });
+});
+
+describe("tidyRegionName", () => {
+  it("drops the awkward Wikidata suffixes seen in the snapshot", () => {
+    const cases: [string, string][] = [
+      ["Burgundy wine region", "Burgundy"],
+      ["Bordeaux wine region", "Bordeaux"],
+      ["Hawke's Bay wine region", "Hawke's Bay"],
+      ["Auckland wine region", "Auckland"],
+      ["Região Demarcada do Douro (RDD)", "Região Demarcada do Douro"],
+      ["Port Phillip Geographical Indication", "Port Phillip"],
+      ["Portugal wine", "Portugal"],
+      ["Mendoza wine-producing region", "Mendoza"],
+      ["Minho (VR)", "Minho"],
+    ];
+    for (const [raw, tidy] of cases) expect(tidyRegionName(raw), raw).toBe(tidy);
+  });
+
+  it("leaves other names alone and never returns an empty string", () => {
+    for (const name of ["Rioja", "Médoc", "Landscape of the Pico Island Vineyard Culture", "Vale do Douro"]) expect(tidyRegionName(name)).toBe(name);
+    expect(tidyRegionName("Wine")).toBe("Wine");
+    expect(tidyRegionName("(RDD)")).toBe("(RDD)");
+  });
+
+  it("is applied to what placeHierarchy offers, and a label naming the tidied name still counts", () => {
+    expect(placeHierarchy(appellation("Pommard"), [region("Burgundy wine region")], fromAppellation)).toEqual({ region: "Burgundy", subregion: null });
+    expect(placeHierarchy(region("Burgundy wine region"), [], { matchedFrom: "appellation", region: "Burgundy" })).toEqual({ region: "Burgundy", subregion: null });
+  });
+});
+
+describe("placeQueries", () => {
+  it("tries the appellation, its designation-stripped form, then the region text", () => {
+    expect(placeQueries("Rioja DOCa", "Rioja Alta")).toEqual([
+      { key: "rioja doca", matchedFrom: "appellation" },
+      { key: "rioja", matchedFrom: "appellation" },
+      { key: "rioja alta", matchedFrom: "region" },
+    ]);
+    expect(placeQueries("Douro (DOC)", null)).toEqual([
+      { key: "douro doc", matchedFrom: "appellation" },
+      { key: "douro", matchedFrom: "appellation" },
+    ]);
+  });
+
+  it("drops duplicates (first source wins) and empty texts", () => {
+    expect(placeQueries("Rioja DOCa", "Rioja")).toEqual([
+      { key: "rioja doca", matchedFrom: "appellation" },
+      { key: "rioja", matchedFrom: "appellation" },
+    ]);
+    expect(placeQueries(null, "Bordeaux")).toEqual([{ key: "bordeaux", matchedFrom: "region" }]);
+    expect(placeQueries("  ", null)).toEqual([]);
   });
 });

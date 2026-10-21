@@ -33,8 +33,10 @@ The pipeline is: photo → Claude reads the label (one call, unchanged) →
 confirms.
 
 **Lookup bounds**
-- One read transaction with `SET LOCAL statement_timeout = 1500`, and LIMITs of
-  5 or fewer on every query.
+- One read transaction with `SET LOCAL statement_timeout = 1500`, and small
+  LIMITs (at most 40 rows) on every query. The place takes at most three
+  queries: one exact query for every text it tries, then a fuzzy query for the
+  appellation, then one for the region text.
 - An in-memory LRU cache (500 readings, 10 minutes).
 - Any error or timeout returns no evidence, and the label reading goes through
   unchanged.
@@ -42,12 +44,18 @@ confirms.
 
 **Matching**
 - **Producer:** exact match on the normalised name or an alias (score 1),
-  otherwise the best trigram similarity of at least 0.6. If several exact
-  matches have different countries, the score is capped at 0.85, so the
+  otherwise the best trigram similarity of at least 0.6, keeping every
+  candidate tied at the top score. If several matches have different countries, the score is capped at 0.85, so the
   producer can't fill fields, and the country is cleared.
-- **Place:** the appellation (or else the region) the label named. Matches are
-  narrowed to the label's country. A place found in several countries is marked
-  ambiguous and fills nothing.
+- **Place:** tried in order, stopping at the first that matches:
+  1. the label's appellation as written, then without its designation
+     ("Rioja DOCa" → "Rioja"): exact first, then fuzzy;
+  2. if the appellation found nothing, the label's region text the same way.
+  Fuzzy matching keeps every candidate tied at the top score, so an
+  appellation wins a tie with a region of the same name, and a tie between two
+  places of the same kind is marked ambiguous. Matches are narrowed to the
+  label's country. A place found in several countries is marked ambiguous and
+  fills nothing.
 - **Region and subregion from a place** (`src/lib/domain/place.ts`):
   - A place matched from the label's appellation text is the appellation the
     label named. It supplies its own name as the region only when the label's
@@ -58,6 +66,11 @@ confirms.
   - Ancestors that fail either rule are skipped, so a missing value stays
     missing rather than becoming a wrong one. Real appellations still get
     their hierarchy: Margaux → region Bordeaux, subregion Médoc.
+  - Names offered are tidied for display: a trailing "wine region",
+    "wine-producing region", "Geographical Indication", "wine" or
+    parenthetical tag is dropped ("Burgundy wine region" → "Burgundy",
+    "Região Demarcada do Douro (RDD)" → "Região Demarcada do Douro"). The
+    catalog keeps the source name.
 - **Wine:** matched only among the wines of an exactly matched producer, never
   by name alone.
 

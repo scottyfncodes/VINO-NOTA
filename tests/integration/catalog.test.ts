@@ -389,9 +389,61 @@ describe("reviewed region decisions (Fix 3) through the importer and lookup", ()
   it("gives the lookup outcomes the proposal promises", async () => {
     clearCatalogLookupCache();
     expect(await place({ appellation: "Valle de la Orotava" })).toMatchObject({ name: "Valle de la Orotava", kind: "appellation", ambiguous: false, region: null });
-    expect(await place({ appellation: "Douro (DOC)" })).toMatchObject({ kind: "appellation", region: "Região Demarcada do Douro (RDD)" });
+    expect(await place({ appellation: "Douro (DOC)" })).toMatchObject({ kind: "appellation", region: "Região Demarcada do Douro" }); // "(RDD)" tidied for display
     expect(await place({ appellation: "Borba (DOC)" })).toMatchObject({ kind: "appellation", region: null, subregion: null });
     expect(await place({ appellation: "Vinho Verde" })).toMatchObject({ name: "Vinho Verde (DOC)", region: null });
-    expect(await place({ region: "Minho (VR)" })).toMatchObject({ name: "Minho (VR)", region: "Minho (VR)" });
+    expect(await place({ region: "Minho (VR)" })).toMatchObject({ name: "Minho (VR)", region: "Minho" });
+  });
+});
+
+describe("lookup fallbacks: fuzzy ties, designation suffixes, region text, tidied names", () => {
+  const batch = (): ImportBatch => {
+    const b = fixture();
+    const r = (externalId: string, kind: "region" | "appellation", name: string, country: string | null, parentExternalId: string | null = null) =>
+      ({ externalId, kind, name, country, parentExternalId, aliases: [] });
+    b.regions.push(
+      // The real Arrábida pair: the excluded "Arrábida (IPR)" region and the real IPR under Palmela.
+      r("Q2879982", "region", "Arrábida (IPR)", "PT"),
+      r("Q2864253", "appellation", "Palmela (DOC)", null),
+      r("Q16010776", "appellation", "Arrábida (IPR)", null, "Q2864253"),
+      // Two appellations of one name: a fuzzy tie between them is ambiguous.
+      r("Q-tw-a", "appellation", "Twinvale (DOC)", null),
+      r("Q-tw-b", "appellation", "Twinvale (DOC)", null),
+      r("Q-rioja", "region", "Rioja", "ES"),
+      r("Q-burgundy", "region", "Burgundy wine region", "FR"),
+      r("Q-pommard", "appellation", "Pommard", "FR", "Q-burgundy"),
+    );
+    return b;
+  };
+  const place = async (input: { appellation?: string; region?: string }) =>
+    (await lookupCatalog({ producer: null, name: null, country: null, region: input.region ?? null, appellation: input.appellation ?? null })).evidence.place;
+
+  beforeAll(async () => {
+    await importCatalogBatch(wikidata, batch(), { dryRun: false, retrievedAt: at });
+    clearCatalogLookupCache();
+  });
+
+  it("keeps every top-scoring fuzzy candidate: the appellation wins a cross-kind tie, a same-kind tie is ambiguous", async () => {
+    expect(await place({ appellation: "Arrábida" })).toMatchObject({ name: "Arrábida (IPR)", kind: "appellation", ambiguous: false });
+    expect(await place({ appellation: "Twinvale" })).toMatchObject({ name: "Twinvale (DOC)", ambiguous: true });
+  });
+
+  it("falls back to the appellation without its designation (Rioja DOCa → Rioja)", async () => {
+    const alias = await getDb().select().from(catalogAlias).where(eq(catalogAlias.normalizedAlias, "rioja doca"));
+    expect(alias).toEqual([]); // the match below comes from stripping "DOCa", not an alias
+    expect(await place({ appellation: "Rioja DOCa" })).toMatchObject({ name: "Rioja", score: 1, region: null });
+    expect(await place({ appellation: "Rioja DOCa", region: "Rioja" })).toMatchObject({ name: "Rioja", region: "Rioja" });
+  });
+
+  it("retries with the label's region text when the appellation finds nothing", async () => {
+    expect(await place({ appellation: "Zzyzx Qwerty Hollow", region: "Bordeaux" })).toMatchObject({ name: "Bordeaux", kind: "region", region: "Bordeaux" });
+    // An appellation match still wins over the region text.
+    expect(await place({ appellation: "Margaux", region: "Bordeaux" })).toMatchObject({ name: "Margaux", subregion: "Médoc" });
+  });
+
+  it("tidies awkward Wikidata region labels for display, leaving the catalog as stored", async () => {
+    expect(await place({ appellation: "Pommard" })).toMatchObject({ name: "Pommard", region: "Burgundy" });
+    const stored = await getDb().select().from(catalogRegion).where(eq(catalogRegion.externalId, "Q-burgundy"));
+    expect(stored[0].name).toBe("Burgundy wine region");
   });
 });
