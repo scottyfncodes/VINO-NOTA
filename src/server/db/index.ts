@@ -1,7 +1,7 @@
 import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
-import { assertPreviewIsolation } from "./target";
+import { assertPreviewIsolation, selectDatabaseUrl } from "./target";
 
 export type Database = PostgresJsDatabase<typeof schema>;
 
@@ -13,11 +13,14 @@ const globalForDb = globalThis as unknown as { __vinoDb?: Database; __vinoSql?: 
  */
 export function getDb(): Database {
   if (globalForDb.__vinoDb) return globalForDb.__vinoDb;
-  const url = process.env.DATABASE_URL;
-  if (!url) {
+  const selected = selectDatabaseUrl();
+  if (!selected) {
     throw new Error("DATABASE_URL is not configured.");
   }
-  assertPreviewIsolation(url);
+  const { url, source } = selected;
+  const target = assertPreviewIsolation(url);
+  // Endpoint id only (a hostname label), never the connection string.
+  if (process.env.VERCEL) console.log(`[db] env=${process.env.VERCEL_ENV} source=${source} endpoint=${target.endpointId ?? target.host}`);
   const sql = postgres(url, {
     // Pooled serverless connections (e.g. Neon/PgBouncer) do not support
     // session-level prepared statements.
