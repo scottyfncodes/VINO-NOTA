@@ -1,50 +1,167 @@
+/* ---------- Filters ---------- */
+.filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  background: var(--surface-sunken);
+  border-radius: var(--radius);
+}
+@media (min-width: 48rem) {
+  .filters {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  }
+}
+.filterActions {
+  display: flex;
+  gap: var(--space-2);
+  grid-column: 1 / -1;
+}
+.filterActions > * {
+  flex: 1;
+}
+@media (min-width: 48rem) {
+  .filterActions {
+    grid-column: auto;
+  }
+}
+.basis {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+/* ---------- Panel: a numbered figure ---------- */
 .panel {
   display: grid;
-  gap: var(--space-4);
-  padding: var(--space-6) 0;
-  border-top: 1px solid var(--rule-strong);
+  gap: var(--space-5);
+  padding: var(--space-6) 0 var(--space-7);
+  border-top: var(--rule-double);
+}
+@media (min-width: 64rem) {
+  .panel {
+    grid-template-columns: 17rem minmax(0, 1fr);
+    gap: var(--space-7);
+  }
 }
 .panelHead {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--space-3);
+  align-content: start;
+}
+@media (min-width: 64rem) {
+  .panelHead {
+    position: sticky;
+    top: calc(var(--masthead-height) + var(--space-5));
+  }
+}
+.panelIndex {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.panelHeadText {
+  display: grid;
+  gap: var(--space-2);
 }
 .panelTitle {
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
+  line-height: 1.02;
+}
+@media (min-width: 48rem) {
+  .panelTitle {
+    font-size: var(--text-3xl);
+  }
 }
 .panelSub {
-  font-size: var(--text-sm);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  line-height: 1.45;
   color: var(--text-muted);
   max-width: 40rem;
 }
+.panelBody {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.subsection {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+/* ---------- Figures ---------- */
 .figures {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-5);
-  font-size: var(--text-sm);
+  gap: var(--space-3) 0;
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule);
+  padding: var(--space-3) 0;
 }
 .figure {
   display: grid;
-  gap: 2px;
+  gap: var(--space-1);
+  padding-right: var(--space-5);
+  margin-right: var(--space-5);
+  border-right: 1px solid var(--rule);
+}
+.figure:last-child {
+  border-right: 0;
+  margin-right: 0;
+  padding-right: 0;
 }
 .figureValue {
-  font-size: var(--text-lg);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
 }
+
+/* ---------- Charts ---------- */
 .chart {
   width: 100%;
   height: 15rem;
-  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+@media (min-width: 48rem) {
+  .chart {
+    height: 17rem;
+  }
 }
 .chartTall {
   height: 18rem;
 }
+@media (min-width: 48rem) {
+  .chartTall {
+    height: 22rem;
+  }
+}
 .chartShort {
   height: 7rem;
 }
+.chart :global(.recharts-cartesian-axis-tick-value) {
+  font-family: var(--font-mono);
+}
+.chart :global(.recharts-reference-line text) {
+  font-family: var(--font-mono);
+}
 .summary {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  max-width: 44rem;
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--text);
+  max-width: 42rem;
 }
 .caveat {
   display: flex;
@@ -52,22 +169,50 @@
   align-items: flex-start;
   font-size: var(--text-xs);
   color: var(--text-muted);
+  max-width: 42rem;
 }
 .tooltip {
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
+  background: var(--inverse-bg);
+  color: var(--inverse-text);
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
+  font-family: var(--font-sans);
   font-size: var(--text-xs);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
+  box-shadow: var(--shadow-pop);
   max-width: 16rem;
 }
 .tooltipTitle {
   font-weight: 600;
-  color: var(--text);
 }
 .tooltipRow {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--inverse-muted);
+}
+
+/* ---------- Tables ---------- */
+.tableDetails {
+  border-top: 1px solid var(--rule);
+}
+.tableSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
   color: var(--text-muted);
+}
+.tableSummary::-webkit-details-marker {
+  display: none;
+}
+.tableSummary:hover,
+.tableDetails[open] .tableSummary {
+  color: var(--accent);
 }
 .table {
   width: 100%;
@@ -77,23 +222,39 @@
 .table th,
 .table td {
   text-align: left;
-  padding: var(--space-2) var(--space-2) var(--space-2) 0;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
   border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.table thead th {
+  border-bottom: 1px solid var(--rule-strong);
 }
 .table th {
+  font-family: var(--font-mono);
   font-size: var(--text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
+  letter-spacing: 0.06em;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.table tbody tr:hover {
+  background: var(--accent-softer);
 }
 .num {
   text-align: right !important;
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+.table th.num {
+  font-family: var(--font-mono);
 }
 .tableWrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
+
+/* ---------- Legends ---------- */
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -109,69 +270,136 @@
 }
 .matrix {
   width: 100%;
-  max-width: 34rem;
+  max-width: 36rem;
   overflow: visible;
+}
+.matrix text {
+  font-family: var(--font-sans);
 }
 .matrix a:focus-visible circle {
   stroke: var(--text);
   stroke-width: 2;
 }
+.matrix a:hover circle {
+  stroke: var(--text);
+}
 .matrix a:focus {
   outline: none;
 }
+
+/* ---------- Descriptors ---------- */
 .descriptorList {
   display: grid;
-  gap: var(--space-2);
-  max-width: 34rem;
+  max-width: 36rem;
 }
 .descriptorRow {
   display: grid;
-  grid-template-columns: 7.5rem 1fr 3rem 4.5rem;
-  gap: var(--space-2);
+  grid-template-columns: minmax(5.5rem, 8rem) 1fr 2.5rem 4.25rem;
+  gap: var(--space-3);
   align-items: center;
+  min-height: var(--touch);
+  border-bottom: 1px solid var(--rule);
   font-size: var(--text-sm);
   text-decoration: none;
 }
 .descriptorRow:hover .descriptorName {
-  text-decoration: underline;
+  color: var(--accent);
 }
 .descriptorName {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-base);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .descriptorTrack {
   height: 8px;
+  background: var(--surface-sunken);
 }
 .descriptorBar {
   height: 8px;
   background: var(--chart-1);
-  border-radius: 0 4px 4px 0;
+}
+.descriptorCount {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: right;
+}
+.descriptorMean {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  text-align: right;
+}
+.selectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: space-between;
 }
 .chips {
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
 }
+
+/* ---------- Discoveries ---------- */
 .discoveries {
   display: grid;
 }
 .discovery {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: var(--space-3);
-  padding: var(--space-2) 0;
+  padding: var(--space-3) 0;
   border-bottom: 1px solid var(--rule);
-  font-size: var(--text-sm);
   text-decoration: none;
 }
-.discovery:hover span:first-child {
-  text-decoration: underline;
+.discovery:hover .discoveryName {
+  color: var(--accent);
 }
+.discoveryName {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.15;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.discoveryFig {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ---------- Not enough data ---------- */
 .empty {
+  display: grid;
+  gap: var(--space-2);
   padding: var(--space-5);
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius);
-  font-size: var(--text-sm);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.emptyMark {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.colophon {
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.03em;
+  line-height: 1.6;
   color: var(--text-muted);
 }

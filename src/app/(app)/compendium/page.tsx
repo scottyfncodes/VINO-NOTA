@@ -40,7 +40,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
     return (
       <>
         <PageHeader eyebrow="Analysis" title="Compendium" />
-        <EmptyState title="Nothing to analyse yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record a tasting</ButtonLink>}>
+        <EmptyState mark="No records to analyse" title="Nothing to analyse yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record a tasting</ButtonLink>}>
           The Compendium charts your rating distribution, palate fingerprint, price against enjoyment, and tasting chronology — all calculated from your
           own saved records. It stays empty until there is something real to show.
         </EmptyState>
@@ -78,7 +78,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
         lede="Four views of your records. Every number is calculated directly from what you saved; nothing is estimated or filled in."
       />
 
-      <form method="get" action="/compendium" style={{ display: "grid", gap: "var(--space-3)", gridTemplateColumns: "repeat(auto-fit, minmax(9rem, 1fr))", alignItems: "end", marginBottom: "var(--space-3)" }}>
+      <form method="get" action="/compendium" className={s.filters} aria-label="Filter the analysis">
         <Field id="c-type" label="Type">
           <Select id="c-type" name="type" defaultValue={filters.wineType ?? ""}>
             <option value="">All types</option>
@@ -105,8 +105,8 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
         <Field id="c-to" label="Until">
           <Input id="c-to" name="to" type="date" defaultValue={filters.to ?? ""} />
         </Field>
-        <div style={{ display: "flex", gap: "var(--space-2)" }}>
-          <button type="submit" className={`${uiStyles.button} ${uiStyles.secondary}`} style={{ flex: 1 }}>
+        <div className={s.filterActions}>
+          <button type="submit" className={`${uiStyles.button} ${uiStyles.primary}`}>
             Apply
           </button>
           {filtered && (
@@ -116,13 +116,13 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
           )}
         </div>
       </form>
-      <p className="muted" style={{ fontSize: "var(--text-sm)", marginBottom: "var(--space-3)" }}>
+      <p className={s.basis}>
         {filtered ? `${plural(rows.length, "tasting")} of ${all.length} match these filters.` : `Based on all ${plural(all.length, "tasting")}.`}
         {dist.unrated > 0 && ` ${dist.unrated} unrated ${dist.unrated === 1 ? "tasting is" : "tastings are"} excluded from score statistics.`}
       </p>
 
       {/* 1. Rating distribution */}
-      <Panel id="ratings" title="Rating distribution" sub="How your personal scores spread across the scale, in one-point bands. Tap a column to see those tastings.">
+      <Panel id="ratings" index={1} title="Rating distribution" sub="How your personal scores spread across the scale, in one-point bands. Tap a column to see those tastings.">
         {dist.rated === 0 ? (
           <NotEnough>None of these tastings has a score yet. Unrated tastings are never counted as zero.</NotEnough>
         ) : (
@@ -167,7 +167,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
       </Panel>
 
       {/* 2. Palate fingerprint */}
-      <Panel id="palate" title="Palate fingerprint" sub="What you recorded about each wine's structure, and how you scored the wines at each level. Only observations you actually made are counted.">
+      <Panel id="palate" index={2} title="Palate fingerprint" sub="What you recorded about each wine's structure, and how you scored the wines at each level. Only observations you actually made are counted.">
         {assessedDims.length === 0 ? (
           <NotEnough>No structural observations recorded yet. Note body, acidity, sweetness, tannin or finish when you taste, and your fingerprint appears here.</NotEnough>
         ) : (
@@ -219,7 +219,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
           </>
         )}
         {finger.descriptors.length > 0 && (
-          <div style={{ display: "grid", gap: "var(--space-3)", marginTop: "var(--space-4)" }}>
+          <div className={s.subsection}>
             <p className="eyebrow">Descriptors you reach for most</p>
             <div className={s.descriptorList}>
               {finger.descriptors.map((d) => (
@@ -228,10 +228,8 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
                   <span className={s.descriptorTrack} aria-hidden="true">
                     <span className={s.descriptorBar} style={{ display: "block", width: `${(d.count / finger.descriptors[0].count) * 100}%` }} />
                   </span>
-                  <span className="num muted" style={{ textAlign: "right" }}>
-                    {d.count}×
-                  </span>
-                  <span className="num" style={{ textAlign: "right", fontSize: "var(--text-xs)" }}>
+                  <span className={s.descriptorCount}>{d.count}×</span>
+                  <span className={s.descriptorMean}>
                     {d.meanScore === null ? <span className="muted">unrated</span> : `avg ${formatScore(d.meanScore)}`}
                   </span>
                 </Link>
@@ -243,7 +241,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
       </Panel>
 
       {/* 3. Value landscape */}
-      <Panel id="value" title="Price and enjoyment" sub="Your score against the price you actually paid. Prices are compared only within one currency and are never converted or estimated.">
+      <Panel id="value" index={3} title="Price and enjoyment" sub="Your score against the price you actually paid. Prices are compared only within one currency and are never converted or estimated.">
         {value.currencies.length === 0 ? (
           <NotEnough>
             No tastings here have both a price and a score. Add the price you paid when recording, and this chart will show where enjoyment and price part ways.
@@ -251,7 +249,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
           </NotEnough>
         ) : (
           <>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-3)", justifyContent: "space-between" }}>
+            <div className={s.selectors}>
               {value.currencies.length > 1 && (
                 <div className={s.chips} role="group" aria-label="Currency">
                   {value.currencies.map((c) => (
@@ -294,13 +292,13 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
                 ) : null}
                 {strengthText[sampleStrength(value.points.length)] && <Caveat>{strengthText[sampleStrength(value.points.length)]}</Caveat>}
                 {value.discoveries.length > 0 && (
-                  <div style={{ display: "grid", gap: "var(--space-2)" }}>
+                  <div className={s.subsection}>
                     <p className="eyebrow">Value discoveries · scored 8.0+ at or below your median price</p>
                     <div className={s.discoveries}>
                       {value.discoveries.map((d) => (
                         <Link key={d.id} href={`/wines/${d.wineId}#tasting-${d.id}`} className={s.discovery}>
-                          <span>{d.label}</span>
-                          <span className="num muted">
+                          <span className={s.discoveryName}>{d.label}</span>
+                          <span className={s.discoveryFig}>
                             {formatScore(d.score)} · {formatPrice(d.price, value.currency, locale)}
                           </span>
                         </Link>
@@ -339,7 +337,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
       </Panel>
 
       {/* 4. Chronology */}
-      <Panel id="chronology" title="Tasting chronology" sub="When you tasted and how you scored, by actual tasting date. Tap a point to open that tasting.">
+      <Panel id="chronology" index={4} title="Tasting chronology" sub="When you tasted and how you scored, by actual tasting date. Tap a point to open that tasting.">
         {chrono.points.length === 0 ? (
           <NotEnough>No tastings match these filters.</NotEnough>
         ) : (
@@ -383,7 +381,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
           </>
         )}
       </Panel>
-      <p className="muted" style={{ fontSize: "var(--text-xs)" }}>
+      <p className={s.colophon}>
         {filtered && `Filtered to ${[filters.wineType && wineTypeLabel(filters.wineType), filters.country && countryName(filters.country), filters.from && `from ${filters.from}`, filters.to && `until ${filters.to}`].filter(Boolean).join(", ")}. `}
         Calculations: means and medians use rated tastings only; medians of an even count average the middle two values.
       </p>

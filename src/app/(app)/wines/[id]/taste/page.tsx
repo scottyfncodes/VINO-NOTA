@@ -29,6 +29,7 @@ export default async function NewTastingPage({ params, searchParams }: PageProps
     <div style={{ maxWidth: "var(--content-max)", margin: "0 auto" }}>
       <PageHeader
         back={{ href: `/wines/${id}`, label: wineTitle(wine) }}
+        compact
         eyebrow={repeatFrom ? "Taste again" : "New tasting"}
         title={wineTitle(wine)}
         lede={repeatFrom ? "Purchase and venue details are carried over from the earlier tasting. Your score and observations start fresh." : "A new occasion with this wine. Earlier tastings stay exactly as they are."}

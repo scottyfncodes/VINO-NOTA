@@ -35,86 +35,92 @@ export function TastingRecord({ t, wineId, locale, highlighted, index, total }: 
   return (
     <article id={`tasting-${t.id}`} className={`${s.tasting} ${highlighted ? s.tastingSaved : ""}`} aria-labelledby={`tasting-${t.id}-title`}>
       <header className={s.tastingHead}>
-        <div>
+        <div className={s.tastingHeadText}>
           <p className="eyebrow">
             Tasting {total - index} of {total}
           </p>
           <h3 className={s.tastingDate} id={`tasting-${t.id}-title`}>
             {label}
           </h3>
-          {t.tags.length > 0 && <p className={s.tastingContext}>{t.tags.map((g) => `#${g}`).join("  ")}</p>}
+          {t.tags.length > 0 && (
+            <p className={s.tags}>
+              {t.tags.map((g) => (
+                <span key={g}>#{g}</span>
+              ))}
+            </p>
+          )}
         </div>
-        <ScoreMark score={t.personalScore} size="2rem" />
+        <div className={s.tastingScore}>
+          <ScoreMark score={t.personalScore} size="var(--text-4xl)" outOf />
+        </div>
       </header>
-      {t.impression && <p className={s.impression}>{t.impression}</p>}
-      {structural.length > 0 && (
-        <div className={s.structure} aria-label="Structure">
-          {structural.map(({ d, o }) => (
-            <div key={d.key} className={s.structureRow}>
-              <span className={s.structureName}>{d.label}</span>
-              {o!.status === "assessed" && o!.value ? (
-                <>
-                  <span className={s.structureTrack} aria-hidden="true">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <span key={n} className={`${s.structureCell} ${n <= o!.value! ? s.structureCellOn : ""}`} />
-                    ))}
+      <div className={s.tastingBody}>
+        {t.impression && <p className={s.impression}>{t.impression}</p>}
+        {structural.length > 0 && (
+          <div className={s.structure} aria-label="Structure">
+            {structural.map(({ d, o }) => (
+              <div key={d.key} className={s.structureRow}>
+                <span className={s.structureName}>{d.label}</span>
+                {o!.status === "assessed" && o!.value ? (
+                  <>
+                    <span className={s.structureTrack} aria-hidden="true">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <span key={n} className={`${s.structureCell} ${n <= o!.value! ? s.structureCellOn : ""}`} />
+                      ))}
+                    </span>
+                    <span className={s.structureReading}>{d.scale[o!.value - 1]}</span>
+                  </>
+                ) : (
+                  <span className={s.statusText}>{OBSERVATION_STATUS_LABEL[o!.status]}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        {(aromas.length > 0 || flavors.length > 0) && (
+          <div className={s.descriptorGroups}>
+            {aromas.length > 0 && (
+              <div className={s.descriptors}>
+                <span className={`eyebrow ${s.descriptorLabel}`}>Nose</span>
+                {aromas.map((o) => (
+                  <span key={o.id} className={s.descriptor}>
+                    {o.descriptor}
                   </span>
-                  <span className={s.structureReading}>{d.scale[o!.value - 1]}</span>
-                </>
-              ) : (
-                <span className={s.statusText}>{OBSERVATION_STATUS_LABEL[o!.status]}</span>
-              )}
-            </div>
-          ))}
+                ))}
+              </div>
+            )}
+            {flavors.length > 0 && (
+              <div className={s.descriptors}>
+                <span className={`eyebrow ${s.descriptorLabel}`}>Palate</span>
+                {flavors.map((o) => (
+                  <span key={o.id} className={s.descriptor}>
+                    {o.descriptor}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {t.notes && <p className={s.notes}>{t.notes}</p>}
+        {context.length > 0 && (
+          <dl className={s.contextList}>
+            {context.map(([k, v]) => (
+              <div key={k} style={{ display: "contents" }}>
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        <div className={s.tastingActions}>
+          <ButtonLink size="small" variant="ghost" icon="edit" href={`/tastings/${t.id}/edit`}>
+            Edit
+          </ButtonLink>
+          <ButtonLink size="small" variant="ghost" icon="copy" href={`/wines/${wineId}/taste?from=${t.id}`}>
+            Taste again
+          </ButtonLink>
+          <DeleteTastingButton tastingId={t.id} label={label} />
         </div>
-      )}
-      {(aromas.length > 0 || flavors.length > 0) && (
-        <div style={{ display: "grid", gap: "var(--space-2)" }}>
-          {aromas.length > 0 && (
-            <div className={s.descriptors}>
-              <span className="eyebrow" style={{ alignSelf: "center" }}>
-                Nose
-              </span>
-              {aromas.map((o) => (
-                <span key={o.id} className={s.descriptor}>
-                  {o.descriptor}
-                </span>
-              ))}
-            </div>
-          )}
-          {flavors.length > 0 && (
-            <div className={s.descriptors}>
-              <span className="eyebrow" style={{ alignSelf: "center" }}>
-                Palate
-              </span>
-              {flavors.map((o) => (
-                <span key={o.id} className={s.descriptor}>
-                  {o.descriptor}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {t.notes && <p className={s.notes}>{t.notes}</p>}
-      {context.length > 0 && (
-        <dl className={s.contextList}>
-          {context.map(([k, v]) => (
-            <div key={k} style={{ display: "contents" }}>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      <div className={s.tastingActions}>
-        <ButtonLink size="small" variant="ghost" icon="edit" href={`/tastings/${t.id}/edit`}>
-          Edit
-        </ButtonLink>
-        <ButtonLink size="small" variant="ghost" icon="copy" href={`/wines/${wineId}/taste?from=${t.id}`}>
-          Taste again
-        </ButtonLink>
-        <DeleteTastingButton tastingId={t.id} label={label} />
       </div>
     </article>
   );

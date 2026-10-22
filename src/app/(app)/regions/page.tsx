@@ -33,7 +33,7 @@ export default async function RegionsPage() {
     return (
       <>
         <PageHeader eyebrow="Wine atlas" title="Regions" />
-        <EmptyState title="No origins recorded yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record a tasting</ButtonLink>}>
+        <EmptyState mark="The map is blank" title="No origins recorded yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record a tasting</ButtonLink>}>
           As you record wines with a country and region, they&rsquo;ll be mapped by country and gathered into an index of the places you&rsquo;ve explored.
         </EmptyState>
       </>
@@ -87,38 +87,53 @@ export default async function RegionsPage() {
         <Figure label="Wines with an origin" value={rows.length - noCountry.wines.size} />
       </div>
 
-      <svg className={s.map} viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} role="group" aria-label={`World map highlighting ${plural(sorted.length, "country", "countries")} you have recorded wines from`}>
-        {shapes.map((sh, i) => {
-          const hit = byNumeric.get(sh.id);
-          if (!hit) return <path key={`${sh.id}-${i}`} d={sh.d} className={s.land} aria-hidden="true" />;
-          return (
-            <a key={`${sh.id}-${i}`} href={`#country-${hit.code}`} aria-label={`${countryName(hit.code)}: ${fig(hit.c.agg)}`}>
-              <path d={sh.d} className={s.recorded} fill={fillFor(hit.c.agg.tastings)}>
-                <title>{`${countryName(hit.code)} — ${fig(hit.c.agg)}`}</title>
-              </path>
-            </a>
-          );
-        })}
-      </svg>
-      <div className={s.legend}>
-        <span>Tastings recorded:</span>
-        {SEQ.map((c, i) => (
-          <span key={c}>
-            <span className={s.swatch} style={{ background: c }} />
-            {i === 0 ? "fewest" : i === SEQ.length - 1 ? `most (${max})` : ""}
+      <figure className={s.plate}>
+        <svg className={s.map} viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} role="group" aria-label={`World map highlighting ${plural(sorted.length, "country", "countries")} you have recorded wines from`}>
+          {shapes.map((sh, i) => {
+            const hit = byNumeric.get(sh.id);
+            if (!hit) return <path key={`${sh.id}-${i}`} d={sh.d} className={s.land} aria-hidden="true" />;
+            return (
+              <a key={`${sh.id}-${i}`} href={`#country-${hit.code}`} aria-label={`${countryName(hit.code)}: ${fig(hit.c.agg)}`}>
+                <path d={sh.d} className={s.recorded} fill={fillFor(hit.c.agg.tastings)}>
+                  <title>{`${countryName(hit.code)} — ${fig(hit.c.agg)}`}</title>
+                </path>
+              </a>
+            );
+          })}
+        </svg>
+        <figcaption className={s.legend}>
+          <span>Tastings recorded:</span>
+          {SEQ.map((c, i) => (
+            <span key={c}>
+              <span className={s.swatch} style={{ background: c }} />
+              {i === 0 ? "fewest" : i === SEQ.length - 1 ? `most (${max})` : ""}
+            </span>
+          ))}
+          <span>
+            <span className={s.swatch} style={{ background: "var(--surface-paper)" }} />
+            none
           </span>
-        ))}
-        <span>
-          <span className={s.swatch} style={{ background: "var(--surface-paper)" }} />
-          none
-        </span>
-      </div>
-      <div style={{ marginTop: "var(--space-3)" }}>
+        </figcaption>
+      </figure>
+      <div className={s.caveat}>
         <Caveat>
           The map shades countries only. Regions and appellations are listed below rather than pinned, because Vino Nota doesn&rsquo;t place points without verified coordinates.
           {unmappable.length > 0 && ` ${unmappable.map(([code]) => countryName(code)).join(", ")} ${unmappable.length === 1 ? "is" : "are"} too small to show at this map scale.`}
         </Caveat>
       </div>
+
+      <nav className={s.jump} aria-label="Countries in the index">
+        <span className="eyebrow">Gazetteer</span>
+        <ul className={s.jumpList} role="list">
+          {sorted.map(([code, c]) => (
+            <li key={code}>
+              <a href={`#country-${code}`} className={s.jumpLink}>
+                {countryName(code)} <span className={s.jumpCount}>{c.agg.tastings}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       <div className={s.index}>
         {sorted.map(([code, c]) => (
@@ -160,7 +175,7 @@ export default async function RegionsPage() {
               </h2>
               <span className={s.countryMeta}>{fig(noCountry)}</span>
             </div>
-            <p className="muted" style={{ fontSize: "var(--text-sm)", paddingTop: "var(--space-3)" }}>
+            <p className={s.quiet}>
               Add a country from each wine&rsquo;s page to place {noCountry.wines.size === 1 ? "it" : "them"} on the atlas.
             </p>
           </section>

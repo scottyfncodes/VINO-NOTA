@@ -63,7 +63,7 @@ export function EmailVerification({ email, verified, canSend, linkResult }: { em
   }
 
   return (
-    <div style={{ display: "grid", gap: "var(--space-3)", marginBottom: "var(--space-4)" }}>
+    <div style={{ display: "grid", gap: "var(--space-3)" }}>
       {linkResult === "verified" && verified && (
         <Notice tone="success" role="status">
           Email confirmed. Thank you.

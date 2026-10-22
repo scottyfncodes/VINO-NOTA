@@ -6,10 +6,10 @@ import { recognitionStatus } from "@/server/recognition";
 import { getStorage } from "@/server/storage";
 import { plural } from "@/lib/format";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { ButtonLink } from "@/components/ui/primitives";
+import { ButtonLink, SectionHead } from "@/components/ui/primitives";
 import { emailConfigured } from "@/server/email";
 import { CurrencyPreference, DeleteAccount, EmailVerification, SignOutButton } from "./SettingsClient";
-import s from "@/components/atlas/atlas.module.css";
+import s from "./settings.module.css";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -22,62 +22,54 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   const recognition = recognitionStatus();
   const storage = getStorage().kind;
   return (
-    <div style={{ maxWidth: "var(--content-max)" }}>
+    <div className={s.page}>
       <PageHeader back={{ href: "/", label: "Atlas" }} eyebrow="Account" title="Settings" />
-      <section className={s.section} style={{ paddingTop: 0 }} aria-labelledby="acct">
-        <div className={s.sectionHead}>
-          <h2 className={s.sectionTitle} id="acct">
-            {user.name}
-          </h2>
+      <section className={s.section} aria-labelledby="acct">
+        <SectionHead id="acct" index="01" title={user.name} />
+        <div className={s.body}>
+          <p className={s.lede}>
+            Signed in as <span className={s.email}>{user.email}</span>. Your journal holds {plural(stats.wines, "wine")} and {plural(stats.tastings, "tasting")}, visible only to you.
+          </p>
+          <EmailVerification email={user.email} verified={user.emailVerified} canSend={emailConfigured()} linkResult={linkResult} />
+          <div>
+            <SignOutButton />
+          </div>
         </div>
-        <p className="muted" style={{ fontSize: "var(--text-sm)", marginBottom: "var(--space-4)" }}>
-          Signed in as {user.email}. Your journal holds {plural(stats.wines, "wine")} and {plural(stats.tastings, "tasting")}, visible only to you.
-        </p>
-        <EmailVerification email={user.email} verified={user.emailVerified} canSend={emailConfigured()} linkResult={linkResult} />
-        <SignOutButton />
       </section>
 
       <section className={s.section} aria-labelledby="prefs">
-        <div className={s.sectionHead}>
-          <h2 className={s.sectionTitle} id="prefs">
-            Preferences
-          </h2>
+        <SectionHead id="prefs" index="02" title="Preferences" />
+        <div className={s.body}>
+          <CurrencyPreference initial={prefs.defaultCurrency} />
         </div>
-        <CurrencyPreference initial={prefs.defaultCurrency} />
       </section>
 
       <section className={s.section} aria-labelledby="export">
-        <div className={s.sectionHead}>
-          <h2 className={s.sectionTitle} id="export">
-            Export your journal
-          </h2>
-        </div>
-        <p className="muted" style={{ fontSize: "var(--text-sm)", marginBottom: "var(--space-4)" }}>
-          The JSON export is complete and portable: every wine, tasting, observation, tag and the provenance of each field. The CSV has one row per tasting for spreadsheets.
-          Photos are listed by id and can be downloaded individually from each wine.
-        </p>
-        <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
-          <ButtonLink href="/api/export?format=json" icon="download" prefetch={false}>
-            Download JSON
-          </ButtonLink>
-          <ButtonLink href="/api/export?format=csv" icon="download" prefetch={false}>
-            Download CSV
-          </ButtonLink>
+        <SectionHead id="export" index="03" title="Export your journal" />
+        <div className={s.body}>
+          <p className={s.text}>
+            The JSON export is complete and portable: every wine, tasting, observation, tag and the provenance of each field. The CSV has one row per tasting for spreadsheets.
+            Photos are listed by id and can be downloaded individually from each wine.
+          </p>
+          <div className={s.buttons}>
+            <ButtonLink href="/api/export?format=json" icon="download" prefetch={false}>
+              Download JSON
+            </ButtonLink>
+            <ButtonLink href="/api/export?format=csv" icon="download" prefetch={false}>
+              Download CSV
+            </ButtonLink>
+          </div>
         </div>
       </section>
 
       <section className={s.section} aria-labelledby="services">
-        <div className={s.sectionHead}>
-          <h2 className={s.sectionTitle} id="services">
-            Services
-          </h2>
-        </div>
-        <dl style={{ display: "grid", gridTemplateColumns: "max-content 1fr", gap: "var(--space-2) var(--space-5)", fontSize: "var(--text-sm)" }}>
-          <dt className="muted">Label reading</dt>
+        <SectionHead id="services" index="04" title="Services" />
+        <dl className={s.services}>
+          <dt>Label reading</dt>
           <dd>{recognition.available ? `On — ${recognition.provider}. Label photos are sent to it only when you capture a label.` : "Not configured. Details are entered by hand."}</dd>
-          <dt className="muted">Photo storage</dt>
+          <dt>Photo storage</dt>
           <dd>{storage === "vercel-blob" ? "Private cloud storage" : storage === "local" ? "Local development storage" : "Not configured — photos can't be saved"}</dd>
-          <dt className="muted">Reference data</dt>
+          <dt>Reference data</dt>
           <dd>
             Missing label details may be suggested from a shared wine reference catalog, marked “From catalog”. It includes data from{" "}
             <a href="https://www.wikidata.org/" rel="noopener noreferrer" target="_blank">
@@ -88,16 +80,14 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         </dl>
       </section>
 
-      <section className={s.section} aria-labelledby="danger">
-        <div className={s.sectionHead}>
-          <h2 className={s.sectionTitle} id="danger">
-            Delete account
-          </h2>
+      <section className={`${s.section} ${s.danger}`} aria-labelledby="danger">
+        <SectionHead id="danger" index="05" title="Delete account" />
+        <div className={s.body}>
+          <p className={s.text}>Removes your account and permanently deletes all of your records and photos.</p>
+          <div>
+            <DeleteAccount email={user.email} />
+          </div>
         </div>
-        <p className="muted" style={{ fontSize: "var(--text-sm)", marginBottom: "var(--space-4)" }}>
-          Removes your account and permanently deletes all of your records and photos.
-        </p>
-        <DeleteAccount email={user.email} />
       </section>
     </div>
   );

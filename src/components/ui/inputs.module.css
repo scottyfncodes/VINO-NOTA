@@ -2,10 +2,14 @@
 .score {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-3);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius);
   background: var(--surface);
+}
+.unrated.score {
+  border-top-color: var(--border-strong);
 }
 .scoreHead {
   display: flex;
@@ -25,11 +29,11 @@
   border-bottom: 1px solid var(--border-strong);
   border-radius: 0;
   background: transparent;
-  font-family: var(--font-sans);
-  font-size: var(--text-3xl);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-family: var(--font-display);
+  font-size: var(--text-5xl);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
   padding: 0;
   color: var(--accent);
   font-variant-numeric: lining-nums;
@@ -43,7 +47,8 @@
   opacity: 1;
 }
 .scoreOutOf {
-  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
   color: var(--text-muted);
   white-space: nowrap;
 }
@@ -51,8 +56,10 @@
   font-family: var(--font-serif);
   font-style: italic;
   color: var(--text-muted);
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
+  line-height: 1.2;
   text-align: right;
+  max-width: 12rem;
 }
 .sliderRow {
   display: grid;
@@ -67,6 +74,13 @@
   background: var(--bg);
   font-size: var(--text-lg);
   line-height: 1;
+  transition: border-color var(--duration) var(--ease), background-color var(--duration) var(--ease);
+}
+.step:hover {
+  border-color: var(--text);
+}
+.step:active {
+  background: var(--accent-soft);
 }
 .range {
   width: 100%;
@@ -122,6 +136,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0 calc(var(--touch) + var(--space-2) + 6px);
+  font-family: var(--font-mono);
   font-size: var(--text-2xs);
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
@@ -165,11 +180,14 @@
   width: 100%;
 }
 .scaleName {
-  font-weight: 600;
-  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
 }
 .scaleReading {
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   color: var(--text-muted);
   font-family: var(--font-serif);
   font-style: italic;
@@ -191,10 +209,15 @@
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--surface);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
+  transition: background-color var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+.dot:hover {
+  border-color: var(--text-muted);
 }
 .dot input {
   position: absolute;
@@ -219,7 +242,9 @@
 .scaleEnds {
   display: flex;
   justify-content: space-between;
-  font-size: var(--text-2xs);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 .statusRow {

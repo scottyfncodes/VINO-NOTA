@@ -18,7 +18,7 @@ export default async function EditWinePage({ params }: PageProps<"/wines/[id]/ed
   });
   return (
     <div style={{ maxWidth: "var(--content-max)", margin: "0 auto" }}>
-      <PageHeader back={{ href: `/wines/${id}`, label: wineTitle(wine) }} eyebrow="Edit identity" title="Wine details" lede="Changes apply to every tasting of this wine. Any field you change is recorded as entered by you." />
+      <PageHeader back={{ href: `/wines/${id}`, label: wineTitle(wine) }} compact eyebrow="Edit identity" title="Wine details" lede="Changes apply to every tasting of this wine. Any field you change is recorded as entered by you." />
       <WineEditor wineId={id} initial={wineToInput(wine)} />
     </div>
   );
