@@ -37,3 +37,18 @@ export async function snapshot(...wineIds: string[]) {
   const sources = await sql`select * from metadata_source_record where wine_id in ${sql(wineIds)} order by id`;
   return JSON.parse(JSON.stringify({ wines, grapes, tastings, observations, images, sources }));
 }
+
+/**
+ * Makes every unused reset link for this email already expired. Uses its own
+ * connection because merge.spec.ts ends the shared one, and all spec files run
+ * in one worker.
+ */
+export async function expireResetLinks(email: string) {
+  const db = postgres(url, { max: 1, prepare: false, onnotice: () => {} });
+  try {
+    await db`update verification set expires_at = now() - interval '1 minute'
+      where identifier like 'reset-password:%' and value = (select id from "user" where email = ${email})`;
+  } finally {
+    await db.end({ timeout: 5 });
+  }
+}
