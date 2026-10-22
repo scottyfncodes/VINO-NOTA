@@ -34,8 +34,9 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
 
   const header = (
     <PageHeader
-      eyebrow="Archive"
+      eyebrow="The archive"
       title="Journal"
+      lede={stats.tastings > 0 ? "Every occasion you have recorded, searchable by wine, place, grape and your own words." : undefined}
       actions={stats.tastings > 0 ? <ButtonLink href="/capture" variant="primary" icon="plus" size="small">Record</ButtonLink> : undefined}
     />
   );
@@ -45,7 +46,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
       <>
         {header}
         {sp.deleted && <Notice tone="success" title="Wine deleted" />}
-        <EmptyState title="No entries yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record your first tasting</ButtonLink>}>
+        <EmptyState mark="The archive is empty" title="No entries yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record your first tasting</ButtonLink>}>
           Each tasting you record appears here, searchable by wine, producer, vintage, grape, region and anything you wrote in your notes.
         </EmptyState>
       </>
@@ -66,12 +67,12 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
           <Notice tone="success" title="Wine deleted" />
         </div>
       )}
-      <nav className={s.tabs} aria-label="Journal views" style={{ marginBottom: "var(--space-4)" }}>
+      <nav className={s.tabs} aria-label="Journal views">
         <Link href={tabHref(false)} className={s.tab} aria-current={!byWine ? "page" : undefined} replace>
-          Tastings · {stats.tastings}
+          Tastings <span className={s.tabCount}>· {stats.tastings}</span>
         </Link>
         <Link href={tabHref(true)} className={s.tab} aria-current={byWine ? "page" : undefined} replace>
-          Wines · {stats.wines}
+          Wines <span className={s.tabCount}>· {stats.wines}</span>
         </Link>
       </nav>
       <Suspense>
@@ -89,12 +90,12 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
         {truncated && " · showing the first 200; refine your search to see more"}
       </p>
       {count === 0 ? (
-        <EmptyState title="Nothing matches" action={<ButtonLink href={byWine ? "/journal?by=wine" : "/journal"}>Clear search and filters</ButtonLink>}>
+        <EmptyState mark="No matching entries" title="Nothing matches" action={<ButtonLink href={byWine ? "/journal?by=wine" : "/journal"}>Clear search and filters</ButtonLink>}>
           Try fewer filters or a different word. Search covers wine and producer names, vintages, grapes, regions, descriptors, tags and your notes.
         </EmptyState>
       ) : byWine ? (
         grid ? (
-          <div className={wineStyles.grid} style={{ marginTop: "var(--space-4)" }}>
+          <div className={`${wineStyles.grid} ${s.results}`}>
             {wineResults!.wines.map((w) => (
               <WineCard
                 key={w.wineId}
@@ -109,7 +110,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
             ))}
           </div>
         ) : (
-          <div>
+          <div className={s.list}>
             {wineResults!.wines.map((w) => (
               <EntryRow
                 key={w.wineId}
@@ -126,7 +127,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
           </div>
         )
       ) : grid ? (
-        <div className={wineStyles.grid} style={{ marginTop: "var(--space-4)" }}>
+        <div className={`${wineStyles.grid} ${s.results}`}>
           {tastingResults!.entries.map((e) => (
             <WineCard
               key={e.id}
@@ -141,7 +142,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
           ))}
         </div>
       ) : (
-        <div>
+        <div className={s.list}>
           {tastingResults!.entries.map((e) => (
             <EntryRow key={e.id} e={e} locale={locale} />
           ))}

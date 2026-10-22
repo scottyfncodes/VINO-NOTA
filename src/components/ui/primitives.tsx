@@ -147,14 +147,48 @@ export function Notice({ tone = "info", title, children, role }: { tone?: "info"
   );
 }
 
-export function EmptyState({ title, children, action }: { title: ReactNode; children?: ReactNode; action?: ReactNode }) {
+export function EmptyState({ title, children, action, mark = "Blank page" }: { title: ReactNode; children?: ReactNode; action?: ReactNode; mark?: ReactNode }) {
   return (
     <section className={s.empty}>
+      <p className={s.emptyMark} aria-hidden="true">
+        {mark}
+      </p>
       <h2 className={s.emptyTitle}>{title}</h2>
       {children && <div className={s.emptyBody}>{children}</div>}
       {action}
     </section>
   );
+}
+
+/** A ruled section heading: optional folio number, display title and a right-hand aside (link or note). */
+export function SectionHead({ id, title, index, aside, as: Tag = "h2" }: { id?: string; title: ReactNode; index?: string; aside?: ReactNode; as?: "h2" | "h3" }) {
+  return (
+    <div className={s.sectionHead}>
+      <div className={s.sectionHeadMain}>
+        {index && (
+          <span className={s.sectionIndex} aria-hidden="true">
+            {index}
+          </span>
+        )}
+        <Tag className={s.sectionTitle} id={id}>
+          {title}
+        </Tag>
+      </div>
+      {aside}
+    </div>
+  );
+}
+
+export function SectionLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className={s.sectionAside}>
+      {children} <Icon name="chevron" size={14} />
+    </Link>
+  );
+}
+
+export function SectionNote({ children }: { children: ReactNode }) {
+  return <span className={s.sectionAside}>{children}</span>;
 }
 
 export function Disclosure({ title, meta, children, defaultOpen }: { title: ReactNode; meta?: ReactNode; children: ReactNode; defaultOpen?: boolean }) {

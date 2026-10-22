@@ -2,45 +2,68 @@
   min-height: 100dvh;
   display: grid;
   align-content: start;
-  padding: calc(var(--safe-top) + var(--space-5)) var(--gutter) calc(var(--safe-bottom) + var(--space-6));
+  gap: var(--space-6);
+  padding: calc(var(--safe-top) + var(--space-4)) calc(var(--gutter) + var(--safe-right)) calc(var(--safe-bottom) + var(--space-7)) calc(var(--gutter) + var(--safe-left));
 }
 @media (min-width: 56rem) {
   .page {
-    grid-template-columns: 1.1fr 1fr;
-    gap: var(--space-8);
+    grid-template-columns: minmax(0, 1.15fr) minmax(22rem, 1fr);
+    gap: var(--space-9);
     align-content: center;
     align-items: center;
     max-width: var(--content-wide);
     margin: 0 auto;
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
   }
 }
 .intro {
   display: grid;
   gap: var(--space-5);
   align-content: start;
-  padding-bottom: var(--space-6);
+}
+.nameplate {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--rule-double);
+}
+.nameplateNote {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-mono);
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 .title {
-  font-size: var(--text-2xl);
-  max-width: 18ch;
+  font-size: var(--text-4xl);
+  line-height: var(--leading-display);
+  max-width: 14ch;
+  padding-top: var(--space-3);
 }
 @media (min-width: 56rem) {
   .title {
-    font-size: var(--text-3xl);
+    font-size: 5.25rem;
   }
 }
 .lede {
+  font-family: var(--font-serif);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
   color: var(--text-muted);
   max-width: 34rem;
 }
 .plates {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   border-top: 1px solid var(--rule-strong);
   border-bottom: 1px solid var(--rule);
 }
 .plate {
-  padding: var(--space-3) var(--space-2) var(--space-3) 0;
+  padding: var(--space-3) var(--space-2) var(--space-4) 0;
   display: grid;
   align-content: start;
   gap: var(--space-1);
@@ -51,28 +74,41 @@
   border-left: 1px solid var(--rule);
   padding-left: var(--space-3);
 }
-.plateTitle {
-  font-family: var(--font-serif);
+.plateIndex {
+  font-family: var(--font-display);
+  font-style: italic;
   font-size: var(--text-md);
+  color: var(--accent);
+  line-height: 1;
+}
+.plateTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.1;
   color: var(--text);
 }
+
+/* ---------- Form card: a slip of good paper ---------- */
 .card {
   display: grid;
   gap: var(--space-4);
   padding: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-top: 3px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-plate);
   align-self: start;
 }
 @media (min-width: 56rem) {
   .card {
     align-self: center;
-    padding: var(--space-6);
+    padding: var(--space-6) var(--space-6) var(--space-5);
   }
 }
 .cardTitle {
-  font-size: var(--text-lg);
+  font-size: var(--text-2xl);
+  line-height: 1.05;
 }
 .switch {
   font-size: var(--text-sm);
@@ -82,8 +118,14 @@
   display: inline-flex;
   align-items: center;
   min-height: var(--touch);
+  color: var(--accent);
+  font-weight: 550;
 }
 .fine {
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+.card > .fine:last-child {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
 }

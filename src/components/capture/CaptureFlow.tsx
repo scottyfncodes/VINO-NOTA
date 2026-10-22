@@ -66,6 +66,9 @@ export function Steps({ step }: { step: Step }) {
     <ol className={s.steps} aria-label="Progress" role="list">
       {STEPS.map((x, i) => (
         <li key={x.key} className={s.stepPip} data-state={i < idx ? "done" : i === idx ? "current" : "todo"} aria-current={i === idx ? "step" : undefined}>
+          <span className={s.stepNum} aria-hidden="true">
+            {String(i + 1).padStart(2, "0")}
+          </span>
           {x.label}
         </li>
       ))}
@@ -312,7 +315,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
         <div className={s.restored}>
           <Notice tone="info" title="Unsaved entry restored">
             We kept what you entered {new Date(restoredAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}.{" "}
-            <button type="button" onClick={startOver} style={{ background: "none", border: 0, padding: 0, color: "var(--accent)", textDecoration: "underline" }}>
+            <button type="button" onClick={startOver} className={s.inlineLink}>
               Start over
             </button>
           </Notice>
@@ -321,7 +324,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
 
       {step === "photo" && (
         <section className={s.stack} aria-labelledby="step-title">
-          <h2 id="step-title" ref={headingRef} tabIndex={-1} className={s.sectionTitle} style={{ fontSize: "var(--text-xl)" }}>
+          <h2 id="step-title" ref={headingRef} tabIndex={-1} className={s.stepTitle}>
             Photograph the label
           </h2>
           <div className={s.photoStage}>
@@ -373,16 +376,16 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
 
       {step === "identify" && (
         <section className={s.stack} aria-labelledby="step-title">
-          <h2 id="step-title" ref={headingRef} tabIndex={-1} className={s.sectionTitle} style={{ fontSize: "var(--text-xl)" }}>
+          <h2 id="step-title" ref={headingRef} tabIndex={-1} className={s.stepTitle}>
             Confirm the wine
           </h2>
 
           {imageId && (
-            <div style={{ display: "grid", gridTemplateColumns: "4.5rem 1fr", gap: "var(--space-4)", alignItems: "start" }}>
+            <div className={s.photoAside}>
               <WineThumb imageId={imageId} wineType={identity.wineType} alt="Your label photo" />
               <div className={s.stackTight}>
                 {recognition.status === "running" && (
-                  <p role="status" style={{ display: "flex", gap: "var(--space-2)", alignItems: "center", fontSize: "var(--text-sm)" }}>
+                  <p role="status" className={s.statusLine}>
                     <span className={s.spinner} aria-hidden="true" /> Reading the label… you can start typing.
                   </p>
                 )}
@@ -404,7 +407,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
                     {recognition.outcome.catalog && <CatalogNote catalog={recognition.outcome.catalog} />}
                     {recognition.outcome.extractedText && (
                       <details>
-                        <summary className="muted" style={{ fontSize: "var(--text-xs)", cursor: "pointer" }}>
+                        <summary className={s.extractedSummary}>
                           Text found on the label
                         </summary>
                         <pre className={s.extracted}>{recognition.outcome.extractedText}</pre>
@@ -482,7 +485,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
                 </span>
               </label>
               {visibleMatches.some((m) => m.match === "other_vintage") && (
-                <p className="muted" style={{ fontSize: "var(--text-xs)" }}>
+                <p className={s.matchMeta}>
                   Other vintages you&rsquo;ve recorded:{" "}
                   {matches
                     .filter((m) => m.match === "other_vintage")
@@ -513,11 +516,11 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
               errors={identityErrors}
             >
               {providerFieldCount > 0 && (
-                <label className={s.checkRow} style={{ padding: "var(--space-3)", border: "1px solid var(--border-strong)", borderRadius: "var(--radius)", background: "var(--surface)" }}>
+                <label className={`${s.checkRow} ${s.confirmRow}`} data-confirmed={confirmed || undefined}>
                   <input id="confirm-identity" type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
                   <span>
                     I&rsquo;ve checked the {plural(providerFieldCount, "detail")} read from the label{" "}
-                    {!confirmed && <span style={{ color: "var(--error)" }}>(required)</span>}
+                    {!confirmed && <span className={s.required}>(required)</span>}
                   </span>
                 </label>
               )}
@@ -537,7 +540,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
 
       {step === "taste" && (
         <section aria-labelledby="step-title">
-          <h2 id="step-title" ref={headingRef} tabIndex={-1} className={s.sectionTitle} style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-5)" }}>
+          <h2 id="step-title" ref={headingRef} tabIndex={-1} className={`${s.stepTitle} ${s.stepTitleSpaced}`}>
             Record the tasting
           </h2>
           <TastingForm value={tasting} onChange={setTasting} wineType={wineTypeForTasting} today={today} errors={tastingErrors} />
@@ -554,24 +557,24 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
 
       {step === "review" && (
         <section className={s.stack} aria-labelledby="step-title">
-          <h2 id="step-title" ref={headingRef} tabIndex={-1} className={s.sectionTitle} style={{ fontSize: "var(--text-xl)" }}>
+          <h2 id="step-title" ref={headingRef} tabIndex={-1} className={s.stepTitle}>
             Review and save
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "5rem 1fr", gap: "var(--space-4)", alignItems: "start" }}>
+          <div className={s.reviewHead}>
             <WineThumb imageId={imageId} wineType={wineTypeForTasting} alt="" />
             <div>
               {sameWine ? (
                 <>
                   <p className="eyebrow">New tasting of</p>
-                  <p style={{ fontFamily: "var(--font-serif)", fontSize: "var(--text-lg)" }}>
+                  <p className={s.reviewTitle}>
                     {[sameWine.producer, sameWine.name].filter(Boolean).join(" ")} {sameWine.vintage ?? (sameWine.isNonVintage ? "NV" : "")}
                   </p>
                 </>
               ) : (
                 <>
                   <p className="eyebrow">New wine</p>
-                  {identity.producer && <p className="muted">{identity.producer}</p>}
-                  <p style={{ fontFamily: "var(--font-serif)", fontSize: "var(--text-lg)" }}>
+                  {identity.producer && <p className={s.reviewProducer}>{identity.producer}</p>}
+                  <p className={s.reviewTitle}>
                     {identity.name} {identity.isNonVintage ? "NV" : identity.vintage}
                   </p>
                   <p className="muted" style={{ fontSize: "var(--text-sm)" }}>

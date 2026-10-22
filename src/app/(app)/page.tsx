@@ -8,7 +8,7 @@ import { countryName } from "@/lib/domain/countries";
 import { wineTypeLabel } from "@/lib/domain/wine";
 import { formatDate, formatNumber, plural, wineTitle } from "@/lib/format";
 import { Wordmark } from "@/components/shell/Wordmark";
-import { ButtonLink } from "@/components/ui/primitives";
+import { ButtonLink, SectionHead, SectionLink, SectionNote } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 import { ScoreMark, WineCard, WineThumb, wineStyles } from "@/components/wine/display";
 import s from "@/components/atlas/atlas.module.css";
@@ -18,30 +18,29 @@ export const metadata: Metadata = { title: "Atlas" };
 function Masthead({ name, locale }: { name: string; locale: string }) {
   const today = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(new Date());
   return (
-    <>
-      <div className={s.masthead}>
-        <Wordmark size="1.5rem" />
-        <div className={s.mastheadMeta}>
-          <ButtonLink href="/settings" variant="ghost" iconOnly icon="user" aria-label="Account and settings" />
-        </div>
+    <header className={s.masthead}>
+      <div className={s.nameplate}>
+        <span className={s.nameplateSpacer} aria-hidden="true" />
+        <Wordmark size="2.5rem" />
+        <ButtonLink href="/settings" variant="ghost" iconOnly icon="user" aria-label="Account and settings" className={s.nameplateAccount} />
       </div>
       <p className={s.dateline}>
-        <span>The private journal of {name}</span>
+        <span className={s.datelineOwner}>The private journal of {name}</span>
         <span suppressHydrationWarning>{today}</span>
       </p>
-    </>
+    </header>
   );
 }
 
 function Welcome() {
   return (
     <section className={s.welcome} aria-labelledby="welcome-title">
-      <div style={{ display: "grid", gap: "var(--space-4)" }}>
+      <div className={s.welcomeLead}>
         <p className="eyebrow">Atlas</p>
         <h1 className={s.welcomeTitle} id="welcome-title">
           Your journal begins with a single bottle.
         </h1>
-        <p className="muted" style={{ maxWidth: "36rem" }}>
+        <p className={s.welcomeLede}>
           Nothing has been recorded yet, so there&rsquo;s nothing to chart. Everything you see here will be drawn from your own entries.
         </p>
         <div>
@@ -64,8 +63,8 @@ function Welcome() {
           <span className={s.welcomeStepBody}>A score out of ten and as much or as little detail as you like.</span>
         </li>
       </ol>
-      <div style={{ display: "grid", gap: "var(--space-3)" }}>
-        <p className="eyebrow">What your entries unlock</p>
+      <div className={s.unlocksWrap}>
+        <SectionHead title="What your entries unlock" as="h2" />
         <ul className={s.unlocks}>
           <li>
             <strong>First tasting</strong> A searchable archive and a page for every bottle.
@@ -107,16 +106,19 @@ export default async function AtlasPage() {
     <>
       <Masthead name={user.name} locale={locale} />
       <section className={s.lead}>
-        <div style={{ display: "grid", gap: "var(--space-2)" }}>
-          <p className="eyebrow">Atlas</p>
+        <div className={s.leadText}>
+          <p className="eyebrow">Atlas · your journal at a glance</p>
           <h1 className={s.leadTitle}>
             {plural(stats.tastings, "tasting")} across {plural(stats.wines, "wine")}
             {stats.countries > 0 ? ` from ${plural(stats.countries, "country", "countries")}.` : "."}
           </h1>
         </div>
-        <div>
+        <div className={s.leadAction}>
           <ButtonLink href="/capture" variant="primary" icon="capture" block>
             Record a tasting
+          </ButtonLink>
+          <ButtonLink href="/journal" variant="secondary" icon="journal" block>
+            Open the journal
           </ButtonLink>
         </div>
       </section>
@@ -137,7 +139,7 @@ export default async function AtlasPage() {
             {plural(stats.countries, "country", "countries")}
           </span>
         </div>
-        <div className={s.stat}>
+        <div className={`${s.stat} ${s.statFeature}`}>
           <span className="eyebrow">Average rating</span>
           <span className={`${s.statValue} ${s.statValueAccent}`}>{stats.meanScore === null ? "—" : formatNumber(stats.meanScore, locale, 1)}</span>
           <span className={s.statNote}>
@@ -148,54 +150,49 @@ export default async function AtlasPage() {
       </section>
 
       {insight && (
-        <section className={s.section} aria-labelledby="insight-title">
-          <div className={s.sectionHead}>
-            <h2 className={s.sectionTitle} id="insight-title">
+        <section className={s.insight} aria-labelledby="insight-title">
+          <div className={s.insightHead}>
+            <h2 className={s.insightKicker} id="insight-title">
               From your records
             </h2>
-            <Link href="/compendium" className={s.sectionLink}>
-              Compendium
+            <Link href="/compendium" className={s.insightLink}>
+              Compendium <Icon name="chevron" size={14} />
             </Link>
           </div>
-          <div className={s.insight}>
+          <div className={s.insightGrid}>
             <p className={s.insightStatement}>{insight.statement}</p>
-            <table className={s.evidence}>
-              <caption className="visually-hidden">Evidence behind this observation</caption>
-              <thead>
-                <tr>
-                  <th scope="col">{insight.kind === "wineType" ? "Style" : "Country"}</th>
-                  <th scope="col">Rated</th>
-                  <th scope="col">Mean score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {insight.groups.map((g) => (
-                  <tr key={g.key}>
-                    <td>{g.label}</td>
-                    <td className="num">{g.n}</td>
-                    <td className="num">{formatNumber(g.mean, locale, 1)}</td>
+            <div className={s.insightEvidence}>
+              <table className={s.evidence}>
+                <caption className="visually-hidden">Evidence behind this observation</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">{insight.kind === "wineType" ? "Style" : "Country"}</th>
+                    <th scope="col">Rated</th>
+                    <th scope="col">Mean score</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className={s.caveat}>
-              Calculated from {plural(insight.totalRated, "rated tasting")}; groups with fewer than three are left out.{" "}
-              {sampleStrength(insight.groups[insight.groups.length - 1].n) !== "established" && "These are small samples — a pattern to watch, not a conclusion."}
-            </p>
+                </thead>
+                <tbody>
+                  {insight.groups.map((g) => (
+                    <tr key={g.key}>
+                      <td>{g.label}</td>
+                      <td className="num">{g.n}</td>
+                      <td className="num">{formatNumber(g.mean, locale, 1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className={s.caveat}>
+                Calculated from {plural(insight.totalRated, "rated tasting")}; groups with fewer than three are left out.{" "}
+                {sampleStrength(insight.groups[insight.groups.length - 1].n) !== "established" && "These are small samples — a pattern to watch, not a conclusion."}
+              </p>
+            </div>
           </div>
         </section>
       )}
 
       <div className={s.twoCol}>
         <section className={s.section} aria-labelledby="recent-title">
-          <div className={s.sectionHead}>
-            <h2 className={s.sectionTitle} id="recent-title">
-              Recently tasted
-            </h2>
-            <Link href="/journal" className={s.sectionLink}>
-              All entries
-            </Link>
-          </div>
+          <SectionHead id="recent-title" index="01" title="Recently tasted" aside={<SectionLink href="/journal">All entries</SectionLink>} />
           <div className={wineStyles.grid}>
             {recent.map((r) => (
               <WineCard
@@ -213,36 +210,29 @@ export default async function AtlasPage() {
         </section>
 
         <section className={s.section} aria-labelledby="fav-title">
-          <div className={s.sectionHead}>
-            <h2 className={s.sectionTitle} id="fav-title">
-              {discoveries.length ? "Highly rated" : "Favourites"}
-            </h2>
-            <span className={s.sectionLink}>8.0 and above</span>
-          </div>
+          <SectionHead id="fav-title" index="02" title={discoveries.length ? "Highly rated" : "Favourites"} aside={<SectionNote>8.0 and above</SectionNote>} />
           {favList.length === 0 ? (
-            <p className="muted" style={{ fontSize: "var(--text-sm)" }}>
-              Nothing rated 8.0 or higher yet. Your standouts will collect here.
-            </p>
+            <p className={s.quiet}>Nothing rated 8.0 or higher yet. Your standouts will collect here.</p>
           ) : (
-            <div className={s.favourites}>
+            <ol className={s.favourites} role="list">
               {favList.map((f) => (
-                <Link key={f.id} href={`/wines/${f.wineId}#tasting-${f.id}`} className={s.fav}>
-                  <WineThumb imageId={f.imageId} wineType={f.wineType} alt="" />
-                  <span>
-                    {f.producer && <span className={s.favMeta}>{f.producer}</span>}
-                    <span className={s.favTitle} style={{ display: "block" }}>
-                      {wineTitle(f)}
+                <li key={f.id}>
+                  <Link href={`/wines/${f.wineId}#tasting-${f.id}`} className={s.fav}>
+                    <WineThumb imageId={f.imageId} wineType={f.wineType} alt="" />
+                    <span className={s.favText}>
+                      {f.producer && <span className={s.favProducer}>{f.producer}</span>}
+                      <span className={s.favTitle}>{wineTitle(f)}</span>
+                      <span className={s.favMeta}>{formatDate(f.tastedOn, locale, "medium")}</span>
                     </span>
-                    <span className={s.favMeta}>{formatDate(f.tastedOn, locale, "medium")}</span>
-                  </span>
-                  <ScoreMark score={f.score} />
-                </Link>
+                    <ScoreMark score={f.score} size="2rem" />
+                  </Link>
+                </li>
               ))}
-            </div>
+            </ol>
           )}
         </section>
       </div>
-      <p className="muted" style={{ fontSize: "var(--text-xs)", marginTop: "var(--space-7)", display: "flex", gap: "var(--space-2)", alignItems: "center" }}>
+      <p className={s.colophon}>
         <Icon name="info" size={14} /> Every figure on this page is calculated from your saved records.
       </p>
     </>

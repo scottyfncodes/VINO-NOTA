@@ -51,7 +51,7 @@ export function Gallery({ wineId, images, wineType, title }: { wineId: string; i
             <WineThumb imageId={current.id} wineType={wineType} alt={`${typeLabel(current.imageType)} of ${title}`} size="display" priority />
           </a>
         ) : (
-          <WineThumb imageId={null} wineType={wineType} alt="" />
+          <WineThumb imageId={null} wineType={wineType} alt="" size="display" />
         )}
       </div>
       <div className={s.galleryThumbs}>

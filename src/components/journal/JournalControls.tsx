@@ -114,13 +114,13 @@ export function JournalControls({ facets }: { facets: { countries: string[]; reg
           <Input id="journal-search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Wine, producer, grape, region, notes…" autoComplete="off" enterKeyHint="search" />
         </div>
         <Button icon="filter" onClick={openSheet} aria-label={`Filters${active.length ? `, ${active.length} active` : ""}`}>
-          <span>Filter</span>
+          <span className={s.filterLabel}>Filter</span>
           {active.length > 0 && <span className={s.filterBadge}>{active.length}</span>}
         </Button>
       </div>
       <div className={s.toolbar}>
         <div className={s.toolbarLeft}>
-          <label htmlFor="journal-sort" className="visually-hidden">
+          <label htmlFor="journal-sort" className={s.sortLabel}>
             Sort by
           </label>
           <Select id="journal-sort" className={s.sortSelect} value={params.get("sort") ?? "date_desc"} onChange={(e) => setParam("sort", e.target.value === "date_desc" ? null : e.target.value)}>
@@ -149,7 +149,7 @@ export function JournalControls({ facets }: { facets: { countries: string[]; reg
           ))}
           <button
             type="button"
-            className={uiStyles.chip}
+            className={`${uiStyles.chip} ${s.clearAll}`}
             onClick={() => {
               const next = new URLSearchParams(params.toString());
               FILTER_KEYS.forEach((k) => next.delete(k));
@@ -221,9 +221,7 @@ export function JournalControls({ facets }: { facets: { countries: string[]; reg
             <Input id="f-max" inputMode="decimal" value={d("max")} onChange={(e) => setD("max", e.target.value)} placeholder="10.0" />
           </Field>
         </div>
-        <p className="muted" style={{ fontSize: "var(--text-xs)", marginTop: "calc(-1 * var(--space-3))" }}>
-          A score range only matches rated tastings.
-        </p>
+        <p className={s.sheetNote}>A score range only matches rated tastings.</p>
         <div className={s.row2}>
           <Field id="f-from" label="Tasted from">
             <Input id="f-from" type="date" value={d("from")} onChange={(e) => setD("from", e.target.value)} />

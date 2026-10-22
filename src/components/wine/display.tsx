@@ -6,27 +6,40 @@ import { formatDate } from "@/lib/format";
 import { Icon } from "@/components/ui/Icon";
 import s from "./wine.module.css";
 
+/** Wine-type key colour, shown as a spine on thumbnails and placeholders. */
+export function bandClass(wineType: string) {
+  return s[`band-${wineType}`] ?? s["band-other"];
+}
+
 export function WineThumb({ imageId, wineType, alt, size = "thumb", priority }: { imageId: string | null; wineType: string; alt: string; size?: "thumb" | "display"; priority?: boolean }) {
   return (
-    <div className={s.thumb}>
+    <div className={`${s.thumb} ${bandClass(wineType)} ${size === "display" ? s.thumbDisplay : ""}`}>
       {imageId ? (
         // Private, authenticated image route; next/image optimisation would bypass the owner check.
         // eslint-disable-next-line @next/next/no-img-element
         <img src={`/api/images/${imageId}?size=${size}`} alt={alt} loading={priority ? "eager" : "lazy"} decoding="async" />
       ) : (
-        <div className={`${s.placeholder} ${s[`band-${wineType}`] ?? s["band-other"]}`} aria-hidden="true">
-          <Icon name="bottle" size={28} />
+        <div className={s.placeholder} aria-hidden="true">
+          <Icon name="bottle" size={size === "display" ? 40 : 26} />
+          {size === "display" && <span className={s.placeholderNote}>No photograph</span>}
         </div>
       )}
     </div>
   );
 }
 
-export function ScoreMark({ score, size = "1.375rem" }: { score: string | number | null; size?: string }) {
+export function ScoreMark({ score, size = "1.625rem", outOf }: { score: string | number | null; size?: string; outOf?: boolean }) {
   if (score === null || score === undefined) return <span className={s.scoreUnrated}>Unrated</span>;
   return (
-    <span className={s.scoreMark} style={{ fontSize: size }} aria-label={`${formatScore(score)} out of 10`}>
-      {formatScore(score)}
+    <span className={s.scoreWrap}>
+      <span className={s.scoreMark} style={{ fontSize: size }} aria-label={`${formatScore(score)} out of 10`}>
+        {formatScore(score)}
+      </span>
+      {outOf && (
+        <span className={s.scoreOutOf} aria-hidden="true">
+          /10
+        </span>
+      )}
     </span>
   );
 }
@@ -63,7 +76,10 @@ export function EntryRow({ e, locale }: { e: EntryProps; locale: string }) {
           {vintage && <span className="num"> {vintage}</span>}
         </span>
         <span className={s.entryMeta}>
-          <span>{wineTypeLabel(e.wineType)}</span>
+          <span className={s.typeKey}>
+            <span className={`${s.typeDot} ${bandClass(e.wineType)}`} aria-hidden="true" />
+            {wineTypeLabel(e.wineType)}
+          </span>
           {origin && <span>{origin}</span>}
         </span>
         {e.impression && <p className={s.entryImpression}>{e.impression}</p>}
@@ -96,12 +112,12 @@ export function WineCard({
   return (
     <Link href={href} className={s.card}>
       <WineThumb imageId={imageId} wineType={wineType} alt="" />
-      <div style={{ display: "grid", gap: 2 }}>
+      <div className={s.cardBody}>
         {producer && <span className={s.entryProducer}>{producer}</span>}
         <span className={s.cardTitle}>{title}</span>
         <span className={s.cardRow}>
-          <span>{caption}</span>
-          <ScoreMark score={score} size="1rem" />
+          <span className={s.cardCaption}>{caption}</span>
+          <ScoreMark score={score} size="1.375rem" />
         </span>
       </div>
     </Link>
