@@ -218,12 +218,11 @@
   align-content: start;
 }
 .card .thumb {
-  transition: box-shadow var(--duration) var(--ease), border-color var(--duration) var(--ease), transform var(--duration) var(--ease);
+  transition: box-shadow var(--duration) var(--ease), border-color var(--duration) var(--ease);
 }
 .card:hover .thumb {
   border-color: var(--rule-strong);
   box-shadow: var(--shadow-plate);
-  transform: translateY(-2px);
 }
 .card:hover .cardTitle {
   color: var(--accent);

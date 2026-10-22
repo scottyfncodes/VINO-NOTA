@@ -21,7 +21,7 @@ export const metadata: Metadata = { title: "Compendium" };
 
 const strengthText = {
   none: "",
-  anecdotal: "Fewer than five data points — treat this as anecdote, not pattern.",
+  anecdotal: "Fewer than five data points: treat this as anecdote, not pattern.",
   emerging: "A small sample: patterns may shift as you record more.",
   established: "",
 } as const;
@@ -41,7 +41,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
       <>
         <PageHeader eyebrow="Analysis" title="Compendium" />
         <EmptyState mark="No records to analyse" title="Nothing to analyse yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record a tasting</ButtonLink>}>
-          The Compendium charts your rating distribution, palate fingerprint, price against enjoyment, and tasting chronology — all calculated from your
+          The Compendium charts your rating distribution, palate fingerprint, price against enjoyment, and tasting chronology, all calculated from your
           own saved records. It stays empty until there is something real to show.
         </EmptyState>
       </>
@@ -323,7 +323,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
                           <td>
                             <Link href={`/wines/${p.wineId}#tasting-${p.id}`}>{p.label}</Link>
                           </td>
-                          <td>{PRICE_BASES.find((b) => b.value === p.basis)?.label ?? "—"}</td>
+                          <td>{PRICE_BASES.find((b) => b.value === p.basis)?.label ?? "–"}</td>
                           <td className={s.num}>{formatPrice(p.price, value.currency, locale)}</td>
                           <td className={s.num}>{formatScore(p.score)}</td>
                         </tr>
@@ -373,7 +373,7 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
                       <td>{formatMonth(m.month, locale)}</td>
                       <td className={s.num}>{m.count}</td>
                       <td className={s.num}>{m.rated}</td>
-                      <td className={s.num}>{m.meanScore === null ? "—" : formatScore(m.meanScore)}</td>
+                      <td className={s.num}>{m.meanScore === null ? "–" : formatScore(m.meanScore)}</td>
                     </tr>
                   ))}
               </tbody>

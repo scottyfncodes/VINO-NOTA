@@ -141,7 +141,7 @@ export function TastingForm({
         <h3 className={s.sectionTitle} id="structure-title">
           Structure
         </h3>
-        <p className={s.sectionHint}>Tap what you noticed. Anything left untouched is recorded as not assessed — never as zero.</p>
+        <p className={s.sectionHint}>Tap what you noticed. Anything left untouched is recorded as not assessed, never as zero.</p>
         {QUICK_DIMENSIONS.map((d) => (
           <ScaleInput
             key={d.key}
@@ -193,7 +193,7 @@ export function TastingForm({
         </h3>
         <div className={s.row3}>
           <Field id="price" label="Price paid" optional error={errors.price}>
-            <Input id="price" inputMode="decimal" value={value.price} onChange={(e) => set("price", e.target.value)} placeholder="—" invalid={Boolean(errors.price)} />
+            <Input id="price" inputMode="decimal" value={value.price} onChange={(e) => set("price", e.target.value)} placeholder="–" invalid={Boolean(errors.price)} />
           </Field>
           <Field id="currency" label="Currency" error={errors.currency}>
             <Select id="currency" value={value.currency} onChange={(e) => set("currency", e.target.value)} invalid={Boolean(errors.currency)}>

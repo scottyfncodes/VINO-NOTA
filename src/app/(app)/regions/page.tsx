@@ -95,7 +95,7 @@ export default async function RegionsPage() {
             return (
               <a key={`${sh.id}-${i}`} href={`#country-${hit.code}`} aria-label={`${countryName(hit.code)}: ${fig(hit.c.agg)}`}>
                 <path d={sh.d} className={s.recorded} fill={fillFor(hit.c.agg.tastings)}>
-                  <title>{`${countryName(hit.code)} — ${fig(hit.c.agg)}`}</title>
+                  <title>{`${countryName(hit.code)}: ${fig(hit.c.agg)}`}</title>
                 </path>
               </a>
             );

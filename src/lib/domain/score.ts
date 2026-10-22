@@ -17,9 +17,9 @@ export function parseScore(input: unknown): { ok: true; value: number | null } |
 }
 
 export function formatScore(score: number | string | null | undefined): string {
-  if (score === null || score === undefined || score === "") return "—";
+  if (score === null || score === undefined || score === "") return "–";
   const n = typeof score === "string" ? Number(score) : score;
-  return Number.isFinite(n) ? n.toFixed(1) : "—";
+  return Number.isFinite(n) ? n.toFixed(1) : "–";
 }
 
 /** Short verbal anchor shown alongside the numeric score; purely descriptive. */

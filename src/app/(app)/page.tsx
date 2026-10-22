@@ -56,7 +56,7 @@ function Welcome() {
         </li>
         <li className={s.welcomeStep}>
           <span className={s.welcomeStepTitle}>Confirm what&rsquo;s in the glass</span>
-          <span className={s.welcomeStepBody}>Producer, wine, vintage and origin — corrected by you.</span>
+          <span className={s.welcomeStepBody}>Producer, wine, vintage and origin, corrected by you.</span>
         </li>
         <li className={s.welcomeStep}>
           <span className={s.welcomeStepTitle}>Note what you noticed</span>
@@ -141,7 +141,7 @@ export default async function AtlasPage() {
         </div>
         <div className={`${s.stat} ${s.statFeature}`}>
           <span className="eyebrow">Average rating</span>
-          <span className={`${s.statValue} ${s.statValueAccent}`}>{stats.meanScore === null ? "—" : formatNumber(stats.meanScore, locale, 1)}</span>
+          <span className={`${s.statValue} ${s.statValueAccent}`}>{stats.meanScore === null ? "–" : formatNumber(stats.meanScore, locale, 1)}</span>
           <span className={s.statNote}>
             {stats.rated === 0 ? "No rated tastings yet" : `Mean of ${plural(stats.rated, "rated tasting")}`}
             {stats.tastings > stats.rated && stats.rated > 0 ? ` · ${stats.tastings - stats.rated} unrated excluded` : ""}
@@ -183,7 +183,7 @@ export default async function AtlasPage() {
               </table>
               <p className={s.caveat}>
                 Calculated from {plural(insight.totalRated, "rated tasting")}; groups with fewer than three are left out.{" "}
-                {sampleStrength(insight.groups[insight.groups.length - 1].n) !== "established" && "These are small samples — a pattern to watch, not a conclusion."}
+                {sampleStrength(insight.groups[insight.groups.length - 1].n) !== "established" && "These are small samples: a pattern to watch, not a conclusion."}
               </p>
             </div>
           </div>
