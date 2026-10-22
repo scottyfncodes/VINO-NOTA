@@ -38,5 +38,5 @@ export function toActionError(error: unknown, context: string): { ok: false; err
     if (digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_HTTP_ERROR_FALLBACK")) throw error;
   }
   console.error(`[${context}] unexpected error:`, error instanceof Error ? `${error.name}: ${error.message}` : "unknown");
-  return { ok: false, error: "Something went wrong while saving. Your entries are still here — please try again." };
+  return { ok: false, error: "Something went wrong while saving. Your entries are still here. Please try again." };
 }

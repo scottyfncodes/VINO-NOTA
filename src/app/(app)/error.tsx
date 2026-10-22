@@ -8,7 +8,7 @@ export default function AppError({ reset }: { error: Error & { digest?: string }
     <section className={s.message} role="alert">
       <p className="eyebrow">Something went wrong</p>
       <h1 className={s.messageTitle}>This page couldn&rsquo;t be loaded.</h1>
-      <p className={s.messageBody}>Your records are safe. This is usually a temporary connection problem — try again in a moment.</p>
+      <p className={s.messageBody}>Your records are safe. This is usually a temporary connection problem. Try again in a moment.</p>
       <div className={s.actions}>
         <Button variant="primary" onClick={reset}>
           Try again

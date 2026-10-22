@@ -119,7 +119,6 @@ const paths: Record<string, React.ReactNode> = {
       <path d="M7 4.5v4c0 3 5 4 5 7.5v4M17 4.5v4c0 3-5 4-5 7.5" />
     </>
   ),
-  sparkle: <path d="M12 4.5 13.6 10l5.4 2-5.4 2L12 19.5 10.4 14 5 12l5.4-2z" />,
   signout: (
     <>
       <path d="M14 4.5H6a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h8" />

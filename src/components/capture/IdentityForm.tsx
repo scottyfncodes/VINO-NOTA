@@ -66,7 +66,7 @@ export function IdentityForm({
     <div className={s.stack}>
       {suggestions.length > 0 && (
         <div className={s.suggestions} aria-label="Uncertain readings">
-          <p className="eyebrow">Uncertain readings — use only if they match the label</p>
+          <p className="eyebrow">Uncertain readings: use only if they match the label</p>
           {suggestions.map((sg) => (
             <div key={sg.field} className={s.suggestion}>
               <span className={s.suggestionText}>
@@ -188,7 +188,7 @@ export function IdentityForm({
                 id={`grape-pct-${i}`}
                 inputMode="decimal"
                 value={g.percentage}
-                placeholder="—"
+                placeholder="–"
                 onChange={(e) => set("grapes", value.grapes.map((x, j) => (j === i ? { ...x, percentage: e.target.value } : x)), "grapes")}
               />
             </Field>
@@ -219,7 +219,7 @@ export function IdentityForm({
 /** Lightweight client-side checks mirroring server validation for immediate feedback. */
 export function validateIdentity(d: IdentityDraft): Partial<Record<IdentityField, string>> {
   const errors: Partial<Record<IdentityField, string>> = {};
-  if (!d.name.trim()) errors.name = "Add the wine's name — use the appellation if there's no other name.";
+  if (!d.name.trim()) errors.name = "Add the wine's name. Use the appellation if there's no other name.";
   if (!d.wineType) errors.wineType = "Choose the wine's type.";
   if (d.vintage && !/^\d{4}$/.test(d.vintage)) errors.vintage = "Use a four-digit year.";
   else if (d.vintage && (Number(d.vintage) < 1800 || Number(d.vintage) > 2100)) errors.vintage = "That year looks out of range.";

@@ -122,7 +122,7 @@ export default async function WinePage({ params, searchParams }: PageProps<"/win
               </div>
               <div>
                 <span className="eyebrow">Last tasted</span>
-                <span className={s.summaryDate}>{tastings[0] ? formatDate(tastings[0].tastedOn, locale, "medium") : "—"}</span>
+                <span className={s.summaryDate}>{tastings[0] ? formatDate(tastings[0].tastedOn, locale, "medium") : "–"}</span>
               </div>
             </div>
             <dl className={s.facts}>

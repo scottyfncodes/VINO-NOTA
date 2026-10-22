@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Instrument_Serif, Inter, Newsreader } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Serif, Newsreader } from "next/font/google";
 import "./globals.css";
 
 // Display: headlines, wine names at size, figures. Text serif: the taster's own voice.
@@ -27,9 +27,11 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+// Plex Sans shares the mono's engineered skeleton, so interface text and data labels read as one family.
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-sans",
   display: "swap",
 });
 
@@ -54,7 +56,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${instrument.variable} ${newsreader.variable} ${inter.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${instrument.variable} ${newsreader.variable} ${plexSans.variable} ${plexMono.variable}`}>
       <body>
         <a className="skip-link" href="#main">
           Skip to content

@@ -196,7 +196,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
           setRecognition({ status: "failed", reason: outcome.reason, retryable: outcome.retryable });
         }
       } catch {
-        setRecognition({ status: "failed", reason: "We couldn't reach the label reader. Your entries are safe — retry or continue by hand.", retryable: true });
+        setRecognition({ status: "failed", reason: "We couldn't reach the label reader. Your entries are safe. Retry or continue by hand.", retryable: true });
       } finally {
         recognitionInFlight.current = false;
       }
@@ -277,7 +277,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
       recognition: outcome
         ? { provider: outcome.provider, imageId, extractedText: outcome.extractedText, candidate: outcome.candidate, confidence: outcome.overallConfidence }
         : null,
-    }).catch(() => ({ ok: false as const, error: "We couldn't reach the server. Your entry is saved on this device — try again when you're back online." }));
+    }).catch(() => ({ ok: false as const, error: "We couldn't reach the server. Your entry is saved on this device. Try again when you're back online." }));
     if (result.ok) {
       savedRef.current = true;
       clearDraft(DRAFT_KEY);
@@ -365,7 +365,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
             </Button>
           )}
           <Button variant="ghost" block onClick={() => go("identify")}>
-            Skip the photo — enter details by hand
+            Skip the photo: enter details by hand
           </Button>
           <ul className={s.tips}>
             <li>Avoid glare: tilt the bottle slightly away from overhead lights.</li>
@@ -432,7 +432,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
                   </Notice>
                 )}
                 {recognition.status === "idle" && recognitionAvailable && (
-                  <Button size="small" icon="sparkle" onClick={() => runRecognition(imageId)}>
+                  <Button size="small" onClick={() => runRecognition(imageId)}>
                     Read the label
                   </Button>
                 )}
@@ -586,7 +586,7 @@ export function CaptureFlow({ recognitionAvailable, providerName, defaultCurrenc
           </div>
           <dl className={s.summaryList}>
             <dt>Tasted</dt>
-            <dd>{tasting.tastedOn ? formatDate(tasting.tastedOn, undefined, "long") : "—"}</dd>
+            <dd>{tasting.tastedOn ? formatDate(tasting.tastedOn, undefined, "long") : "–"}</dd>
             <dt>Your score</dt>
             <dd>{tasting.score === null ? "Not rated" : `${formatScore(tasting.score)} / 10`}</dd>
             <dt>Structure</dt>

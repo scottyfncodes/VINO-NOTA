@@ -66,9 +66,9 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
         <SectionHead id="services" index="04" title="Services" />
         <dl className={s.services}>
           <dt>Label reading</dt>
-          <dd>{recognition.available ? `On — ${recognition.provider}. Label photos are sent to it only when you capture a label.` : "Not configured. Details are entered by hand."}</dd>
+          <dd>{recognition.available ? `On (${recognition.provider}). Label photos are sent to it only when you capture a label.` : "Not configured. Details are entered by hand."}</dd>
           <dt>Photo storage</dt>
-          <dd>{storage === "vercel-blob" ? "Private cloud storage" : storage === "local" ? "Local development storage" : "Not configured — photos can't be saved"}</dd>
+          <dd>{storage === "vercel-blob" ? "Private cloud storage" : storage === "local" ? "Local development storage" : "Not configured. Photos can't be saved"}</dd>
           <dt>Reference data</dt>
           <dd>
             Missing label details may be suggested from a shared wine reference catalog, marked “From catalog”. It includes data from{" "}

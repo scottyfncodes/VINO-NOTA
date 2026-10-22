@@ -67,7 +67,7 @@ export function Fingerprint({ dimensions }: { dimensions: FingerprintDimension[]
                       stroke={l.meanScore === null ? "var(--chart-1)" : "var(--bg)"}
                       strokeWidth={l.meanScore === null ? 1.5 : 2}
                     >
-                      <title>{`${d.label}: ${d.scale[l.value - 1]} — ${l.count} ${l.count === 1 ? "tasting" : "tastings"}${l.meanScore !== null ? `, mean ${formatScore(l.meanScore)} (${l.ratedCount} rated)` : ", none rated"}`}</title>
+                      <title>{`${d.label}: ${d.scale[l.value - 1]} · ${l.count} ${l.count === 1 ? "tasting" : "tastings"}${l.meanScore !== null ? `, mean ${formatScore(l.meanScore)} (${l.ratedCount} rated)` : ", none rated"}`}</title>
                     </circle>
                   </Link>
                 ),

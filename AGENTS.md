@@ -16,3 +16,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Missing values are never zero: unrated scores are `NULL`; un-assessed sensory dimensions have no row.
 - Schema changes: edit `src/server/db/schema.ts`, then `npm run db:generate` and commit the SQL in `drizzle/`.
 - Gate before pushing: `npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e`.
+- Design guardrails (type, icons, layout, colour, motion, copy) are in `CLAUDE.md`; every UI change must meet them.

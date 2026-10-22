@@ -23,7 +23,7 @@ describe("parseScore", () => {
     expect(parseScore("abc").ok).toBe(false);
   });
   it("formats", () => {
-    expect(formatScore(null)).toBe("—");
+    expect(formatScore(null)).toBe("–");
     expect(formatScore("9.0")).toBe("9.0");
   });
 });

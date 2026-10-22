@@ -24,7 +24,7 @@ export function TastingRecord({ t, wineId, locale, highlighted, index, total }: 
   if (t.foodPairing) context.push(["With", t.foodPairing]);
   if (t.wouldBuyAgain !== null) context.push(["Buy again", t.wouldBuyAgain ? "Yes" : "No"]);
   const blind = BLIND_LABEL[t.blindStatus];
-  if (blind) context.push(["Blind", `${blind}${t.blindGuess ? ` — guessed “${t.blindGuess}”` : ""}`]);
+  if (blind) context.push(["Blind", `${blind}${t.blindGuess ? `, guessed “${t.blindGuess}”` : ""}`]);
   if (t.servingTempC) context.push(["Served at", `${Number(t.servingTempC)} °C`]);
   if (t.decantMinutes !== null) context.push(["Decanted", `${t.decantMinutes} min`]);
   if (t.bottleProvenance) context.push(["Bottle from", t.bottleProvenance]);
