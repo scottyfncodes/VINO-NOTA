@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Serif, Newsreader } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 // Display: headlines, wine names at size, figures. Text serif: the taster's own voice.
 // Sans: interface. Mono: specimen-style labels and data — the "scientific rigour" half.
@@ -62,6 +63,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         {children}
+        {/* HaveAnApp Pulse: anonymous, cookieless usage counts. */}
+        <Script src="https://haveanapp-pulse-collect.vercel.app/p.js" data-app="vino-nota" strategy="afterInteractive" />
       </body>
     </html>
   );
