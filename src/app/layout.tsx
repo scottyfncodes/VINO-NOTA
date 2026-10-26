@@ -63,8 +63,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         {children}
-        {/* HaveAnApp Pulse: anonymous, cookieless usage counts. */}
-        <Script src="https://haveanapp-pulse-collect.vercel.app/p.js" data-app="vino-nota" strategy="afterInteractive" />
+        {/* HaveAnApp Pulse: anonymous, cookieless usage counts, plus a random returning-visitor id kept on this device for this app. */}
+        <Script src="https://haveanapp-pulse-collect.vercel.app/p.js" data-app="vino-nota" data-returning="on" strategy="afterInteractive" />
       </body>
     </html>
   );
