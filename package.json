@@ -16,6 +16,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:migrate:check": "tsx scripts/migrate.ts --check",
     "icons": "tsx scripts/generate-icons.ts",
+    "evaluation:seed": "tsx --conditions=react-server scripts/evaluation-seed.ts",
     "catalog:fetch-wikidata": "tsx scripts/catalog/fetch-wikidata.ts",
     "catalog:import": "tsx scripts/catalog/import.ts",
     "catalog:review": "tsx scripts/catalog/review.ts",

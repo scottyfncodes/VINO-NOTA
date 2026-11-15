@@ -1,0 +1,75 @@
+{
+  "target": "server",
+  "url": "http://localhost:3100",
+  "entry": "src/app/layout.tsx",
+  "page": "/sign-in",
+  "start": "npm run build && npm run start -- -p 3100",
+  "prepare": "npm run evaluation:seed",
+  "pixelcraft": {
+    "viewports": [
+      "iphone17",
+      "iphone13",
+      "desktop",
+      "narrow",
+      "tablet",
+      "landscape"
+    ],
+    "wait_ms": 1200,
+    "screens": [
+      {
+        "name": "Sign in",
+        "path": "/sign-in"
+      },
+      {
+        "name": "Atlas",
+        "path": "/sign-in",
+        "steps": [
+          {
+            "fill": {
+              "selector": "input[type=email]",
+              "value": "evaluation@example.test"
+            }
+          },
+          {
+            "fill": {
+              "selector": "input[type=password]",
+              "value": "correct-horse-battery"
+            }
+          },
+          {
+            "selector": "form button[type=submit]"
+          },
+          {
+            "wait": 2500
+          }
+        ]
+      },
+      {
+        "name": "Journal",
+        "path": "/journal"
+      },
+      {
+        "name": "Capture",
+        "path": "/capture"
+      },
+      {
+        "name": "Compendium",
+        "path": "/compendium"
+      },
+      {
+        "name": "Regions",
+        "path": "/regions"
+      },
+      {
+        "name": "Settings",
+        "path": "/settings"
+      }
+    ],
+    "accept_tells": [
+      {
+        "id": "eyebrow",
+        "reason": "mono specimen labels are the field-notebook half of the art direction"
+      }
+    ]
+  }
+}
