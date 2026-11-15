@@ -45,6 +45,11 @@
   /* Accent & state */
   --accent: var(--cellar-burgundy); /* 10.1:1 as text */
   --accent-hover: #551721;
+  /* Filled controls. The same burgundy as the accent on paper; in the dark theme
+     the accent lightens to stay legible as text, but a filled control stays wine. */
+  --accent-fill: var(--accent);
+  --accent-fill-hover: var(--accent-hover);
+  --accent-fill-active: #47121b;
   --accent-soft: rgb(110 31 43 / 0.09);
   --accent-softer: rgb(110 31 43 / 0.045);
   --success: var(--field-green); /* 6.0:1 */
@@ -90,8 +95,8 @@
   --font-serif: var(--font-newsreader), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --font-sans: var(--font-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
-  --text-2xs: 0.6875rem; /* 11 */
-  --text-xs: 0.75rem; /* 12 */
+  --text-2xs: 0.75rem; /* 12: the floor for anything read on a phone */
+  --text-xs: 0.8125rem; /* 13 */
   --text-sm: 0.875rem; /* 14 */
   --text-base: 1rem; /* 16 — inputs never smaller (prevents iOS zoom) */
   --text-md: 1.125rem; /* 18 */
@@ -104,6 +109,7 @@
   --leading-display: 0.98;
   --leading-tight: 1.12;
   --leading-snug: 1.3;
+  --leading-prose: 1.45; /* multi-line serif prose: ledes, notes */
   --leading-body: 1.55;
   --tracking-caps: 0.08em;
   --tracking-mono: 0.11em;
@@ -142,6 +148,7 @@
   /* Motion */
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   --duration: 180ms;
+  --duration-press: 80ms; /* a pressed control answers at once, then settles */
 
   /* Elevation: used only for things that genuinely float */
   --shadow-sheet: 0 -1px 0 var(--border), 0 -16px 48px rgb(28 22 20 / 0.14);
@@ -165,9 +172,12 @@
     --inverse-rule: rgb(239 232 220 / 0.14);
     --text: #efe8dc; /* 15.1:1 */
     --text-muted: #ada492; /* 7.6:1 */
-    --text-on-accent: #171312;
+    --text-on-accent: #faf7f0; /* 5.4:1 on the wine fill */
     --accent: #dc8995; /* 6.9:1 */
     --accent-hover: #e8a2ad;
+    --accent-fill: #a13a4c; /* 2.9:1 against the page: reads as a solid control */
+    --accent-fill-hover: #b3475a;
+    --accent-fill-active: #8a2f3f;
     --accent-soft: rgb(220 137 149 / 0.13);
     --accent-softer: rgb(220 137 149 / 0.06);
     --success: #82b5a0;
@@ -273,6 +283,12 @@ a {
 
 a:hover {
   text-decoration-color: currentColor;
+}
+
+a:active {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+  transition-duration: var(--duration-press);
 }
 
 img,
@@ -387,7 +403,7 @@ ol[role="list"] {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: var(--text-md);
-  line-height: var(--leading-snug);
+  line-height: var(--leading-prose);
   font-variation-settings: "opsz" 24;
 }
 
@@ -416,8 +432,11 @@ ol[role="list"] {
   left: var(--space-4);
   top: calc(var(--safe-top) + var(--space-2));
   z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch);
   padding: var(--space-2) var(--space-4);
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--text-on-accent);
   border-radius: var(--radius);
   transform: translateY(-200%);

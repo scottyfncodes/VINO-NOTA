@@ -9,6 +9,12 @@
   background: var(--surface-sunken);
   border-radius: var(--radius);
 }
+/* A date field cannot shrink below its own format, so the narrowest phones get one column. */
+@media (max-width: 22.49rem) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (min-width: 48rem) {
   .filters {
     grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
@@ -120,6 +126,39 @@
   margin-right: 0;
   padding-right: 0;
 }
+
+/* On a phone a strip of figures is a ruled row of equal columns (two by two
+   from four figures up), never two figures and an orphan on a second line. */
+@media (max-width: 47.99rem) {
+  .figures {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: end;
+    gap: 0;
+    padding: 0;
+  }
+  .figures > * {
+    margin-right: 0;
+    padding: var(--space-3) var(--space-3) var(--space-3) 0;
+    border-right: 0;
+  }
+  .figures > * + * {
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--rule);
+  }
+  .figures:has(> :nth-child(4)) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .figures:has(> :nth-child(4)) > :nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .figures:has(> :nth-child(4)) > :nth-child(n + 3) {
+    border-top: 1px solid var(--rule);
+  }
+}
 .figureValue {
   font-family: var(--font-display);
   font-size: var(--text-2xl);
@@ -169,7 +208,7 @@
   align-items: flex-start;
   font-size: var(--text-xs);
   color: var(--text-muted);
-  max-width: 42rem;
+  max-width: 36rem;
 }
 .tooltip {
   background: var(--inverse-bg);

@@ -253,18 +253,18 @@ export default async function CompendiumPage({ searchParams }: PageProps<"/compe
               {value.currencies.length > 1 && (
                 <div className={s.chips} role="group" aria-label="Currency">
                   {value.currencies.map((c) => (
-                    <Link key={c.currency} href={keep({ currency: c.currency })} className={uiStyles.chip} aria-pressed={c.currency === value.currency} replace scroll={false}>
+                    <Link key={c.currency} href={keep({ currency: c.currency })} className={uiStyles.chip} aria-current={c.currency === value.currency ? "true" : undefined} replace scroll={false}>
                       {c.currency} · {c.count}
                     </Link>
                   ))}
                 </div>
               )}
               <div className={s.chips} role="group" aria-label="Price basis">
-                <Link href={keep({ basis: null })} className={uiStyles.chip} aria-pressed={!basis} replace scroll={false}>
+                <Link href={keep({ basis: null })} className={uiStyles.chip} aria-current={!basis ? "true" : undefined} replace scroll={false}>
                   All prices
                 </Link>
                 {PRICE_BASES.map((b) => (
-                  <Link key={b.value} href={keep({ basis: b.value })} className={uiStyles.chip} aria-pressed={basis === b.value} replace scroll={false}>
+                  <Link key={b.value} href={keep({ basis: b.value })} className={uiStyles.chip} aria-current={basis === b.value ? "true" : undefined} replace scroll={false}>
                     {b.label}
                   </Link>
                 ))}

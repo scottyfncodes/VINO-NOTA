@@ -151,9 +151,10 @@
   gap: 0 var(--space-2);
   margin-top: 1px;
 }
-.entryMeta > * + *::before {
+/* The separator belongs to the item before it, so a wrapped line never starts with a dot. */
+.entryMeta > :not(:last-child)::after {
   content: "·";
-  margin-right: var(--space-2);
+  margin-left: var(--space-2);
 }
 .typeKey {
   display: inline-flex;

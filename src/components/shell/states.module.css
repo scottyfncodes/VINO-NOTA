@@ -76,7 +76,7 @@
 .messageBody {
   font-family: var(--font-serif);
   font-size: var(--text-md);
-  line-height: var(--leading-snug);
+  line-height: var(--leading-prose);
   color: var(--text-muted);
 }
 .actions {

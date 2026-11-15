@@ -227,8 +227,8 @@
   cursor: pointer;
 }
 .dot:has(input:checked) {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
   color: var(--text-on-accent);
   font-weight: 600;
 }
