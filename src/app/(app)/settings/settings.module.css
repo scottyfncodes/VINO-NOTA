@@ -1,7 +1,9 @@
 /* One gap separates every section, the destructive one included; its red rule sets it apart. */
 .page {
   max-width: 60rem;
-  display: grid;
+  /* A column, not a grid: the sections are one stack sharing a left edge. */
+  display: flex;
+  flex-direction: column;
   gap: var(--space-7);
   padding-top: var(--space-6);
 }

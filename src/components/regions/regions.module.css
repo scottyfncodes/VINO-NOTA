@@ -66,18 +66,62 @@
     padding: var(--space-5) var(--space-5) var(--space-4);
   }
 }
+.mapFrame {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.mapBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--touch);
+}
+.mapTools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
 .map {
+  display: block;
   width: 100%;
   height: auto;
+  /* On a phone the box takes the view's shape (set inline), up to a 4:3 plate for a regional view. */
+  aspect-ratio: var(--map-shape, 4 / 3);
+  /* One finger still scrolls the page; a sideways drag or a pinch moves the map. */
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
 }
+.map:active {
+  cursor: grabbing;
+}
+@media (min-width: 48rem) {
+  .map {
+    aspect-ratio: 960 / 470;
+  }
+}
+.sea {
+  fill: transparent;
+  pointer-events: all;
+}
+.blank {
+  margin-top: var(--space-5);
+}
+/* Outlines keep their weight at every zoom. */
 .land {
   fill: var(--surface-paper);
   stroke: var(--surface);
   stroke-width: 0.6;
+  vector-effect: non-scaling-stroke;
 }
 .recorded {
   stroke: var(--surface);
   stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
   transition: opacity var(--duration) var(--ease);
 }
 .map a:hover .recorded,
