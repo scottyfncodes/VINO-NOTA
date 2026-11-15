@@ -12,8 +12,8 @@ export const MAP_FRAME = {
   minPad: 16,
   /** The closest the opening view gets: one small country still shows its neighbours. */
   minFitShare: 0.22,
-  /** Records spread across most of the world's width get the whole world, not a near-miss crop. */
-  wholeWorldShare: 0.86,
+  /** Records spread across most of the world's width get the whole world, not a crop that barely differs from it. */
+  wholeWorldShare: 0.7,
   /** Manual zoom stops here: beyond it the 1:110m outlines are only a few points. */
   maxZoom: 12,
   /** One step of the zoom buttons or keys. */

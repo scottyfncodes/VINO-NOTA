@@ -42,6 +42,12 @@ describe("frameFor", () => {
     expect(frameFor([france, argentina, newZealand], WORLD)).toEqual(WORLD);
   });
 
+  it("never opens on a crop that is nearly the whole world", () => {
+    // Europe to New Zealand: wide enough that a fitted frame would differ from the world by a sliver.
+    const frame = frameFor([france, newZealand], WORLD);
+    expect(frame.width === WORLD.width || frame.width < WORLD.width * MAP_FRAME.wholeWorldShare).toBe(true);
+  });
+
   it("keeps a tall, narrow spread to its own width instead of the whole world", () => {
     const chile: Box = { x: 262, y: 300, width: 16, height: 120 };
     const usa: Box = { x: 150, y: 96, width: 150, height: 60 };
