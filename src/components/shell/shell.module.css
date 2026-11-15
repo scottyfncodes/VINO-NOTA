@@ -104,17 +104,6 @@
 .navList > li {
   display: contents;
 }
-/* The narrowest phones: columns follow their labels so "Compendium" keeps clear of its neighbours. */
-@media (max-width: 22.49rem) {
-  .navList {
-    grid-template-columns: repeat(5, auto);
-    justify-content: space-between;
-    padding: 0 var(--space-2);
-  }
-  .navItem {
-    min-width: var(--touch);
-  }
-}
 .navItem {
   display: flex;
   flex-direction: column;
@@ -136,6 +125,7 @@
 }
 .navItem:active {
   color: var(--accent);
+  background: var(--accent-softer);
   transition-duration: var(--duration-press);
 }
 .navItem[aria-current="page"] {
@@ -154,6 +144,12 @@
 .navItem:focus-visible {
   box-shadow: inset 0 0 0 2px var(--accent);
   border-radius: var(--radius);
+}
+/* The narrowest phones: labels tighten so "Compendium" keeps clear of its neighbours. */
+@media (max-width: 22.49rem) {
+  .navItem {
+    letter-spacing: 0;
+  }
 }
 .capture {
   display: flex;

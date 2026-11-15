@@ -288,6 +288,7 @@ a:hover {
 a:active {
   color: var(--accent);
   text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
   transition-duration: var(--duration-press);
 }
 

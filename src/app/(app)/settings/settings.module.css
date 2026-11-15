@@ -1,11 +1,12 @@
+/* One gap separates every section, the destructive one included; its red rule sets it apart. */
 .page {
   max-width: 60rem;
-}
-.section {
+  display: grid;
+  gap: var(--space-7);
   padding-top: var(--space-6);
 }
-.section + .section {
-  padding-top: var(--space-7);
+.section {
+  min-width: 0;
 }
 .body {
   display: grid;
@@ -61,9 +62,6 @@
   .services dd {
     padding: var(--space-3) 0;
   }
-}
-.danger {
-  margin-top: var(--space-5);
 }
 .danger > :first-child {
   border-top-color: var(--error);
