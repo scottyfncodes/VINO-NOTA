@@ -8,7 +8,9 @@ import { formatNumber, plural } from "@/lib/format";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { ButtonLink, EmptyState } from "@/components/ui/primitives";
 import { Caveat, Figure } from "@/components/charts/ChartBits";
-import { countryShapes, MAP_HEIGHT, MAP_WIDTH } from "@/components/regions/worldMap";
+import { frameFor } from "@/lib/domain/mapFrame";
+import { RegionMap } from "@/components/regions/RegionMap";
+import { countryShapes, MAP_WORLD } from "@/components/regions/worldMap";
 import s from "@/components/regions/regions.module.css";
 
 export const metadata: Metadata = { title: "Regions" };
@@ -33,9 +35,18 @@ export default async function RegionsPage() {
     return (
       <>
         <PageHeader eyebrow="Wine atlas" title="Regions" />
-        <EmptyState mark="The map is blank" title="No origins recorded yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record a tasting</ButtonLink>}>
-          As you record wines with a country and region, they&rsquo;ll be mapped by country and gathered into an index of the places you&rsquo;ve explored.
-        </EmptyState>
+        <figure className={s.plate}>
+          <RegionMap world={MAP_WORLD} fit={MAP_WORLD} label="World map with no countries highlighted yet">
+            {countryShapes().map((sh, i) => (
+              <path key={`${sh.id}-${i}`} d={sh.d} className={s.land} aria-hidden="true" />
+            ))}
+          </RegionMap>
+        </figure>
+        <div className={s.blank}>
+          <EmptyState mark="The map is blank" title="No origins recorded yet" action={<ButtonLink href="/capture" variant="primary" icon="capture">Record a tasting</ButtonLink>}>
+            As you record wines with a country and region, they&rsquo;ll be mapped by country and gathered into an index of the places you&rsquo;ve explored.
+          </EmptyState>
+        </div>
       </>
     );
   }
@@ -74,6 +85,11 @@ export default async function RegionsPage() {
   const shapes = countryShapes();
   const mapped = new Set(shapes.map((sh) => sh.id));
   const unmappable = sorted.filter(([code]) => !mapped.has(countryByCode(code)?.numeric ?? ""));
+  // The opening view fits the countries that have records; the gazetteer below is unaffected.
+  const fit = frameFor(
+    shapes.filter((sh) => byNumeric.has(sh.id)).map((sh) => sh.frame),
+    MAP_WORLD,
+  );
   const regionCount = sorted.reduce((n, [, c]) => n + c.regions.size, 0);
   const mean = (a: Agg) => (a.rated ? formatNumber(a.scoreSum / a.rated, locale, 1) : null);
   const fig = (a: Agg) => [plural(a.wines.size, "wine"), plural(a.tastings, "tasting"), mean(a) && `avg ${mean(a)}`].filter(Boolean).join(" · ");
@@ -88,7 +104,7 @@ export default async function RegionsPage() {
       </div>
 
       <figure className={s.plate}>
-        <svg className={s.map} viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} role="group" aria-label={`World map highlighting ${plural(sorted.length, "country", "countries")} you have recorded wines from`}>
+        <RegionMap world={MAP_WORLD} fit={fit} label={`Map of the ${plural(sorted.length, "country", "countries")} you have recorded wines from`}>
           {shapes.map((sh, i) => {
             const hit = byNumeric.get(sh.id);
             if (!hit) return <path key={`${sh.id}-${i}`} d={sh.d} className={s.land} aria-hidden="true" />;
@@ -100,7 +116,7 @@ export default async function RegionsPage() {
               </a>
             );
           })}
-        </svg>
+        </RegionMap>
         <figcaption className={s.legend}>
           <span>Tastings recorded:</span>
           {SEQ.map((c, i) => (
