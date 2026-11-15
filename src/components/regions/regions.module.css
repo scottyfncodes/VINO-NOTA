@@ -18,6 +18,39 @@
   padding-right: 0;
 }
 
+/* On a phone a strip of figures is a ruled row of equal columns (two by two
+   from four figures up), never two figures and an orphan on a second line. */
+@media (max-width: 47.99rem) {
+  .stats {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    align-items: end;
+    gap: 0;
+    padding: 0;
+  }
+  .stats > * {
+    margin-right: 0;
+    padding: var(--space-3) var(--space-3) var(--space-3) 0;
+    border-right: 0;
+  }
+  .stats > * + * {
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--rule);
+  }
+  .stats:has(> :nth-child(4)) {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stats:has(> :nth-child(4)) > :nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .stats:has(> :nth-child(4)) > :nth-child(n + 3) {
+    border-top: 1px solid var(--rule);
+  }
+}
+
 /* ---------- Map plate ---------- */
 .plate {
   margin: 0;

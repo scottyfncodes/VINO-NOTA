@@ -44,12 +44,12 @@ export function ValueChart({ points, currency, medianPrice, medianScore }: { poi
               domain={[0, Math.ceil(maxPrice * 1.08)]}
               tickLine={false}
               axisLine={{ stroke: "var(--chart-axis)" }}
-              tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+              tick={{ fill: "var(--text-muted)", fontSize: 12 }}
               tickFormatter={(v: number) => formatPrice(v, currency) ?? String(v)}
             />
-            <YAxis type="number" dataKey="score" name="Score" domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} tickLine={false} axisLine={false} tick={{ fill: "var(--text-muted)", fontSize: 11 }} width={40} />
-            {medianPrice !== null && points.length >= 3 && <ReferenceLine x={medianPrice} stroke="var(--chart-axis)" strokeDasharray="0" label={{ value: "median price", position: "insideTopRight", fill: "var(--text-muted)", fontSize: 10 }} />}
-            {medianScore !== null && points.length >= 3 && <ReferenceLine y={medianScore} stroke="var(--chart-axis)" label={{ value: "median score", position: "insideBottomRight", fill: "var(--text-muted)", fontSize: 10 }} />}
+            <YAxis type="number" dataKey="score" name="Score" domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} tickLine={false} axisLine={false} tick={{ fill: "var(--text-muted)", fontSize: 12 }} width={40} />
+            {medianPrice !== null && points.length >= 3 && <ReferenceLine x={medianPrice} stroke="var(--chart-axis)" strokeDasharray="0" label={{ value: "median price", position: "insideTopRight", fill: "var(--text-muted)", fontSize: 12 }} />}
+            {medianScore !== null && points.length >= 3 && <ReferenceLine y={medianScore} stroke="var(--chart-axis)" label={{ value: "median score", position: "insideBottomRight", fill: "var(--text-muted)", fontSize: 12 }} />}
             <Tooltip
               cursor={false}
               content={({ active, payload }) => {

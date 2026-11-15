@@ -14,8 +14,8 @@ export function RatingChart({ bins }: { bins: ScoreBin[] }) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: -24 }} barCategoryGap="18%">
           <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
-          <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "var(--chart-axis)" }} tick={{ fill: "var(--text-muted)", fontSize: 11 }} interval={0} />
-          <YAxis allowDecimals={false} domain={[0, max]} tickLine={false} axisLine={false} tick={{ fill: "var(--text-muted)", fontSize: 11 }} width={48} />
+          <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "var(--chart-axis)" }} tick={{ fill: "var(--text-muted)", fontSize: 12 }} interval={0} />
+          <YAxis allowDecimals={false} domain={[0, max]} tickLine={false} axisLine={false} tick={{ fill: "var(--text-muted)", fontSize: 12 }} width={48} />
           <Tooltip
             cursor={{ fill: "var(--accent-softer)" }}
             content={({ active, payload }) =>

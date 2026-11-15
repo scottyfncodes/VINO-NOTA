@@ -175,7 +175,7 @@
   height: 1.25rem;
   padding: 0 0.3rem;
   border-radius: var(--radius-sm);
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--text-on-accent);
   font-family: var(--font-mono);
   font-size: var(--text-2xs);

@@ -123,6 +123,11 @@
 .navItem:hover {
   color: var(--text);
 }
+.navItem:active {
+  color: var(--accent);
+  background: var(--accent-softer);
+  transition-duration: var(--duration-press);
+}
 .navItem[aria-current="page"] {
   color: var(--accent);
 }
@@ -140,6 +145,12 @@
   box-shadow: inset 0 0 0 2px var(--accent);
   border-radius: var(--radius);
 }
+/* The narrowest phones: labels tighten so "Compendium" keeps clear of its neighbours. */
+@media (max-width: 22.49rem) {
+  .navItem {
+    letter-spacing: 0;
+  }
+}
 .capture {
   display: flex;
   align-items: center;
@@ -147,7 +158,7 @@
   width: 3.25rem;
   height: 3.25rem;
   border-radius: var(--radius-lg);
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--text-on-accent);
   margin-top: -1.15rem;
   box-shadow: 0 0 0 4px var(--bg), var(--shadow-plate);
@@ -164,7 +175,7 @@
   display: none;
 }
 .navItemCapture[aria-current="page"] .capture {
-  background: var(--accent-hover);
+  background: var(--accent-fill-hover);
 }
 .navItemCapture .label {
   margin-top: 2px;
@@ -242,15 +253,18 @@
     height: var(--touch);
     padding: 0 var(--space-4);
     border-radius: var(--radius);
-    background: var(--accent);
+    background: var(--accent-fill);
     color: var(--text-on-accent);
     font-weight: 550;
     align-self: center;
   }
   .navItemCapture:hover,
   .navItemCapture[aria-current="page"] {
-    background: var(--accent-hover);
+    background: var(--accent-fill-hover);
     color: var(--text-on-accent);
+  }
+  .navItemCapture:active {
+    background: var(--accent-fill-active);
   }
   .capture {
     width: auto;
@@ -360,7 +374,7 @@
 .pageLede {
   font-family: var(--font-serif);
   font-size: var(--text-md);
-  line-height: var(--leading-snug);
+  line-height: var(--leading-prose);
   color: var(--text-muted);
   max-width: 38rem;
 }

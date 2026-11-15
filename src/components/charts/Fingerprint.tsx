@@ -21,10 +21,10 @@ const stepFor = (score: number) => STEPS.find((x) => score < x.max)!;
 export function Fingerprint({ dimensions }: { dimensions: FingerprintDimension[] }) {
   const rows = dimensions.filter((d) => d.assessed > 0);
   const maxCount = Math.max(1, ...rows.flatMap((d) => d.levels.map((l) => l.count)));
-  const labelW = 112;
+  const labelW = 128;
   const colW = 40;
-  const rowH = 46;
-  const width = labelW + colW * 5 + 44;
+  const rowH = 48;
+  const width = labelW + colW * 5 + 36;
   const height = 22 + rows.length * rowH;
   const r = (count: number) => (count === 0 ? 0 : Math.max(4, Math.sqrt(count / maxCount) * 17));
 
@@ -32,11 +32,11 @@ export function Fingerprint({ dimensions }: { dimensions: FingerprintDimension[]
     <div style={{ display: "grid", gap: "var(--space-3)" }}>
       <svg className={s.matrix} viewBox={`0 0 ${width} ${height}`} role="group" aria-label="Palate fingerprint dot matrix">
         {[1, 2, 3, 4, 5].map((n) => (
-          <text key={n} x={labelW + colW * (n - 0.5)} y={12} textAnchor="middle" fontSize="10" fill="var(--text-muted)">
+          <text key={n} x={labelW + colW * (n - 0.5)} y={12} textAnchor="middle" fontSize="12" fill="var(--text-muted)">
             {n}
           </text>
         ))}
-        <text x={labelW + colW * 5 + 8} y={12} fontSize="10" fill="var(--text-muted)">
+        <text x={labelW + colW * 5 + 8} y={12} fontSize="12" fill="var(--text-muted)">
           n
         </text>
         {rows.map((d, i) => {
@@ -44,10 +44,10 @@ export function Fingerprint({ dimensions }: { dimensions: FingerprintDimension[]
           return (
             <g key={d.key}>
               <line x1={labelW} x2={labelW + colW * 5} y1={cy} y2={cy} stroke="var(--chart-grid)" />
-              <text x={0} y={cy - 3} fontSize="12" fill="var(--text)">
+              <text x={0} y={cy - 4} fontSize="13" fill="var(--text)">
                 {d.label}
               </text>
-              <text x={0} y={cy + 11} fontSize="9.5" fill="var(--text-muted)">
+              <text x={0} y={cy + 12} fontSize="12" fill="var(--text-muted)">
                 {d.scale[0].toLowerCase()} → {d.scale[4].toLowerCase()}
               </text>
               {d.levels.map((l) =>
@@ -72,7 +72,7 @@ export function Fingerprint({ dimensions }: { dimensions: FingerprintDimension[]
                   </Link>
                 ),
               )}
-              <text x={labelW + colW * 5 + 8} y={cy + 4} fontSize="11" fill="var(--text-muted)" style={{ fontVariantNumeric: "tabular-nums" }}>
+              <text x={labelW + colW * 5 + 8} y={cy + 4} fontSize="12" fill="var(--text-muted)" style={{ fontVariantNumeric: "tabular-nums" }}>
                 {d.assessed}
               </text>
             </g>

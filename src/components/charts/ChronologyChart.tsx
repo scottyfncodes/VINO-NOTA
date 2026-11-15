@@ -22,7 +22,9 @@ export function ChronologyChart({ data }: { data: Chronology }) {
   const rated = data.points.filter((p) => p.score !== null).map((p) => ({ ...p, t: ts(p.tastedOn) }));
   const meanLine = data.months.filter((m) => m.meanScore !== null).map((m) => ({ t: monthMid(m.month), mean: m.meanScore }));
   const counts = data.months.map((m) => ({ t: monthMid(m.month), count: m.count, rated: m.rated, month: m.month }));
-  const tickCount = Math.min(6, data.months.length + 1);
+  // One tick per month at its midpoint, thinned so labels never collide or repeat.
+  const step = Math.ceil(data.months.length / 6);
+  const monthTicks = data.months.filter((_, i) => i % step === 0).map((m) => monthMid(m.month));
 
   const xAxis = (
     <XAxis
@@ -30,11 +32,11 @@ export function ChronologyChart({ data }: { data: Chronology }) {
       dataKey="t"
       domain={domain}
       scale="time"
-      tickCount={tickCount}
+      ticks={monthTicks}
       tickFormatter={fmtMonth}
       tickLine={false}
       axisLine={{ stroke: "var(--chart-axis)" }}
-      tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+      tick={{ fill: "var(--text-muted)", fontSize: 12 }}
     />
   );
 
@@ -46,7 +48,7 @@ export function ChronologyChart({ data }: { data: Chronology }) {
           <ComposedChart margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
             <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
             {xAxis}
-            <YAxis type="number" domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} tickLine={false} axisLine={false} tick={{ fill: "var(--text-muted)", fontSize: 11 }} width={40} />
+            <YAxis type="number" domain={[0, 10]} ticks={[0, 2, 4, 6, 8, 10]} tickLine={false} axisLine={false} tick={{ fill: "var(--text-muted)", fontSize: 12 }} width={40} />
             <Tooltip
               cursor={false}
               content={({ active, payload }) => {
@@ -84,7 +86,7 @@ export function ChronologyChart({ data }: { data: Chronology }) {
           <BarChart data={counts} margin={{ top: 4, right: 8, bottom: 0, left: -12 }}>
             <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
             {xAxis}
-            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "var(--text-muted)", fontSize: 11 }} width={40} tickCount={3} />
+            <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: "var(--text-muted)", fontSize: 12 }} width={40} tickCount={3} />
             <Tooltip
               cursor={{ fill: "var(--accent-softer)" }}
               content={({ active, payload }) =>
